@@ -2,6 +2,8 @@ package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.Shell;
@@ -36,18 +38,18 @@ public class ShellImpl implements Shell {
 			throws AbstractApplicationException, ShellException{
 		
 		// process command
-		String[] cmdTokensArray = cmd.split(" ");
+		String[] cmdTokensArray = splitString(cmd);
 		String app = cmdTokensArray[0];
-		String[] args;
+		String[] argsArray;
 
 		if (cmdTokensArray.length > 1)
 		{
-			args = Arrays.copyOfRange(cmdTokensArray, 1,
+			argsArray = Arrays.copyOfRange(cmdTokensArray, 1,
 					cmdTokensArray.length);
 		}
 		else
 		{
-			args = new String[0];
+			argsArray = new String[0];
 		}
 		// first word of command is the application
 	
@@ -56,13 +58,13 @@ public class ShellImpl implements Shell {
 		case "pwd": {
 			// pwd
 			PwdApplication pwdApp = new PwdApplication();
-			pwdApp.run(args, stdin, stdout);
+			pwdApp.run(argsArray, stdin, stdout);
 			break;
 		}
 		case "cd": {
 			// cd PATH
 			CdApplication cdApp = new CdApplication();
-			cdApp.run(args, stdin, stdout);
+			cdApp.run(argsArray, stdin, stdout);
 			break;
 		}
 		case "ls": {
@@ -101,9 +103,13 @@ public class ShellImpl implements Shell {
 			// wc [OPTIONS] [FILE]...
 			break;
 		}
+		case "exit": {
+			System.out.println("Thank you for using CS4218 Shell!");
+			System.exit(0); 
+		}
 		case "test": {
 			TestApplication testApp = new TestApplication();
-			testApp.run(args, stdin, stdout);
+			testApp.run(argsArray, stdin, stdout);
 			break;
 		}
 		default: {
@@ -111,6 +117,104 @@ public class ShellImpl implements Shell {
 		}
 		}
 	}
+	
+	
+	// splits string using delimiters
+	public String[] splitString(String str)
+	{
+		Vector<String> cmdVector = new Vector<String>();
+		int endIndx = 0;
+		
+		Pattern appWordP = Pattern.compile( "([A-Za-z]*)");
+		Matcher appWordM = appWordP.matcher(str);
+		if(appWordM.find()) //should be got
+		{
+			String s = appWordM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + appWordM.end();
+		}
+		
+		//for wc -l
+		Pattern optionsP = Pattern.compile( "[\\s]*(-[A-Za-z])[\\s]" );
+		Matcher optionsM = optionsP.matcher(str.substring(endIndx));
+		if(optionsM.find()) 
+		{
+			String s = optionsM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + optionsM.end();
+		}
+		
+		Pattern fileNameP = Pattern.compile( "[\\s]*([\\s]*[A-Za-z0-9\\-\\.\\\\/]*[\\*])" );
+		Matcher fileNameM = fileNameP.matcher(str.substring(endIndx));
+		if(fileNameM.find()) 
+		{
+			String s = fileNameM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + fileNameM.end();
+		}
+		
+		//for find -name
+		Pattern dashNameP = Pattern.compile( "[\\s]*(-name)" );
+		Matcher dashNameM = dashNameP.matcher(str.substring(endIndx));
+		if(dashNameM.find()) 
+		{
+			String s = dashNameM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + dashNameM.end();
+		}
+		
+	
+		Pattern inputStreamP = Pattern.compile(  "[\\s]*(<[\\s]*[A-Za-z0-9\\-.\\\\/]*)" );
+		Matcher inputStreamM = inputStreamP.matcher(str.substring(endIndx));
+		if(inputStreamM.find())
+		{
+			String s = inputStreamM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + inputStreamM.end();
+		}
+		
+		Pattern outputStreamP = Pattern.compile(  "[\\s]*(>[\\s]*[A-Za-z0-9\\-.\\\\/]*)" );
+		Matcher outputStreamM = outputStreamP.matcher(str.substring(endIndx));
+		if(outputStreamM.find())
+		{
+			String s = outputStreamM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + outputStreamM.end();
+		}
+		
+		Pattern doubleQuotesP =  Pattern.compile(  "[\\s]*(\"[\\s]*[\\sA-Za-z0-9\\-.\\\\/]*[\\s]*\")" );
+		Matcher doubleQuotesM = doubleQuotesP.matcher(str.substring(endIndx));
+		if(doubleQuotesM.find())
+		{
+			String s = doubleQuotesM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + doubleQuotesM.end();
+		}
+		
+		Pattern singleQuotesP = Pattern.compile(  "[\\s]*(\'[\\s]*[\\sA-Za-z0-9\\-.\\\\/]*[\\s]*\') " );
+		Matcher singleQuotesM = singleQuotesP.matcher(str.substring(endIndx));
+		if(singleQuotesM.find())
+		{
+			String s = singleQuotesM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + singleQuotesM.end();
+		}
+		
+		Pattern backQuotesP = Pattern.compile(  "[\\s]*(`[\\s]*[\\sA-Za-z0-9\\-.\\\\/]*[\\s]*`)" );
+		Matcher backQuotesM = backQuotesP.matcher(str.substring(endIndx));
+		if(backQuotesM.find())
+		{
+			String s = backQuotesM.group(1);		    
+		    cmdVector.add(s);
+		    endIndx = endIndx + backQuotesM.end();
+		}
+		  
+		 //System.out.println(cmdVector.toString());
+		
+		return cmdVector.toArray(new String[cmdVector.size()]);
+	}
+	
+	
 	
 	public void evaluatePipe(String cmd) throws AbstractApplicationException, ShellException{
 		String[] pipeCmdArray = cmd.split("\\|");
@@ -154,8 +258,8 @@ public class ShellImpl implements Shell {
 				System.out.print(currentDir + ">");
 				readLine = bReader.readLine();
 				shell.parseAndEvaluate(readLine, System.out);
-			} catch (IOException|AbstractApplicationException|ShellException e) {
-				System.out.println(e.getMessage());
+			} catch (Exception e) {
+				System.out.println("Error: "+e.getMessage());
 			}
 
 		}
