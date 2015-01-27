@@ -101,7 +101,11 @@ public class ShellImpl implements Shell {
 			// wc [OPTIONS] [FILE]...
 			break;
 		}
-
+		case "test": {
+			TestApplication testApp = new TestApplication();
+			testApp.run(args, stdin, stdout);
+			break;
+		}
 		default: {
 			throw new ShellException("Invalid Command");
 		}
@@ -111,14 +115,17 @@ public class ShellImpl implements Shell {
 	public void evaluatePipe(String cmd) throws AbstractApplicationException, ShellException{
 		String[] pipeCmdArray = cmd.split("\\|");
 		
-		InputStream stdin = new ByteArrayInputStream(new byte[1024]);
+		byte[] buffer = new byte[1024];
+		InputStream stdin = new ByteArrayInputStream(buffer);
 		OutputStream stdout = new ByteArrayOutputStream();
 		
 		for(int i = 0; i < pipeCmdArray.length; i++)
 		{
 			evaluateCall(pipeCmdArray[i].trim(), stdin, stdout);
+			stdin = new ByteArrayInputStream(((ByteArrayOutputStream) stdout).toByteArray()); 
+			stdout = new ByteArrayOutputStream();
 			
-			PipeCommand pc = new PipeCommand();
+/*			PipeCommand pc = new PipeCommand();
 			try {
 				pc.evaluate(stdin, stdout);
 			} catch (AbstractApplicationException e) {
@@ -127,7 +134,7 @@ public class ShellImpl implements Shell {
 			} catch (ShellException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 			
 		}
 	}

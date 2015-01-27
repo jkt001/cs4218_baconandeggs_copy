@@ -22,12 +22,8 @@ public class PipeCommand implements Command {
 		byte[] byteArray= outByte.toByteArray();
 		System.out.println("byteArray "+new String(byteArray));
 		
-		try {
-			stdin.read(byteArray); //this part is ...wrong
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		stdin = new ByteArrayInputStream (byteArray);
+		//stdin.read(byteArray); //this part is ...wrong
 		
 /*        byte[] buffer = new byte[1024];
         int len;
