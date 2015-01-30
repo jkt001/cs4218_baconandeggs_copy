@@ -22,9 +22,24 @@ public class LsApplication implements Application{
 			throw new LsException("Too many parameters");
 		}
 		
-		File theDir = new File(Environment.currentDirectory);
+		String directory;
+		if(args.length == 0){
+			directory = Environment.currentDirectory;
+		}else{
+			directory = args[0];
+		}
 		
-        String str[] = theDir.list();
+        String str[] = getListOfFileFromDirectory(directory);
+		writeStringToOutputStream(str, stdout);
+	}
+	
+	protected String[] getListOfFileFromDirectory(String directory){
+		File theDir = new File(directory);
+		
+        return theDir.list();
+	}
+	
+	protected void writeStringToOutputStream(String[] str, OutputStream stdout){
 		try {
 			for(int i=0;i<str.length-1;i++){
 				if(!str[i].startsWith(".")){
@@ -39,5 +54,4 @@ public class LsApplication implements Application{
 			e.printStackTrace();
 		}
 	}
-	
 }

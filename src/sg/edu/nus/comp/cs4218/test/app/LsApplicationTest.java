@@ -9,6 +9,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.LsException;
 import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
 
@@ -68,18 +69,35 @@ public class LsApplicationTest {
 	}
 	
 	@Test
-	public void testTempDirectory() {
+	public void testTempDirectoryAsCurrentDirectory() {
 		LsApplication myLs = new LsApplication();
 		String[] str = {};
+		String temp = Environment.currentDirectory;
+		Environment.currentDirectory += File.separator + "testLsApplicationTempDir"; 
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myLs.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-//			System.out.print(testStr);
-			assertEquals("bin	README.md	src	testLsApplicationTempDir\n",testStr);
+			assertEquals("a.txt\n",testStr);
 		}catch(LsException le){
 			fail("Not supposed to have exception for folder that exists.");
 		}		
+		//after test change back current directory
+		Environment.currentDirectory = temp;
+	}
+	@Test
+	public void testWithPathArgument(){
+		LsApplication myLs = new LsApplication();
+		String path = Environment.currentDirectory + File.separator + "testLsApplicationTempDir";
+		String[] str = {path};
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		try{
+			myLs.run(str, null, myOutputStream);
+			String testStr = myOutputStream.toString();
+			assertEquals("a.txt\n",testStr);
+		}catch(LsException le){
+			fail("Not supposed to have exception for folder that exists.");
+		}
 	}
 	
 	@AfterClass
