@@ -1,6 +1,7 @@
 package sg.edu.nus.comp.cs4218.test.app;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -84,73 +85,111 @@ public class CdApplicationTest {
 	// Test folder that exists, absolute path
 	@Test
 	public void testRun() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\", "C:\\");
 	}
 	
 	// Test folder that exists, absolute path
 	@Test
 	public void testRun1a() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\Windows", "C:\\Windows");
 	}
 	
 	// Test folder that exists, absolute path
 	@Test
 	public void testRun1b() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\Windows\\", "C:\\Windows");
 	}
 	
 	// Test folder that does not exist, absolute path
 	@Test
 	public void testRun2() {
+		assumeTrue(isWindows());
 		testCdExpectFailure(System.getProperty("user.dir"), "C:\\InvalidDir");
 	}
 	
 	// Test folder that exists, relative subdirectory
 	@Test
 	public void testRun3() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "..", "C:\\");
 	}
 	
 	// Test folder that exists, relative subdirectory
 	@Test
 	public void testRun3a() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows\\System32", "..\\..", "C:\\");
 	}
 	
 	// Test folder that exists, relative subdirectory
 	@Test
 	public void testRun3b() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows\\System32", "..\\System", "C:\\Windows\\System");
 	}
 	
 	// Test folder that exists, root-relative subdirectory
 	@Test
 	public void testRun4() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "\\", "C:\\");
 	}
 	
 	// Test folder that exists, root-relative subdirectory
 	@Test
 	public void testRun4a() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "\\Users", "C:\\Users");
 	}
 	
 	// Test cd to beyond root of drive
 	@Test
 	public void testRun5() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\", "..", "C:\\");
 	}
 	
 	// Test cd to beyond root of drive
 	@Test
 	public void testRun5a() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "..\\..", "C:\\");
 	}
 	
 	// Test cd to beyond root of drive
 	@Test
 	public void testRun5b() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "\\..", "C:\\");
+	}
+	
+	@Test
+	public void testRunCdDirWithNoPermissionsToCdTo() {
+		assumeTrue(isWindows());
+		CdApplication app = new CdApplication();
+		String[] params = {"C:\\System Volume Information"};
+		try {
+			app.run(params, System.in, System.out);
+		} catch (CdException e) {
+			System.out.println(e.getMessage());
+		}
+		testCdExpectFailure("C:\\", "C:\\System Volume Information");
+	}
+	
+	@Test
+	public void testRunCdDirWithNoPermissionsToListContentsOf() {
+		assumeTrue(isWindows());
+		CdApplication app = new CdApplication();
+		String[] params = {"C:\\$RECYCLE.BIN"};
+		try {
+			app.run(params, System.in, System.out);
+		} catch (CdException e) {
+			System.out.println(e.getMessage());
+		}
+		testCdExpectSuccess("C:\\", "C:\\$RECYCLE.BIN", "C:\\$RECYCLE.BIN");		
 	}
 
 	private void testCdExpectFailure(String initialDirectory, String cdPath) {
@@ -181,6 +220,13 @@ public class CdApplicationTest {
 		}
 		
 		assertEquals(expectedDirectory, Environment.currentDirectory);
+	}
+	
+	public boolean isWindows(){
+		if (System.getProperty("os.name").startsWith("Windows")) {
+			return true;
+		}
+		return false;
 	}
 
 }

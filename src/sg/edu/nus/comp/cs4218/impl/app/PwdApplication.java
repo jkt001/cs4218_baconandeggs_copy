@@ -17,7 +17,7 @@ public class PwdApplication implements Application {
 			throws AbstractApplicationException {
 
 		if (args != null && args.length > 0) {
-			throw new CdException("Too many parameters");
+			throw new PwdException("Too many parameters");
 		}
 		
 		try {
