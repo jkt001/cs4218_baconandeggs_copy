@@ -2,6 +2,7 @@ package sg.edu.nus.comp.cs4218.test.app;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -13,21 +14,14 @@ import sg.edu.nus.comp.cs4218.exception.CdException;
 import sg.edu.nus.comp.cs4218.impl.app.CdApplication;
 
 public class CdApplicationTest {
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+	
+	private static final String MESSAGE_FAIL = "Not supposed to succeed.";
+	
+	CdApplication app;
 
 	@Before
 	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
+		app = new CdApplication();
 	}
 	
 	// Test null parameters
@@ -37,7 +31,7 @@ public class CdApplicationTest {
 		String[] params = null;
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -50,7 +44,7 @@ public class CdApplicationTest {
 		String[] params = {};
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -63,7 +57,7 @@ public class CdApplicationTest {
 		String[] params = {null};
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -72,11 +66,11 @@ public class CdApplicationTest {
 	// Test two parameters
 	@Test
 	public void testTwoParams() {
-		CdApplication app = new CdApplication();
+		
 		String[] params = {"a", "b"};
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -86,28 +80,28 @@ public class CdApplicationTest {
 	@Test
 	public void testSimpleAbsolutePathThatExists() {
 		assumeTrue(isWindows());
-		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\", "C:\\");
+		testCdExpectSuccess(getUserDir(), "C:\\", "C:\\");
 	}
 	
 	// Test folder that exists, absolute path
 	@Test
 	public void testAbsolutePathWithOneFolderThatExists() {
 		assumeTrue(isWindows());
-		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\Windows", "C:\\Windows");
+		testCdExpectSuccess(getUserDir(), "C:\\Windows", "C:\\Windows");
 	}
 	
 	// Test folder that exists, absolute path
 	@Test
 	public void testAbsolutePathWithOneFolderWithExtraSlashThatExists() {
 		assumeTrue(isWindows());
-		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\Windows\\", "C:\\Windows");
+		testCdExpectSuccess(getUserDir(), "C:\\Windows\\", "C:\\Windows");
 	}
 	
 	// Test folder that does not exist, absolute path
 	@Test
 	public void testNonExistentAbsolutePath() {
 		assumeTrue(isWindows());
-		testCdExpectFailure(System.getProperty("user.dir"), "C:\\InvalidDir");
+		testCdExpectFailure(getUserDir(), "C:\\InvalidDir");
 	}
 	
 	// Test folder that exists, relative subdirectory
@@ -227,6 +221,10 @@ public class CdApplicationTest {
 			return true;
 		}
 		return false;
+	}
+	
+	private String getUserDir() {
+		return System.getProperty("user.dir");
 	}
 
 }
