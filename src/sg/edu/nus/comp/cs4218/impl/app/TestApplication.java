@@ -17,7 +17,7 @@ public class TestApplication implements Application {
 			throws AbstractApplicationException {
 		BufferedReader in;
 		
-
+		
 		if(stdin != null){
 			 in = new BufferedReader( new InputStreamReader(stdin) );
 				 
@@ -38,6 +38,7 @@ public class TestApplication implements Application {
 		String result = "result";
 		try {
 			stdout.write(result.getBytes(Charset.forName("UTF-8")));
+			stdout.write(System.getProperty("line.separator").getBytes());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

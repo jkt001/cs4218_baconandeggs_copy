@@ -26,9 +26,6 @@ public class PipeCommand implements Command {
 		stdin = new ByteArrayInputStream (byteArray);
 		//stdin.read(byteArray); //this part is ...wrong
 		
-		InputStreamReader isr = new InputStreamReader(stdin);
-		isr.re
-		
 /*        byte[] buffer = new byte[1024];
         int len;
         try { 
