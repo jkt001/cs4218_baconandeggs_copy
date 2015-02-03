@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.OutputStream;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -85,6 +86,7 @@ public class LsApplicationTest {
 		//after test change back current directory
 		Environment.currentDirectory = temp;
 	}
+	
 	@Test
 	public void testWithPathArgument(){
 		LsApplication myLs = new LsApplication();
@@ -99,6 +101,38 @@ public class LsApplicationTest {
 			fail("Not supposed to have exception for folder that exists.");
 		}
 	}
+	
+	@Test
+	public void testCurrentDirectoryNotExists(){
+		LsApplication myLs = new LsApplication();
+
+		String temp = Environment.currentDirectory;
+		Environment.currentDirectory += File.separator + "testLsApplicationNotExistTempDir"; 
+		String[] str = {};
+		try{
+			myLs.run(str, null, new ByteArrayOutputStream());
+			fail("Should throw directory not exist exception");
+		}catch(LsException le){
+			assertEquals(le.getLocalizedMessage(), "ls: Directory does not exist");
+		}
+		Environment.currentDirectory = temp;
+
+	}
+	
+	@Test
+	public void testWithPathArgumentDirectoryNotExists(){
+		LsApplication myLs = new LsApplication();
+		String path = Environment.currentDirectory + File.separator + "testLsApplicationNotExistsTempDir";
+		String[] str = {path};
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		try{
+			myLs.run(str, null, myOutputStream);
+			fail("Should throw directory not exist exception");
+		}catch(LsException le){
+			assertEquals(le.getLocalizedMessage(), "ls: Directory does not exist");
+		}
+	}
+	
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {

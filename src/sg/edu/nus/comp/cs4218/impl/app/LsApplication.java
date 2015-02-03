@@ -33,8 +33,12 @@ public class LsApplication implements Application{
 		writeStringToOutputStream(str, stdout);
 	}
 	
-	protected String[] getListOfFileFromDirectory(String directory){
+	protected String[] getListOfFileFromDirectory(String directory) throws LsException{
 		File theDir = new File(directory);
+		
+		if(!theDir.isDirectory()){
+			throw new LsException("Directory does not exist");
+		}
 		
         return theDir.list();
 	}
@@ -50,7 +54,6 @@ public class LsApplication implements Application{
 			stdout.write(str[str.length-1].getBytes(Charset.forName("UTF-8")));
 			stdout.write("\n".getBytes(Charset.forName("UTF-8")));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
