@@ -15,17 +15,8 @@ public class PipeCommand implements Command {
 	@Override
 	public void evaluate(InputStream stdin, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-
-		//convert the output stream to the input stream
-		ByteArrayOutputStream outByte = (ByteArrayOutputStream)stdout;
 		
-		byte[] byteArray= outByte.toByteArray();
-		System.out.println("byteArray "+new String(byteArray));
-		
-		stdin = new ByteArrayInputStream (byteArray);
-		//stdin.read(byteArray); //this part is ...wrong
-		
-/*        byte[] buffer = new byte[1024];
+		byte[] buffer = new byte[1024];
         int len;
         try { 
             while ((len = stdin.read(buffer)) != -1) {
@@ -33,10 +24,7 @@ public class PipeCommand implements Command {
             }
         } catch (IOException e) {
             throw new ShellException("Error in pipe");
-        }*/
-
-        
-		
+        }       
 	}
 
 	@Override
