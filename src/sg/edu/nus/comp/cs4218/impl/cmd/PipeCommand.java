@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import sg.edu.nus.comp.cs4218.Command;
@@ -25,6 +26,9 @@ public class PipeCommand implements Command {
 		stdin = new ByteArrayInputStream (byteArray);
 		//stdin.read(byteArray); //this part is ...wrong
 		
+		InputStreamReader isr = new InputStreamReader(stdin);
+		isr.re
+		
 /*        byte[] buffer = new byte[1024];
         int len;
         try { 
@@ -36,6 +40,33 @@ public class PipeCommand implements Command {
         }*/
 
         
+		
+	}
+	
+	private boolean finished = false;
+	
+	public class ThreadedPipe implements Runnable {
+
+		private InputStream in;
+		private OutputStream out;
+		
+		public ThreadedPipe(InputStream inputStream, OutputStream outputStream){
+			in = inputStream;
+			out = outputStream;
+		}
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while (!finished) {
+				try {
+					out.write(in.read());
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 		
 	}
 
