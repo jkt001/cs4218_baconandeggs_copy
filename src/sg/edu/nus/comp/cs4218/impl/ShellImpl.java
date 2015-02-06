@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.Shell;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
@@ -40,11 +41,13 @@ public class ShellImpl implements Shell {
 	// process command
 	private void evaluateCall(String cmd, InputStream stdin, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
+		
 		String[] cmdTokensArray = splitString(cmd), argsArray;
 		String app = cmdTokensArray[0];
 		int nTokens = cmdTokensArray.length;
 		InputStream inputStream = stdin;
 		OutputStream outputStream = stdout;
+		
 		if (nTokens >= 3) { // last 2 for inputRedir & >outputRedir
 			if (!cmdTokensArray[nTokens - 2].equals("")) {
 				String inputStreamS = cmdTokensArray[nTokens - 2].trim();
@@ -59,33 +62,42 @@ public class ShellImpl implements Shell {
 		} else {
 			argsArray = new String[0];
 		}
+
+		runApp(app, argsArray, inputStream, outputStream);
+	}
+
+	private void runApp(String app, String[] argsArray,
+			InputStream inputStream, OutputStream outputStream)
+			throws AbstractApplicationException, ShellException {
+		Application absApp = null;
 		if (("pwd".equals(app))) {
-			PwdApplication pwdApp = new PwdApplication();
-			pwdApp.run(argsArray, inputStream, outputStream);
+			absApp = new PwdApplication();
 		} else if (("cd").equals(app)) {// cd PATH
-			CdApplication cdApp = new CdApplication();
-			cdApp.run(argsArray, inputStream, outputStream);
+			absApp = new CdApplication();
 		} else if (("ls").equals(app)) {// ls
-			LsApplication lsApp = new LsApplication();
-			lsApp.run(argsArray, inputStream, outputStream);
+			absApp = new LsApplication();
 		} else if (("cat").equals(app)) {// cat [FILE]...
-
+			// absApp = new catApplication();
 		} else if (("echo").equals(app)) {// echo [args]...
-			EchoApplication echoApp = new EchoApplication();
-			echoApp.run(argsArray, inputStream, outputStream);
+			absApp = new EchoApplication();
 		} else if (("head").equals(app)) {// head [OPTIONS] [FILE]
-
+			// absApp = new headApplication();
 		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
-
+			// absApp = new tailApplication();
 		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
-
+			// absApp = new grepApplication();
 		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
-
+			// absApp = new sedApplication();
 		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
-
+			// absApp = new findApplication();
 		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
-
+			// absApp = new wcApplication();
 		} else { // invalid command
+			throw new ShellException(INVALID_CMD);
+		}
+		if (absApp != null) {
+			absApp.run(argsArray, inputStream, outputStream);
+		} else {
 			throw new ShellException(INVALID_CMD);
 		}
 	}
@@ -176,7 +188,7 @@ public class ShellImpl implements Shell {
 				Matcher matcher = pattern.matcher(str.substring(newEndIdx));
 				if (matcher.find()) {
 					String matchedStr = matcher.group(1);
-					newStartIdx = newStartIdx + matcher.start();
+					newStartIdx = newEndIdx + matcher.start();
 					if (newStartIdx != newEndIdx) {
 						throw new ShellException(INVALID_CMD);
 					} // check if there's any invalid token not detected
@@ -190,7 +202,8 @@ public class ShellImpl implements Shell {
 		} while (smallestPattIdx != -1);
 		return newEndIdx;
 	}
-	//processing of backquotes for command substitution
+
+	// processing of backquotes for command substitution
 	private String processBQ(String dqStr) throws AbstractApplicationException,
 			ShellException {
 		// Back quoted: any char except \n,`
@@ -203,11 +216,6 @@ public class ShellImpl implements Shell {
 		if (matcherBQ.find()) {// found backquote
 			String bqStr = matcherBQ.group(1);
 			// cmdVector.add(bqStr.trim());
-			/*
-			 * int bqStartIdx = matcherBQ.start(); int bqEndIdx =
-			 * matcherBQ.end();
-			 */
-
 			// process back quote
 			OutputStream bqOutputStream = new ByteArrayOutputStream();
 			parseAndEvaluate(bqStr, bqOutputStream);
@@ -241,7 +249,7 @@ public class ShellImpl implements Shell {
 		cmdVector.add(inputRedirS);
 		return newEndIdx;
 	}
-	
+
 	// Extraction of output direction from cmdLine
 	private int extractOutputRedir(String str, Vector<String> cmdVector,
 			int endIdx) throws ShellException {
@@ -259,7 +267,8 @@ public class ShellImpl implements Shell {
 		return newEndIdx;
 	}
 
-	// Splits cmd line to app word, args and redirections, using the extraction methods above
+	// Splits cmd line to app word, args and redirections, using the extraction
+	// methods above
 	private String[] splitString(String cmdStr) throws ShellException,
 			AbstractApplicationException {
 		int endIdx = 0;
@@ -270,14 +279,14 @@ public class ShellImpl implements Shell {
 		endIdx = extractArgs(str, cmdVector, endIdx);
 		endIdx = extractInputRedir(str, cmdVector, endIdx);
 		endIdx = extractOutputRedir(str, cmdVector, endIdx);
-		// System.out.println(cmdVector.toString());
+		//System.out.println(cmdVector.toString());
 		if (endIdx != cmdStr.length()) {
 			throw new ShellException(INVALID_CMD);
 		}
 		return cmdVector.toArray(new String[cmdVector.size()]);
 	}
 
-	//TODO: Evaluation of pipe commands 
+	// TODO: Evaluation of pipe commands
 	private void evaluatePipe(String cmd) throws AbstractApplicationException,
 			ShellException {
 		String[] pipeCmdArray = cmd.split("\\|");
