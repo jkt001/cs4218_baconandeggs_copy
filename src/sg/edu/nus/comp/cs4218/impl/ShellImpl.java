@@ -15,6 +15,10 @@ import sg.edu.nus.comp.cs4218.impl.cmd.PipeCommand;
 
 public class ShellImpl implements Shell {
 
+	public static final String INVALID_CMD = "Invalid command.";
+	public static final String ERROR_REDIR_IN = "Error opening input stream for redirection.";
+	public static final String ERROR_REDIR_OUT = "Error opening output stream for redirection.";
+
 	@Override
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
@@ -24,127 +28,96 @@ public class ShellImpl implements Shell {
 		for (int i = 0; i < cmdArray.length; i++) {
 			String cmd = cmdArray[i].trim(); // trim leading and trailing spaces
 
-			try {
-				// look for pipe operator |
-				if (cmd.contains("|")) {
-					evaluatePipe(cmd);
-				} else {
-					evaluateCall(cmd, System.in, stdout);
-				}
-			} catch (IOException | ShellException e) {
-				throw new ShellException(e.getMessage());
-			} catch (AbstractApplicationException e) {
-				throw e;
+			// look for pipe operator |
+			if (cmd.contains("|")) {
+				evaluatePipe(cmd);
+			} else {
+				evaluateCall(cmd, System.in, stdout);
 			}
 		}
 	}
 
 	// process command
-	public void evaluateCall(String cmd, InputStream stdin, OutputStream stdout)
-			throws AbstractApplicationException, ShellException, IOException {
+	private void evaluateCall(String cmd, InputStream stdin, OutputStream stdout)
+			throws AbstractApplicationException, ShellException {
 		String[] cmdTokensArray = splitString(cmd), argsArray;
 		String app = cmdTokensArray[0];
 		int nTokens = cmdTokensArray.length;
-		FileInputStream fInputStream = null;
-		FileOutputStream fOutputStream = null;
 		InputStream inputStream = stdin;
 		OutputStream outputStream = stdout;
-
-		System.out.println(cmdTokensArray[nTokens - 2]
-				+ cmdTokensArray[nTokens - 1] + ";");
-		if (nTokens >= 3) { // last 2 elements of cmdTokens reserved as
-							// <inputRedir & outputRedir
+		if (nTokens >= 3) { // last 2 for inputRedir & >outputRedir
 			if (!cmdTokensArray[nTokens - 2].equals("")) {
-				String inputStreamS = cmdTokensArray[nTokens - 2].substring(1)
-						.trim();
-				File inputFile = new File(inputStreamS);
-				fInputStream = new FileInputStream(inputFile);
-				inputStream = fInputStream;
+				String inputStreamS = cmdTokensArray[nTokens - 2].trim();
+				inputStream = openInputRedir(inputStreamS);
 			}
 			if (!cmdTokensArray[nTokens - 1].equals("")) {
-				String outputStreamS = cmdTokensArray[nTokens - 1].substring(1)
-						.trim();
-				File outputFile = new File(outputStreamS);
-				fOutputStream = new FileOutputStream(outputFile);
-				outputStream = fOutputStream;
+				String outputStreamS = cmdTokensArray[nTokens - 1].trim();
+				outputStream = openOutputRedir(outputStreamS);
 			}
 			argsArray = Arrays.copyOfRange(cmdTokensArray, 1,
 					cmdTokensArray.length - 2);
 		} else {
 			argsArray = new String[0];
 		}
-
-		switch (app) {
-
-		case "pwd": {
-			// pw
+		if (("pwd".equals(app))) {
 			PwdApplication pwdApp = new PwdApplication();
 			pwdApp.run(argsArray, inputStream, outputStream);
-			break;
-		}
-		case "cd": {
-			// cd PATH
+		} else if (("cd").equals(app)) {// cd PATH
 			CdApplication cdApp = new CdApplication();
 			cdApp.run(argsArray, inputStream, outputStream);
-			break;
-		}
-		case "ls": {
+		} else if (("ls").equals(app)) {// ls
 			LsApplication lsApp = new LsApplication();
 			lsApp.run(argsArray, inputStream, outputStream);
-			break;
-		}
-		case "cat": {
-			// cat [FILE]...
-			break;
-		}
-		case "echo": {
-			/*
-			 * EchoApplication echoApp = new EchoApplication();
-			 * echoApp.run(argsArray, inputStream, outputStream);
-			 */
-			break;
-		}
-		case "head": {
-			// head [OPTIONS] [FILE]
-			break;
-		}
-		case "tail": {
-			// tail [OPTIONS] [FILE]
-			break;
-		}
-		case "grep": {
-			// grep PATTERN [FILE]...
-			break;
-		}
-		case "sed": {
-			// sed REPLACEMENT [FILE]
-			break;
-		}
-		case "find": {
-			// find [PATH] ­name PATTERN
-			break;
-		}
-		case "wc": {
-			// wc [OPTIONS] [FILE]...
-			break;
-		}
-		case "exit": {
-			System.out.println("Thank you for using CS4218 Shell!");
-			System.exit(0);
-			break;
-		}
-		case "test": {
-			TestApplication testApp = new TestApplication();
-			testApp.run(argsArray, inputStream, outputStream);
-			break;
-		}
-		default: {
-			throw new ShellException("Invalid command");
-		}
+		} else if (("cat").equals(app)) {// cat [FILE]...
+
+		} else if (("echo").equals(app)) {// echo [args]...
+			EchoApplication echoApp = new EchoApplication();
+			echoApp.run(argsArray, inputStream, outputStream);
+		} else if (("head").equals(app)) {// head [OPTIONS] [FILE]
+
+		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
+
+		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
+
+		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
+
+		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
+
+		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
+
+		} else { // invalid command
+			throw new ShellException(INVALID_CMD);
 		}
 	}
 
-	public int findAppWord(String str, Vector<String> cmdVector, int endIdx)
+	// Open input stream for redirection
+	private InputStream openInputRedir(String inputStreamS)
+			throws ShellException {
+		File inputFile = new File(inputStreamS);
+		FileInputStream fInputStream = null;
+		try {
+			fInputStream = new FileInputStream(inputFile);
+		} catch (FileNotFoundException e) {
+			throw new ShellException(e.getMessage());
+		}
+		return fInputStream;
+	}
+
+	// Open output stream for redirection
+	private OutputStream openOutputRedir(String outputStreamS)
+			throws ShellException {
+		File outputFile = new File(outputStreamS);
+		FileOutputStream fOutputStream = null;
+		try {
+			fOutputStream = new FileOutputStream(outputFile);
+		} catch (FileNotFoundException e) {
+			throw new ShellException(e.getMessage());
+		}
+		return fOutputStream;
+	}
+
+	// Extraction of app word from cmd line
+	private int extractAppWord(String str, Vector<String> cmdVector, int endIdx)
 			throws ShellException {
 		int newEndIdx = -1;
 		Pattern appWordP = Pattern.compile("([A-Za-z]*)[\\s]");
@@ -156,146 +129,110 @@ public class ShellImpl implements Shell {
 			newEndIdx = endIdx + appWordM.end() - 1;
 		}
 		if (newEndIdx == -1) { // app word should be found in any case
-			throw new ShellException("Invalid command");
+			throw new ShellException(INVALID_CMD);
 		}
 		return newEndIdx;
 	}
 
-	// for wc -l
-	public int findOptWord(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern optionsP = Pattern.compile("[\\s]+(-[A-Za-z])[\\s]");
-		Matcher optionsM = optionsP.matcher(str.substring(endIdx));
-		if (optionsM.find()) {
-			int startIdx = optionsM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
+	// Extraction of args from cmd line
+	// -Unquoted: any char except for whitespace characters, quotes,
+	// newlines, semicolons “;”, “|”, “<” and “>”.
+	// -Double quoted: any char except \n, ", `
+	// -Single quoted: any char except \n, '
+	// -Back quotes in Double Quote for command substitution:
+	// "DQ rules `anything but \n` DQ rules"
+	private int extractArgs(String str, Vector<String> cmdVector, int endIdx)
+			throws AbstractApplicationException, ShellException {
+		String patternDash = "[\\s]+(-[A-Za-z]*)[\\s]";
+		String patternUQ = "[\\s]+([^\\s\"'`\\n;|<>]*)[\\s]";
+		String patternDQ = "[\\s]+\"([^\\n\"`]*)\"[\\s]";
+		String patternSQ = "[\\s]+\'([^\\n']*)\'[\\s]";
+		String patternBQinDQ = "[\\s]+\"([^\\n\"`]*`[^\\n]*`[^\\n\"`]*)\"[\\s]";
+
+		int patternBQinDQIdx = 4;
+		String[] patterns = { patternDash, patternUQ, patternDQ, patternSQ,
+				patternBQinDQ };
+		int startIdx, newStartIdx = endIdx, smallestStartIdx, smallestPattIdx, newEndIdx = endIdx;
+		do {
+			startIdx = -1;
+			smallestStartIdx = -1;
+			smallestPattIdx = -1;
+			// loop through and search for all patterns from start of substring
+			for (int i = 0; i < patterns.length; i++) {
+				Pattern pattern = Pattern.compile(patterns[i]);
+				Matcher matcher = pattern.matcher(str.substring(newEndIdx));
+				if (matcher.find()) {
+					startIdx = matcher.start();
+					if (startIdx < smallestStartIdx || smallestStartIdx == -1) {
+						smallestPattIdx = i;
+						smallestStartIdx = startIdx;
+					}
+				}
 			}
-			String grpStr = optionsM.group(1);
-			cmdVector.add(grpStr);
-			newEndIdx = endIdx + optionsM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
-		}
-		return newEndIdx;
-	}
 
-	public int findFileWord(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern fileNameP = Pattern
-				.compile("[\\s]+([\\sA-Za-z0-9\\-.\\\\/\\*]*)[\\s]");
-		Matcher fileNameM = fileNameP.matcher(str.substring(endIdx));
-		if (fileNameM.find()) {
-			int startIdx = fileNameM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
+			// if a pattern is found
+			if (smallestPattIdx != -1) {
+				Pattern pattern = Pattern.compile(patterns[smallestPattIdx]);
+				Matcher matcher = pattern.matcher(str.substring(newEndIdx));
+				if (matcher.find()) {
+					String matchedStr = matcher.group(1);
+					newStartIdx = newStartIdx + matcher.start();
+					if (newStartIdx != newEndIdx) {
+						throw new ShellException(INVALID_CMD);
+					} // check if there's any invalid token not detected
+					if (smallestPattIdx == patternBQinDQIdx) {
+						matchedStr = processBQ(matchedStr);
+					}
+					cmdVector.add(matchedStr); // should i trim the whitespaces?
+					newEndIdx = newEndIdx + matcher.end() - 1;
+				}
 			}
-			String grpStr = fileNameM.group(1);
-			cmdVector.add(grpStr.trim());
-			newEndIdx = endIdx + fileNameM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
-		}
+		} while (smallestPattIdx != -1);
 		return newEndIdx;
 	}
+	//processing of backquotes for command substitution
+	private String processBQ(String dqStr) throws AbstractApplicationException,
+			ShellException {
+		// Back quoted: any char except \n,`
+		String patternBQ = "`([^\\n`]*)`";
+		Pattern patternBQp = Pattern.compile(patternBQ);
+		Matcher matcherBQ = patternBQp.matcher(dqStr);
 
-	// for find -name
-	public int findNameWord(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern dashNameP = Pattern.compile("[\\s]+(-name)[\\s]");
-		Matcher dashNameM = dashNameP.matcher(str.substring(endIdx));
-		if (dashNameM.find()) {
-			int startIdx = dashNameM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
-			}
-			String grpStr = dashNameM.group(1);
-			cmdVector.add(grpStr);
-			newEndIdx = endIdx + dashNameM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
+		String resultStr = dqStr;
+
+		if (matcherBQ.find()) {// found backquote
+			String bqStr = matcherBQ.group(1);
+			// cmdVector.add(bqStr.trim());
+			/*
+			 * int bqStartIdx = matcherBQ.start(); int bqEndIdx =
+			 * matcherBQ.end();
+			 */
+
+			// process back quote
+			OutputStream bqOutputStream = new ByteArrayOutputStream();
+			parseAndEvaluate(bqStr, bqOutputStream);
+
+			ByteArrayOutputStream outByte = (ByteArrayOutputStream) bqOutputStream;
+			byte[] byteArray = outByte.toByteArray();
+			String bqResult = new String(byteArray);
+			// replace substring of back quote with result
+			String replacedStr = dqStr.replace("`" + bqStr + "`", bqResult);
+			resultStr = replacedStr;
 		}
-		return newEndIdx;
+		return resultStr;
 	}
 
-	public int findDoubleQuoted(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern doubleQuotedP = Pattern
-				.compile("[\\s]+(\"[\\s]*[\\sA-Za-z0-9\\-.\\\\/]*[\\s]*\")[\\s]");
-		Matcher doubleQuotedM = doubleQuotedP.matcher(str.substring(endIdx));
-		if (doubleQuotedM.find()) {
-			int startIdx = doubleQuotedM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
-			}
-			String grpStr = doubleQuotedM.group(1);
-			cmdVector.add(grpStr);
-			newEndIdx = endIdx + doubleQuotedM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
-		}
-		return newEndIdx;
-	}
-
-	public int findSingleQuoted(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern singleQuotedP = Pattern
-				.compile("[\\s]+(\'[\\s]*[\\sA-Za-z0-9\\-.\\\\/]*[\\s]*\')[\\s]");
-		Matcher singleQuotedM = singleQuotedP.matcher(str.substring(endIdx));
-		if (singleQuotedM.find()) {
-			int startIdx = singleQuotedM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
-			}
-			String grpStr = singleQuotedM.group(1);
-			cmdVector.add(grpStr);
-			newEndIdx = endIdx + singleQuotedM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
-		}
-		return newEndIdx;
-	}
-
-	public int findBackQuoted(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern backQuotedP = Pattern
-				.compile("[\\s]+(`[\\s]*[\\sA-Za-z0-9\\-.\\\\/]*[\\s]*`)[\\s]");
-		Matcher backQuotedM = backQuotedP.matcher(str.substring(endIdx));
-		if (backQuotedM.find()) {
-			int startIdx = backQuotedM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
-			}
-			String grpStr = backQuotedM.group(1);
-			cmdVector.add(grpStr);
-			newEndIdx = endIdx + backQuotedM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
-		}
-		return newEndIdx;
-	}
-
+	// Extraction of input direction from cmdLine
 	// two slots at end of cmdVector reserved for <inputredir and >outredir
 	// assume input stream first the output stream if both are in the args
 	// even if not found, put in empty strings
-	public int findInputRedir(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
+	private int extractInputRedir(String str, Vector<String> cmdVector,
+			int endIdx) throws ShellException {
 		int newEndIdx = -1;
-		Pattern inputRedirP = Pattern
-				.compile("[\\s]+(<[\\s]*[A-Za-z0-9\\-.\\\\/]*)[\\s]");
+		Pattern inputRedirP = Pattern.compile("[\\s]+<(([^\\n\"`']*))[\\s]");
 		Matcher inputRedirM = inputRedirP.matcher(str.substring(endIdx));
 		String inputRedirS = "";
 		if (inputRedirM.find()) {
-			int startIdx = inputRedirM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
-			}
 			inputRedirS = inputRedirM.group(1);
 			newEndIdx = endIdx + inputRedirM.end() - 1;
 		} else {
@@ -304,19 +241,15 @@ public class ShellImpl implements Shell {
 		cmdVector.add(inputRedirS);
 		return newEndIdx;
 	}
-
-	public int findOutputRedir(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
+	
+	// Extraction of output direction from cmdLine
+	private int extractOutputRedir(String str, Vector<String> cmdVector,
+			int endIdx) throws ShellException {
 		int newEndIdx = -1;
-		Pattern outputRedirP = Pattern
-				.compile("[\\s]+(>[\\s]*[A-Za-z0-9\\-.\\\\/]*)[\\s]");
+		Pattern outputRedirP = Pattern.compile("[\\s]+>(([^\\n\"`']*))[\\s]");
 		Matcher outputRedirM = outputRedirP.matcher(str.substring(endIdx));
 		String outputRedirS = "";
 		if (outputRedirM.find()) {
-			int startIdx = outputRedirM.start();
-			if (startIdx != 0) {
-				throw new ShellException("Invalid command");
-			}
 			outputRedirS = outputRedirM.group(1);
 			newEndIdx = endIdx + outputRedirM.end() - 1;
 		} else {
@@ -326,34 +259,27 @@ public class ShellImpl implements Shell {
 		return newEndIdx;
 	}
 
-	// splits string using delimiters
-	public String[] splitString(String cmdStr) throws ShellException {
+	// Splits cmd line to app word, args and redirections, using the extraction methods above
+	private String[] splitString(String cmdStr) throws ShellException,
+			AbstractApplicationException {
+		int endIdx = 0;
 		String str = cmdStr + " ";
 		Vector<String> cmdVector = new Vector<String>();
-		int endIdx = 0;
 
-		endIdx = findAppWord(str, cmdVector, endIdx);
-		endIdx = findOptWord(str, cmdVector, endIdx);
-		endIdx = findFileWord(str, cmdVector, endIdx);
-		endIdx = findNameWord(str, cmdVector, endIdx);
-		endIdx = findDoubleQuoted(str, cmdVector, endIdx);
-		endIdx = findSingleQuoted(str, cmdVector, endIdx);
-		// TODO: to edit to specifications
-		endIdx = findBackQuoted(str, cmdVector, endIdx); 
-		endIdx = findInputRedir(str, cmdVector, endIdx);
-		endIdx = findOutputRedir(str, cmdVector, endIdx);
-
-		System.out.println(cmdVector.toString());
-
-		if (endIdx != str.length() - 1) {
-			throw new ShellException("Invalid command");
+		endIdx = extractAppWord(str, cmdVector, endIdx);
+		endIdx = extractArgs(str, cmdVector, endIdx);
+		endIdx = extractInputRedir(str, cmdVector, endIdx);
+		endIdx = extractOutputRedir(str, cmdVector, endIdx);
+		// System.out.println(cmdVector.toString());
+		if (endIdx != cmdStr.length()) {
+			throw new ShellException(INVALID_CMD);
 		}
-
 		return cmdVector.toArray(new String[cmdVector.size()]);
 	}
 
-	public void evaluatePipe(String cmd) throws AbstractApplicationException,
-			ShellException, IOException {
+	//TODO: Evaluation of pipe commands 
+	private void evaluatePipe(String cmd) throws AbstractApplicationException,
+			ShellException {
 		String[] pipeCmdArray = cmd.split("\\|");
 
 		byte[] buffer = new byte[1024];
@@ -365,19 +291,10 @@ public class ShellImpl implements Shell {
 			stdin = new ByteArrayInputStream(
 					((ByteArrayOutputStream) stdout).toByteArray());
 			stdout = new ByteArrayOutputStream();
-
-			/*
-			 * PipeCommand pc = new PipeCommand(); try { pc.evaluate(stdin,
-			 * stdout); } catch (AbstractApplicationException e) { // TODO
-			 * Auto-generated catch block e.printStackTrace(); } catch
-			 * (ShellException e) { // TODO Auto-generated catch block
-			 * e.printStackTrace(); }
-			 */
-
 		}
 	}
 
-	public static void main(String[] vargs) {
+	public static void main(String... args) {
 		ShellImpl shell = new ShellImpl();
 
 		BufferedReader bReader = new BufferedReader(new InputStreamReader(
@@ -390,13 +307,13 @@ public class ShellImpl implements Shell {
 				currentDir = Environment.currentDirectory;
 				System.out.print(currentDir + ">");
 				readLine = bReader.readLine();
+				if (readLine == null) {
+					break;
+				}
 				shell.parseAndEvaluate(readLine, System.out);
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
-
 		}
-
 	}
-
 }
