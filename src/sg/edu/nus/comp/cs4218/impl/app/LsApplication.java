@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
@@ -47,12 +46,12 @@ public class LsApplication implements Application{
 		try {
 			for(int i=0;i<str.length-1;i++){
 				if(!str[i].startsWith(".")){
-					stdout.write(str[i].getBytes(Charset.forName("UTF-8")));
-					stdout.write("\t".getBytes(Charset.forName("UTF-8")));
+					stdout.write(str[i].getBytes());
+					stdout.write("\t".getBytes());
 				}			
 			}
-			stdout.write(str[str.length-1].getBytes(Charset.forName("UTF-8")));
-			stdout.write("\n".getBytes(Charset.forName("UTF-8")));
+			stdout.write(str[str.length-1].getBytes());
+			stdout.write("\n".getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

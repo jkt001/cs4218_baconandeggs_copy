@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -15,22 +14,20 @@ import sg.edu.nus.comp.cs4218.exception.LsException;
 import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
 
 public class LsApplicationTest {
+	static String tempFolderPath = "testLsApplicationTempDir";
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		File theDir = new File("testLsApplicationTempDir");
-		  // if the directory does not exist, create it
 		  if (!theDir.exists()) {
-	//	    System.out.println("creating directory: " + theDir);
 		    boolean result = false;
 
 		    try{
 		        theDir.mkdir();
 
-		        File subFile = new File("testLsApplicationTempDir","a.txt");
+		        File subFile = new File(tempFolderPath,"a.txt");
 		        subFile.createNewFile();
 
-		    	//theDir.createNewFile();
 		        result = true;
 		     } catch(SecurityException se){
 		        //handle it
@@ -62,8 +59,7 @@ public class LsApplicationTest {
 		try{
 			myLs.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-//			System.out.print(testStr);
-			assertEquals("bin	README.md	src	testLsApplicationTempDir\n",testStr);
+			assertEquals("bin	README.md	src	"+ tempFolderPath + "\n",testStr);
 		}catch(LsException le){
 			fail("Not supposed to have exception for folder that exists.");
 		}		
@@ -74,7 +70,7 @@ public class LsApplicationTest {
 		LsApplication myLs = new LsApplication();
 		String[] str = {};
 		String temp = Environment.currentDirectory;
-		Environment.currentDirectory += File.separator + "testLsApplicationTempDir"; 
+		Environment.currentDirectory += File.separator + tempFolderPath; 
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myLs.run(str, null, myOutputStream);
@@ -90,7 +86,7 @@ public class LsApplicationTest {
 	@Test
 	public void testWithPathArgument(){
 		LsApplication myLs = new LsApplication();
-		String path = Environment.currentDirectory + File.separator + "testLsApplicationTempDir";
+		String path = Environment.currentDirectory + File.separator + tempFolderPath;
 		String[] str = {path};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
@@ -136,9 +132,9 @@ public class LsApplicationTest {
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		File theDir = new File("testLsApplicationTempDir");
+		File theDir = new File(tempFolderPath);
 		if(theDir.exists()){
-			File subFile = new File("testLsApplicationTempDir","a.txt");
+			File subFile = new File(tempFolderPath,"a.txt");
 	        subFile.delete();
 			theDir.delete();
 		}
