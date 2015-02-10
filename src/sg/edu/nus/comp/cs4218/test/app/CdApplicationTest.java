@@ -1,6 +1,8 @@
 package sg.edu.nus.comp.cs4218.test.app;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -12,21 +14,14 @@ import sg.edu.nus.comp.cs4218.exception.CdException;
 import sg.edu.nus.comp.cs4218.impl.app.CdApplication;
 
 public class CdApplicationTest {
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+	
+	private static final String MESSAGE_FAIL = "Not supposed to succeed.";
+	
+	CdApplication app;
 
 	@Before
 	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
+		app = new CdApplication();
 	}
 	
 	// Test null parameters
@@ -36,7 +31,7 @@ public class CdApplicationTest {
 		String[] params = null;
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -49,7 +44,7 @@ public class CdApplicationTest {
 		String[] params = {};
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -62,7 +57,7 @@ public class CdApplicationTest {
 		String[] params = {null};
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -71,11 +66,11 @@ public class CdApplicationTest {
 	// Test two parameters
 	@Test
 	public void testTwoParams() {
-		CdApplication app = new CdApplication();
+		
 		String[] params = {"a", "b"};
 		try {
 			app.run(params, System.in, System.out);
-			fail("Not supposed to succeed.");
+			fail(MESSAGE_FAIL);
 		} catch (CdException e) {
 			
 		}
@@ -83,74 +78,112 @@ public class CdApplicationTest {
 
 	// Test folder that exists, absolute path
 	@Test
-	public void testRun() {
-		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\", "C:\\");
+	public void testSimpleAbsolutePathThatExists() {
+		assumeTrue(isWindows());
+		testCdExpectSuccess(getUserDir(), "C:\\", "C:\\");
 	}
 	
 	// Test folder that exists, absolute path
 	@Test
-	public void testRun1a() {
-		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\Windows", "C:\\Windows");
+	public void testAbsolutePathWithOneFolderThatExists() {
+		assumeTrue(isWindows());
+		testCdExpectSuccess(getUserDir(), "C:\\Windows", "C:\\Windows");
 	}
 	
 	// Test folder that exists, absolute path
 	@Test
-	public void testRun1b() {
-		testCdExpectSuccess(System.getProperty("user.dir"), "C:\\Windows\\", "C:\\Windows");
+	public void testAbsolutePathWithOneFolderWithExtraSlashThatExists() {
+		assumeTrue(isWindows());
+		testCdExpectSuccess(getUserDir(), "C:\\Windows\\", "C:\\Windows");
 	}
 	
 	// Test folder that does not exist, absolute path
 	@Test
-	public void testRun2() {
-		testCdExpectFailure(System.getProperty("user.dir"), "C:\\InvalidDir");
+	public void testNonExistentAbsolutePath() {
+		assumeTrue(isWindows());
+		testCdExpectFailure(getUserDir(), "C:\\InvalidDir");
 	}
 	
 	// Test folder that exists, relative subdirectory
 	@Test
-	public void testRun3() {
+	public void testRelativePathToParent() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "..", "C:\\");
 	}
 	
 	// Test folder that exists, relative subdirectory
 	@Test
-	public void testRun3a() {
+	public void testRelativePathUpTwoLevels() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows\\System32", "..\\..", "C:\\");
 	}
 	
 	// Test folder that exists, relative subdirectory
 	@Test
-	public void testRun3b() {
+	public void testRelativePathToParentAndSubdirectory() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows\\System32", "..\\System", "C:\\Windows\\System");
 	}
 	
 	// Test folder that exists, root-relative subdirectory
 	@Test
-	public void testRun4() {
+	public void testRootRelativePath() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "\\", "C:\\");
 	}
 	
 	// Test folder that exists, root-relative subdirectory
 	@Test
-	public void testRun4a() {
+	public void testRootRelativePathWithSubdirectory() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "\\Users", "C:\\Users");
 	}
 	
 	// Test cd to beyond root of drive
 	@Test
-	public void testRun5() {
+	public void testRelativePathBeyondRoot() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\", "..", "C:\\");
 	}
 	
 	// Test cd to beyond root of drive
 	@Test
-	public void testRun5a() {
+	public void testRelativePathBeyondRootByGoingUpTwoLevels() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "..\\..", "C:\\");
 	}
 	
 	// Test cd to beyond root of drive
 	@Test
-	public void testRun5b() {
+	public void testRelativePathBeyondRootByRootAndParent() {
+		assumeTrue(isWindows());
 		testCdExpectSuccess("C:\\Windows", "\\..", "C:\\");
+	}
+	
+	@Test
+	public void testRunCdDirWithNoPermissionsToCdTo() {
+		assumeTrue(isWindows());
+		CdApplication app = new CdApplication();
+		String[] params = {"C:\\System Volume Information"};
+		try {
+			app.run(params, System.in, System.out);
+		} catch (CdException e) {
+			System.out.println(e.getMessage());
+		}
+		testCdExpectFailure("C:\\", "C:\\System Volume Information");
+	}
+	
+	@Test
+	public void testDirectoryWithNoPermissionsToListContentsOf() {
+		assumeTrue(isWindows());
+		CdApplication app = new CdApplication();
+		String[] params = {"C:\\$RECYCLE.BIN"};
+		try {
+			app.run(params, System.in, System.out);
+		} catch (CdException e) {
+			System.out.println(e.getMessage());
+		}
+		testCdExpectSuccess("C:\\", "C:\\$RECYCLE.BIN", "C:\\$RECYCLE.BIN");		
 	}
 
 	private void testCdExpectFailure(String initialDirectory, String cdPath) {
@@ -181,6 +214,17 @@ public class CdApplicationTest {
 		}
 		
 		assertEquals(expectedDirectory, Environment.currentDirectory);
+	}
+	
+	public boolean isWindows(){
+		if (System.getProperty("os.name").startsWith("Windows")) {
+			return true;
+		}
+		return false;
+	}
+	
+	private String getUserDir() {
+		return System.getProperty("user.dir");
 	}
 
 }
