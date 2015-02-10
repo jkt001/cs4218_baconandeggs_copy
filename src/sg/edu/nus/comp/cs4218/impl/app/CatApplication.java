@@ -16,8 +16,10 @@ public class CatApplication implements Application {
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws CatException {
+		if(args == null){
+			throw new CatException("Args is null");
+		}
 		int numOfFiles = args.length;
-
 		if (numOfFiles > 0) {
 			Path filePath;
 			Path[] filePathArray = new Path[numOfFiles];
@@ -26,7 +28,7 @@ public class CatApplication implements Application {
 
 			for (int i = 0; i < numOfFiles; i++) {
 				filePath = currentDir.resolve(args[i]);
-				// System.out.println(filePath);
+				//System.out.println(filePath);
 				isFileReadable = checkIfFileIsReadable(filePath);
 				if (isFileReadable) {
 					filePathArray[i] = filePath;
@@ -41,7 +43,8 @@ public class CatApplication implements Application {
 								.readAllBytes(filePathArray[j]);
 						stdout.write(byteFileArray);
 					} catch (IOException e) {
-						e.printStackTrace();
+						throw new CatException("Could not write to output stream" +e.getLocalizedMessage());
+						//e.printStackTrace();
 					}
 				}
 
@@ -55,7 +58,7 @@ public class CatApplication implements Application {
 				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new CatException("Could not read input stream or write to output stream" +e.getLocalizedMessage());
 			}
 		}
 
