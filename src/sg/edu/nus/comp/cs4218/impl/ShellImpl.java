@@ -94,7 +94,7 @@ public class ShellImpl implements Shell {
 		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
 			// absApp = new FindApplication();
 		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
-			// absApp = new WcApplication();
+			absApp = new WcApplication();
 		} else { // invalid command
 			throw new ShellException(INVALID_CMD);
 		}
