@@ -48,7 +48,7 @@ public class ShellImpl implements Shell {
 		InputStream inputStream = stdin;
 		OutputStream outputStream = stdout;
 
-		//process inputRedir and/or outputRedir
+		// process inputRedir and/or outputRedir
 		if (nTokens >= 3) { // last 2 for inputRedir & >outputRedir
 			if (!cmdTokensArray[nTokens - 2].equals("")) {
 				String inputStreamS = cmdTokensArray[nTokens - 2].trim();
@@ -63,8 +63,8 @@ public class ShellImpl implements Shell {
 		} else {
 			argsArray = new String[0];
 		}
-		
-		//process backquotes
+
+		// process backquotes
 		argsArray = processBQ(argsArray);
 		runApp(app, argsArray, inputStream, outputStream);
 	}
@@ -98,10 +98,10 @@ public class ShellImpl implements Shell {
 		} else { // invalid command
 			throw new ShellException(INVALID_CMD);
 		}
-		if (absApp != null) {
-			absApp.run(argsArray, inputStream, outputStream);
-		} else {
+		if (absApp == null) {
 			throw new ShellException(INVALID_CMD);
+		} else {
+			absApp.run(argsArray, inputStream, outputStream);
 		}
 	}
 
@@ -143,7 +143,7 @@ public class ShellImpl implements Shell {
 		endIdx = extractArgs(str, cmdVector, endIdx);
 		endIdx = extractInputRedir(str, cmdVector, endIdx);
 		endIdx = extractOutputRedir(str, cmdVector, endIdx);
-		//System.out.println(cmdVector.toString());
+		// System.out.println(cmdVector.toString());
 		if (endIdx != cmdStr.length() + 1) {
 			throw new ShellException(INVALID_CMD);
 		}
@@ -203,11 +203,12 @@ public class ShellImpl implements Shell {
 		return newEndIdx;
 	}
 
-	
-	private String[] processBQ(String[] argsArray)
+	private String[] processBQ(String... argsArray)
 			throws AbstractApplicationException, ShellException {
-		//echo "this is space `echo "nbsp"`"
+		// echo "this is space `echo "nbsp"`"
 		// Back quoted: any char except \n,`
+		String[] resultArr = new String[argsArray.length];
+		System.arraycopy( argsArray, 0, resultArr, 0, argsArray.length );
 		String patternBQ = "`([^\\n`]*)`";
 		Pattern patternBQp = Pattern.compile(patternBQ);
 
@@ -222,13 +223,15 @@ public class ShellImpl implements Shell {
 
 				ByteArrayOutputStream outByte = (ByteArrayOutputStream) bqOutputStream;
 				byte[] byteArray = outByte.toByteArray();
-				String bqResult = new String(byteArray).replace("\n", "").replace("\r", "");
+				String bqResult = new String(byteArray).replace("\n", "")
+						.replace("\r", "");
 				// replace substring of back quote with result
-				String replacedStr = argsArray[i].replace("`" + bqStr + "`", bqResult);
-				argsArray[i] = replacedStr;
+				String replacedStr = argsArray[i].replace("`" + bqStr + "`",
+						bqResult);
+				resultArr[i] = replacedStr;
 			}
 		}
-		return argsArray;
+		return resultArr;
 	}
 
 	// Extraction of input direction from cmdLine
