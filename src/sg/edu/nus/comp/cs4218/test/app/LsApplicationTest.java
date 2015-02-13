@@ -18,7 +18,7 @@ public class LsApplicationTest {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		File theDir = new File("testLsApplicationTempDir");
+		File theDir = new File(tempFolderPath);
 		  if (!theDir.exists()) {
 		    boolean result = false;
 
