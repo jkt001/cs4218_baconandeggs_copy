@@ -16,10 +16,27 @@ public class CatApplication implements Application {
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws CatException {
-		if(args == null){
-			throw new CatException("Args is null");
+
+		if (args == null || args.length == 0) {
+			int intCount;
+
+			try {
+				while ((intCount = stdin.read()) != -1) {
+					stdout.write(intCount);
+				}
+			} catch (IOException exIO) {
+				throw new CatException(
+						"Could not read input stream or write to output stream");
+			} catch (NullPointerException exNull) {
+				throw new CatException(
+						"This is a null pointer exception. Not IOException.");
+			} catch (Exception ex) {
+				throw new CatException("This is an exception yet to be caught.");
+			}
 		}
+
 		int numOfFiles = args.length;
+
 		if (numOfFiles > 0) {
 			Path filePath;
 			Path[] filePathArray = new Path[numOfFiles];
@@ -28,40 +45,27 @@ public class CatApplication implements Application {
 
 			for (int i = 0; i < numOfFiles; i++) {
 				filePath = currentDir.resolve(args[i]);
-				//System.out.println(filePath);
 				isFileReadable = checkIfFileIsReadable(filePath);
 				if (isFileReadable) {
 					filePathArray[i] = filePath;
 				}
 			}
+
 			// file could be read. perform cat command
 			if (filePathArray.length != 0) {
 				for (int j = 0; j < filePathArray.length; j++) {
-					// no redirection
 					try {
 						byte[] byteFileArray = Files
 								.readAllBytes(filePathArray[j]);
 						stdout.write(byteFileArray);
 					} catch (IOException e) {
-						throw new CatException("Could not write to output stream" +e.getLocalizedMessage());
-						//e.printStackTrace();
+						throw new CatException(
+								"Could not write to output stream");
 					}
 				}
 
 			}
-		} else {
-			// read from stdin
-			int intCount;
-			try {
-				while ((intCount = stdin.read()) != -1) {
-					stdout.write(intCount);
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				throw new CatException("Could not read input stream or write to output stream" +e.getLocalizedMessage());
-			}
 		}
-
 	}
 
 	private boolean checkIfFileIsReadable(Path filePath) throws CatException {
@@ -69,20 +73,12 @@ public class CatApplication implements Application {
 			throw new CatException("No such file exists");
 		}
 		if (Files.isDirectory(filePath)) {
-			throw new CatException(filePath + " is a directory");
+			throw new CatException("This is a directory");
 		}
-
-		if (Files.isRegularFile(filePath)) {
-			if (Files.isReadable(filePath)) {
-				if (Files.exists(filePath)) {
-					return true;
-				}
-			} else {
-				throw new CatException("No permission to read " + filePath);
-			}
+		if (Files.exists(filePath)&&Files.isReadable(filePath)) {
+			return true;
 		} else {
-			throw new CatException(filePath + " is not a regular file");
+			throw new CatException("Could not read file");
 		}
-		return false;
 	}
 }
