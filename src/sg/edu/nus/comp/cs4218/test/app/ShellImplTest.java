@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
 import sg.edu.nus.comp.cs4218.impl.ShellImpl;
@@ -27,9 +28,13 @@ import sg.edu.nus.comp.cs4218.impl.ShellImpl;
 public class ShellImplTest {
 	private ShellImpl shell;
 	private String inputLine;
-	private String testStr;
-	private String testFileName;
+	private OutputStream outputStream;
 	private Vector<String> cmdVector;
+	private static String testStr = "Testing Stream";
+	private static String testFileName = "testShell.txt";
+	private static String testFolderName = "testShellFolder";
+	private static String validCmdNoExp = "Not supposed to throw exception for valid command.";
+	private static String originalFilePath = Environment.currentDirectory;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -43,14 +48,14 @@ public class ShellImplTest {
 	public void setUp() throws Exception {
 		shell = new ShellImpl();
 		inputLine = null;
-		testStr = "Testing Stream";
-		testFileName = "testShell.txt";
 		cmdVector = new Vector<String>();
+		outputStream = System.out;
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		removeTestFile(testFileName);
+		removeTestFolder(testFolderName);
 	}
 
 	public void createTestFile(String fileName) throws IOException {
@@ -61,6 +66,25 @@ public class ShellImplTest {
 		File file = new File(fileName);
 		file.setWritable(true);
 		file.delete();
+	}
+
+	public void createTestFolder(String folderName) throws IOException {
+		new File(folderName).mkdir();
+	}
+
+	public void removeTestFolder(String folderName) throws IOException {
+		File file = new File(folderName + "\\\\");
+
+		String[] entries = file.list();
+		if (entries != null) {
+			for (String s : entries) {
+				File currentFile = new File(file.getPath(), s);
+				currentFile.delete();
+			}
+		}
+
+		file.delete();
+		Environment.currentDirectory = originalFilePath;
 	}
 
 	public void writeToStream(OutputStream myoutputStream) throws IOException {
@@ -75,6 +99,147 @@ public class ShellImplTest {
 		scanner.close();
 
 		return fileStr;
+	}
+
+	// testing parseAndEvaluate
+
+	@Test
+	public void testCat() {
+		try {
+			createTestFile(testFileName);
+			String readLine = "cat " + testFileName;
+			shell.parseAndEvaluate(readLine, outputStream);
+			removeTestFile(testFileName);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+	@Test
+	public void testCd() {
+		try {
+			createTestFolder(testFolderName);
+			String readLine = "cd " + testFolderName;
+			shell.parseAndEvaluate(readLine, outputStream);
+			removeTestFolder(testFolderName);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+	@Test
+	public void testEcho() {
+		String readLine = "echo " + testStr;
+		try {
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+	
+	@Test
+	public void testEchoWithOutputDir() {
+		String readLine = "echo " + testStr + " > " +testFileName;
+		try {
+			System.out.println(readLine);
+			createTestFile(testFileName);
+			shell.parseAndEvaluate(readLine, outputStream);
+			removeTestFile(testFileName);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+	@Test
+	public void testHead() {
+		try {
+			createTestFile(testFileName);
+			String readLine = "head -n 1" + testFileName;
+			shell.parseAndEvaluate(readLine, outputStream);
+			removeTestFile(testFileName);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+	
+	@Test
+	public void testHeadWithInputDir() {
+		try {
+			createTestFile(testFileName);
+			String readLine = "head -n 1 < " + testFileName;
+			shell.parseAndEvaluate(readLine, outputStream);
+			removeTestFile(testFileName);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+
+	@Test
+	public void testLs() {
+		String readLine = "ls";
+		try {
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+	@Test
+	public void testPwd() {
+		String readLine = "pwd";
+		try {
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+	@Test
+	public void testWc() {
+		try {
+			createTestFile(testFileName);
+			String readLine = "wc " + testFileName;
+			shell.parseAndEvaluate(readLine, outputStream);
+			removeTestFile(testFileName);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+	@Test
+	public void testSemicolon() {
+		try {
+			createTestFile(testFileName);
+			createTestFolder(testFolderName);
+			String readLine = "wc " + testFileName + ";" + "pwd" + ";" + "cd "
+					+ testFolderName + ";";
+			shell.parseAndEvaluate(readLine, outputStream);
+			removeTestFile(testFileName);
+			removeTestFolder(testFolderName);
+		} catch (Exception e) {
+			fail(validCmdNoExp);
+		}
+	}
+
+	@Test(expected = ShellException.class)
+	public void testInvalidSemicolon() throws IOException, AbstractApplicationException, ShellException {
+		createTestFile(testFileName);
+		createTestFolder(testFolderName);
+		String readLine = "wc " + testFileName + ";" + "pwd" + ";;" + "cd "
+				+ testFolderName + ";";
+		shell.parseAndEvaluate(readLine, outputStream);
+		removeTestFile(testFileName);
+		removeTestFolder(testFolderName);
+	}
+
+	@Test(expected = ShellException.class)
+	public void testInvalidApp() throws IOException,
+			AbstractApplicationException, ShellException {
+		createTestFile(testFileName);
+		String readLine = "notAnApp";
+		shell.parseAndEvaluate(readLine, outputStream);
+		removeTestFile(testFileName);
 	}
 
 	// Testing parsing
@@ -182,7 +347,7 @@ public class ShellImplTest {
 	@Test
 	public void extractInputRedirTest() throws ShellException,
 			AbstractApplicationException {
-		inputLine = "<inputDir/file.txt";
+		inputLine = "< inputDir/file.txt";
 		shell.extractInputRedir(" " + inputLine + " ", cmdVector, 0);
 		String[] resultStrArr = { "inputDir/file.txt" };
 		Vector<String> resultStrVect = new Vector<String>(
@@ -193,7 +358,7 @@ public class ShellImplTest {
 	@Test
 	public void inputRedirTest() throws ShellException,
 			AbstractApplicationException {
-		inputLine = "token1 dir/token-2.txt token3 <inputDir";
+		inputLine = "token1 dir/token-2.txt token3 < inputDir";
 		String strArray[] = shell.splitString(inputLine);
 		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
 				"token3", "inputDir", "" });
@@ -231,16 +396,18 @@ public class ShellImplTest {
 
 	@Test
 	public void openOutputRedirTest() throws ShellException, IOException {
-		OutputStream myoutputStream;
+		OutputStream myOutputStream;
 		try {
-			myoutputStream = shell.openOutputRedir(testFileName);
-			writeToStream(myoutputStream);
+			myOutputStream = shell.openOutputRedir(testFileName);
+			writeToStream(myOutputStream);
+			myOutputStream.close();
 		} catch (IOException le) {
 			fail("Not supposed to have exception for creating and writing to test file.");
 		}
 		try {
 			String testFileStr = fileToString(testFileName);
 			assertEquals(testFileStr, testStr);
+			removeTestFile(testFileName);
 		} catch (IOException e) {
 			fail("Not supposed to have exception for file that exists.");
 		}
@@ -263,7 +430,7 @@ public class ShellImplTest {
 	@Test
 	public void extractOutputRedirTest() throws ShellException,
 			AbstractApplicationException {
-		inputLine = ">outputDir/file.txt";
+		inputLine = "> outputDir/file.txt";
 		shell.extractOutputRedir(" " + inputLine + " ", cmdVector, 0);
 		String[] resultStrArr = { "outputDir/file.txt" };
 		Vector<String> resultStrVect = new Vector<String>(
@@ -274,7 +441,7 @@ public class ShellImplTest {
 	@Test
 	public void outputRedirTest() throws ShellException,
 			AbstractApplicationException {
-		inputLine = "token1 dir/token-2.txt token3 >outputDir";
+		inputLine = "token1 dir/token-2.txt token3 > outputDir";
 		String strArray[] = shell.splitString(inputLine);
 		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
 				"token3", "", "outputDir" });
@@ -283,7 +450,7 @@ public class ShellImplTest {
 	@Test
 	public void multipleTypesTest() throws ShellException,
 			AbstractApplicationException {
-		inputLine = "token1 \"dir/token-2.txt\" \'token3\' -token4 \"token5 `token5.2`\" <inputDir.txt >dir/outputDir.txt";
+		inputLine = "token1 \"dir/token-2.txt\" \'token3\' -token4 \"token5 `token5.2`\" < inputDir.txt > dir/outputDir.txt";
 		String strArray[] = shell.splitString(inputLine);
 		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
 				"token3", "-token4", "token5 `token5.2`", "inputDir.txt",

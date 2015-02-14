@@ -78,9 +78,15 @@ public class WcApplication implements Application {
 				}
 				outputStr += count[2];
 			}
+			outputStr += "\n";
 			stdout.write(outputStr.getBytes());
 		}catch(Exception ec){
 
+		}
+		try {
+			myInputStream.close();
+		} catch (IOException e) {
+			throw new WcException("File inputstream closing error.");
 		}
 	}
 

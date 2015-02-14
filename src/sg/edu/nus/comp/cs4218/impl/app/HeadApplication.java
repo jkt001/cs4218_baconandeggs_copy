@@ -77,6 +77,7 @@ public class HeadApplication implements Application {
 				byte[] toWrite;
 					toWrite = spiltFileArray[intCount].getBytes("UTF-8");
 					stdout.write(toWrite);
+					intCount++;
 				}
 
 				// System.out.println(spiltFileContentArray[i]);

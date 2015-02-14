@@ -67,6 +67,7 @@ public class ShellImpl implements Shell {
 		// process backquotes
 		argsArray = processBQ(argsArray);
 		runApp(app, argsArray, inputStream, outputStream);
+		closeDir(inputStream, outputStream);
 	}
 
 	private void runApp(String app, String[] argsArray,
@@ -131,6 +132,23 @@ public class ShellImpl implements Shell {
 		return fOutputStream;
 	}
 
+	// Closes streams from redir
+	private void closeDir(InputStream inputStream, OutputStream outputStream) throws ShellException{
+		if(inputStream != System.in){
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				throw new ShellException(e.getMessage());
+			}
+		}
+		if(outputStream != System.out){
+			try {
+				outputStream.close();
+			} catch (IOException e) {
+				throw new ShellException(e.getMessage());
+			}
+		}
+	}
 	// Splits cmd line to app word, args and redirections, using the extraction
 	// methods above
 	public String[] splitString(String cmdStr) throws ShellException,
@@ -143,7 +161,7 @@ public class ShellImpl implements Shell {
 		endIdx = extractArgs(str, cmdVector, endIdx);
 		endIdx = extractInputRedir(str, cmdVector, endIdx);
 		endIdx = extractOutputRedir(str, cmdVector, endIdx);
-		// System.out.println(cmdVector.toString());
+		//System.out.println(cmdVector.toString());
 		if (endIdx != cmdStr.length() + 1) {
 			throw new ShellException(INVALID_CMD);
 		}
@@ -167,15 +185,20 @@ public class ShellImpl implements Shell {
 
 		String[] patterns = { patternDash, patternUQ, patternDQ, patternSQ,
 				patternBQinDQ };
+		String substring;
 		int startIdx, newStartIdx = endIdx, smallestStartIdx, smallestPattIdx, newEndIdx = endIdx;
 		do {
+			substring = str.substring(newEndIdx);
 			startIdx = -1;
 			smallestStartIdx = -1;
 			smallestPattIdx = -1;
+			if(substring.trim().startsWith("<") ||substring.trim().startsWith(">") ){
+				break;
+			}
 			// loop through and search for all patterns from start of substring
 			for (int i = 0; i < patterns.length; i++) {
 				Pattern pattern = Pattern.compile(patterns[i]);
-				Matcher matcher = pattern.matcher(str.substring(newEndIdx));
+				Matcher matcher = pattern.matcher(substring);
 				if (matcher.find()) {
 					startIdx = matcher.start();
 					if (startIdx < smallestStartIdx || smallestStartIdx == -1) {
@@ -236,12 +259,13 @@ public class ShellImpl implements Shell {
 
 	// Extraction of input direction from cmdLine
 	// two slots at end of cmdVector reserved for <inputredir and >outredir
+	// assume that input redir and output redir are always at the end of the command
 	// assume input stream first the output stream if both are in the args
 	// even if not found, put in empty strings
 	public int extractInputRedir(String str, Vector<String> cmdVector,
 			int endIdx) throws ShellException {
 		int newEndIdx = -1;
-		Pattern inputRedirP = Pattern.compile("[\\s]+<(([^\\n\"`'<>]*))[\\s]");
+		Pattern inputRedirP = Pattern.compile("[\\s]+<[\\s]+(([^\\n\"`'<>]*))[\\s]");
 		Matcher inputRedirM = inputRedirP.matcher(str.substring(endIdx));
 		String inputRedirS = "";
 		if (inputRedirM.find()) {
@@ -258,7 +282,7 @@ public class ShellImpl implements Shell {
 	public int extractOutputRedir(String str, Vector<String> cmdVector,
 			int endIdx) throws ShellException {
 		int newEndIdx = -1;
-		Pattern outputRedirP = Pattern.compile("[\\s]+>(([^\\n\"`'<>]*))[\\s]");
+		Pattern outputRedirP = Pattern.compile("[\\s]+>[\\s]+(([^\\n\"`'<>]*))[\\s]");
 		Matcher outputRedirM = outputRedirP.matcher(str.substring(endIdx));
 		String outputRedirS = "";
 		if (outputRedirM.find()) {
