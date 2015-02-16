@@ -7,9 +7,7 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 import org.junit.AfterClass;
@@ -23,14 +21,15 @@ public class WcApplicationTest {
 	static String tempFilePath = "testWcApplication.txt";
 
 	/*
-	 * one character, one word, one line
-	 * two character, two word, two line
-	 * with double spacing, with triple spacing
-	 * with double line
-	 * end with empty space, end with empty line
+	 * * one character, one word, one line - stdin
+	 * * two character, two word, one line - stdin
+	 * * two word, one line - stdin
+	 * * with double spacing, with triple spacing
+	 * * with double line
+	 * * end with empty space, end with empty line
 	 * symbols
 	 * * m, w, l, mw, wl, ml, mwl, null
-	 * * null
+	 * * null args, null stdout
 	 * File
 	 * Stdin
 	 */
@@ -48,13 +47,25 @@ public class WcApplicationTest {
 	public void testNullArgument(){
 		WcApplication myWc = new WcApplication();
 		try{
-			myWc.run(null,null,null);
+			myWc.run(null,null,new ByteArrayOutputStream());
 			fail("Should throw exception");
 		}catch(WcException we){
 			assertEquals(we.getLocalizedMessage(), "wc: Null arguments");
 		}
 	}
 
+	@Test
+	public void testNullStdout(){
+		WcApplication myWc = new WcApplication();
+		try{
+			String str[] = {tempFilePath};
+			myWc.run(str,null,null);
+			fail("Should throw exception");
+		}catch(WcException we){
+			assertEquals(we.getLocalizedMessage(), "wc: OutputStream not provided");
+		}
+	}
+	
 	@Test
 	public void testOneCharacter_FileInput(){
 		WcApplication myWc = new WcApplication();
@@ -72,7 +83,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1	1",testStr);
+			assertEquals("2	1	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -95,7 +106,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2",testStr);
+			assertEquals("2\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -118,7 +129,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("1",testStr);
+			assertEquals("1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -141,7 +152,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("1",testStr);
+			assertEquals("1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -164,7 +175,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1",testStr);
+			assertEquals("2	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -187,7 +198,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("1	1",testStr);
+			assertEquals("1	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -210,7 +221,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1",testStr);
+			assertEquals("2	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -233,7 +244,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,null,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1	1",testStr);
+			assertEquals("2	1	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -248,7 +259,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1	1",testStr);
+			assertEquals("2	1	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -263,7 +274,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("3	1	1",testStr);
+			assertEquals("3	1	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -278,7 +289,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("6	2	1",testStr);
+			assertEquals("6	2	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -293,7 +304,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("7	2	1",testStr);
+			assertEquals("7	2	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -308,7 +319,7 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("8	2	1",testStr);
+			assertEquals("8	2	1\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
@@ -324,13 +335,14 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("6	2	2",testStr);
+			assertEquals("6	2	2\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
 	}
+	
 	@Test
-	public void testThreeLine_StdinInput(){
+	public void testContentLineEmpty_StdinInput(){
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
 		String inputStr = "ab"+System.getProperty("line.separator")+System.getProperty("line.separator")+"bc";
@@ -339,28 +351,60 @@ public class WcApplicationTest {
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("7	2	3",testStr);
+			assertEquals("7	2	3\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
 	}
-	/*
+	
 	@Test
 	public void testEndWithEmptyLine_StdinInput(){
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		String inputStr = "ab"+System.getProperty("line.separator");
+		String inputStr = "ab"+System.getProperty("line.separator")+System.getProperty("line.separator");//new line and carriage return
 		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,myInputStream,myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("4	1	2",testStr);
+			assertEquals("4	1	2\n",testStr);
 		}catch(WcException we){
 			fail("Should not throw exception");
 		}
 	}
-	*/
+	
+	@Test
+	public void testEndWithEmptySpace_StdinInput(){
+		WcApplication myWc = new WcApplication();
+		String[] str = {};
+		String inputStr = "ab ";
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		try{
+			myWc.run(str,myInputStream,myOutputStream);
+			String testStr = myOutputStream.toString();
+			assertEquals("4	1	1\n",testStr);
+		}catch(WcException we){
+			fail("Should not throw exception");
+		}
+	}
+	
+	@Test
+	public void testWithSymbol_StdinInput(){
+		WcApplication myWc = new WcApplication();
+		String[] str = {};
+		String inputStr = "ab , bc";
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		try{
+			myWc.run(str,myInputStream,myOutputStream);
+			String testStr = myOutputStream.toString();
+			assertEquals("8	3	1\n",testStr);
+		}catch(WcException we){
+			fail("Should not throw exception");
+		}
+	}
+	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		File file = new File(tempFilePath);
