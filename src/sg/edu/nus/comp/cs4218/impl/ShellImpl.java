@@ -93,7 +93,7 @@ public class ShellImpl implements Shell {
 		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
 			// absApp = new SedApplication();
 		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
-			// absApp = new FindApplication();
+			absApp = new FindApplication();
 		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
 			absApp = new WcApplication();
 		} else { // invalid command
