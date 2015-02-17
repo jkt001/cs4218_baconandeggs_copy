@@ -18,52 +18,49 @@ public class CatApplication implements Application {
 			throws CatException {
 
 		if (args == null || args.length == 0) {
-			int intCount;
-
+			if (stdin == null || stdout == null) {
+				throw new CatException("Null Pointer Exception");
+			}
 			try {
+				int intCount;
 				while ((intCount = stdin.read()) != -1) {
 					stdout.write(intCount);
 				}
-			} catch (IOException exIO) {
-				throw new CatException(
-						"Could not read input stream or write to output stream");
-			} catch (NullPointerException exNull) {
-				throw new CatException(
-						"This is a null pointer exception. Not IOException.");
-			} catch (Exception ex) {
-				throw new CatException("This is an exception yet to be caught.");
+			} catch (Exception exIO) {
+				throw new CatException("Exception Caught");
 			}
-		}
+		} else {
 
-		int numOfFiles = args.length;
+			int numOfFiles = args.length;
 
-		if (numOfFiles > 0) {
-			Path filePath;
-			Path[] filePathArray = new Path[numOfFiles];
-			Path currentDir = Paths.get(Environment.currentDirectory);
-			boolean isFileReadable = false;
+			if (numOfFiles > 0) {
+				Path filePath;
+				Path[] filePathArray = new Path[numOfFiles];
+				Path currentDir = Paths.get(Environment.currentDirectory);
+				boolean isFileReadable = false;
 
-			for (int i = 0; i < numOfFiles; i++) {
-				filePath = currentDir.resolve(args[i]);
-				isFileReadable = checkIfFileIsReadable(filePath);
-				if (isFileReadable) {
-					filePathArray[i] = filePath;
-				}
-			}
-
-			// file could be read. perform cat command
-			if (filePathArray.length != 0) {
-				for (int j = 0; j < filePathArray.length; j++) {
-					try {
-						byte[] byteFileArray = Files
-								.readAllBytes(filePathArray[j]);
-						stdout.write(byteFileArray);
-					} catch (IOException e) {
-						throw new CatException(
-								"Could not write to output stream");
+				for (int i = 0; i < numOfFiles; i++) {
+					filePath = currentDir.resolve(args[i]);
+					isFileReadable = checkIfFileIsReadable(filePath);
+					if (isFileReadable) {
+						filePathArray[i] = filePath;
 					}
 				}
 
+				// file could be read. perform cat command
+				if (filePathArray.length != 0) {
+					for (int j = 0; j < filePathArray.length; j++) {
+						try {
+							byte[] byteFileArray = Files
+									.readAllBytes(filePathArray[j]);
+							stdout.write(byteFileArray);
+						} catch (IOException e) {
+							throw new CatException(
+									"Could not write to output stream");
+						}
+					}
+
+				}
 			}
 		}
 	}
@@ -75,7 +72,7 @@ public class CatApplication implements Application {
 		if (Files.isDirectory(filePath)) {
 			throw new CatException("This is a directory");
 		}
-		if (Files.exists(filePath)&&Files.isReadable(filePath)) {
+		if (Files.exists(filePath) && Files.isReadable(filePath)) {
 			return true;
 		} else {
 			throw new CatException("Could not read file");

@@ -9,17 +9,17 @@ import java.nio.file.Paths;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
-import sg.edu.nus.comp.cs4218.exception.HeadException;
+import sg.edu.nus.comp.cs4218.exception.TailException;
 
-public class HeadApplication implements Application {
+public class TailApplication implements Application {
 
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
-			throws HeadException {
+			throws TailException {
 
 		if (args == null || args.length == 0) {
 			if (stdin == null || stdout == null) {
-				throw new HeadException("Null Pointer Exception");
+				throw new TailException("Null Pointer Exception");
 			}
 			try {
 				int intCount;
@@ -27,7 +27,7 @@ public class HeadApplication implements Application {
 					stdout.write(intCount);
 				}
 			} catch (Exception e) {
-				throw new HeadException("Exception Caught");
+				throw new TailException("Exception Caught");
 			}
 		} else {
 			int numLines;
@@ -40,11 +40,13 @@ public class HeadApplication implements Application {
 
 				// check file
 				Path currentDir = Paths.get(Environment.currentDirectory);
+				
 				int filePosition = 0;
 				if (args.length == 3) {
 					filePosition = 2;
 				}
 				Path filePath = currentDir.resolve(args[filePosition]);
+				
 				boolean isFileReadable = false;
 				isFileReadable = checkIfFileIsReadable(filePath);
 
@@ -52,32 +54,35 @@ public class HeadApplication implements Application {
 					readAndWriteToStdout(stdout, numLines, filePath);
 				}
 			} else {
-				throw new HeadException("Invalid Head Command");
+				throw new TailException("Invalid Tail Command");
 			}
 		}
 	}
 
 	private int checkNumberOfLinesInput(String numLinesString)
-			throws HeadException {
+			throws TailException {
 		int numLines;
+		
 		try {
 			numLines = Integer.parseInt(numLinesString);
 		} catch (NumberFormatException nfe) {
-			throw new HeadException("Invalid command, not a number.");
+			throw new TailException("Invalid command, not a number.");
 		}
 
 		if (numLines < 0) {
-			throw new HeadException("Number of lines cannot be negative");
+			throw new TailException("Number of lines cannot be negative");
 		}
 
 		return numLines;
 	}
 
 	private void readAndWriteToStdout(OutputStream stdout,
-			int numLinesRequired, Path filePath) throws HeadException {
+			int numLinesRequired, Path filePath) throws TailException {
+
 		String encoding = "UTF-8";
 		byte[] byteFileArray;
-		int numLinesToWrite = 0;
+		int numLinesInFile = 0;
+		int readLinePos = 0;
 		byte[] toWrite;
 
 		try {
@@ -91,43 +96,43 @@ public class HeadApplication implements Application {
 
 			String[] spiltFileArray = fileContent.split(System.lineSeparator());
 
-			if (numLinesRequired > spiltFileArray.length) {
-				numLinesToWrite = spiltFileArray.length;
-			} else {
-				numLinesToWrite = numLinesRequired;
+			numLinesInFile = spiltFileArray.length;
+			if (numLinesRequired < numLinesInFile) {
+				readLinePos = numLinesInFile - numLinesRequired;
 			}
-
-			int intCount = 0;
-			while (intCount != numLinesToWrite) {
-
+			
+			int intCount;
+			for(intCount = readLinePos; intCount<numLinesInFile; intCount++){
 				if (spiltFileArray[intCount].equals("")) {
 					stdout.write(spiltFileArray[intCount].getBytes(encoding));
 				} else {
 					int endPos = spiltFileArray[intCount].lastIndexOf(' ');
+
 					toWrite = spiltFileArray[intCount].substring(0, endPos)
 							.getBytes(encoding);
+
 					stdout.write(toWrite);
 					stdout.write(System.lineSeparator().getBytes(encoding));
 				}
-				intCount++;
 			}
 		} catch (IOException e) {
-			throw new HeadException("IOException");
+			throw new TailException("IO Exception");
 		}
 
 	}
 
-	private boolean checkIfFileIsReadable(Path filePath) throws HeadException {
+	private boolean checkIfFileIsReadable(Path filePath) throws TailException {
+
 		if (Files.notExists(filePath)) {
-			throw new HeadException("No such file exists");
+			throw new TailException("No such file exists");
 		}
 		if (Files.isDirectory(filePath)) {
-			throw new HeadException("This is a directory");
+			throw new TailException("This is a directory");
 		}
 		if (Files.exists(filePath) && Files.isReadable(filePath)) {
 			return true;
 		} else {
-			throw new HeadException("Could not read file");
+			throw new TailException("Could not read file");
 		}
 	}
 }
