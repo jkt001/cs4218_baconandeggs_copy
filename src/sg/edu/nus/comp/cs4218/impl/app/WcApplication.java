@@ -21,6 +21,11 @@ public class WcApplication implements Application {
 		if (args == null){
 			throw new WcException("Null arguments");
 		}
+		
+		if(stdout == null){
+			throw new WcException("OutputStream not provided");
+			
+		}
 
 		String filePath = "";
 		boolean printChar = false;
@@ -49,7 +54,7 @@ public class WcApplication implements Application {
 		}
 		
 		InputStream myInputStream;
-		if(!filePath.equals("")){
+		if(!"".equals(filePath)){
 			File file = new File(filePath);
 			try {
 				myInputStream = new FileInputStream(file);
@@ -78,9 +83,15 @@ public class WcApplication implements Application {
 				}
 				outputStr += count[2];
 			}
+			outputStr += "\n";
 			stdout.write(outputStr.getBytes());
 		}catch(Exception ec){
 
+		}
+		try {
+			myInputStream.close();
+		} catch (IOException e) {
+			throw new WcException("File inputstream closing error.");
 		}
 	}
 
@@ -89,16 +100,16 @@ public class WcApplication implements Application {
 		int charCount = 0;
 		int wordCount = 0;
 		int lineCount = 0;
-		BufferedReader br = new BufferedReader(new InputStreamReader(stdin));
+		BufferedReader myBufferedReader = new BufferedReader(new InputStreamReader(stdin));
 		try {
-			while((fileLine = br.readLine())!= null){
+			while((fileLine = myBufferedReader.readLine())!= null){
 				for(int i=0;i<fileLine.length();i++){
 					charCount++;
-					if(Character.isWhitespace(fileLine.charAt(i)) && i!=fileLine.length() && Character.isLetter(fileLine.charAt(i+1))){
+					if(Character.isWhitespace(fileLine.charAt(i)) && i!=fileLine.length()-1 && !Character.isWhitespace(fileLine.charAt(i+1))){
 						wordCount++;
 					}
 				}
-				if(!fileLine.equals("")){
+				if(!"".equals(fileLine)){
 					wordCount++;//last word
 				}
 				charCount++;//line character

@@ -1,99 +1,167 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
-import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
+import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.FindException;
 
 public class FindApplication implements Application {
 
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
-			throws FindException {
-
-		boolean isPathDirectory = false;
-		String pathDir;
-		String pattern;
-		String nameFlag;
-
-		if (args == null || args.length == 0) {
-			throw new FindException("Invalid Find Command");
-		}
-
-		// args = directoryPath, "-name", pattern
-		if (args.length == 3) {
-			pathDir = args[0];
-			nameFlag = args[1];
-			pattern = args[2];
-		}
-		// args = "-name", pattern
-		else if (args.length == 2) {
-			pathDir = Environment.currentDirectory;
-			nameFlag = args[0];
-			pattern = args[1];
-		} else {
-			throw new FindException("Invalid Find Command");
+			throws AbstractApplicationException {
+		
+		final PrintWriter stdoutWriter = new PrintWriter(stdout);
+		
+		if (args == null) {
+			throw new FindException("No parameters");
 		}
 		
-		isPathDirectory = checkPathIsDirectory(pathDir);
-		if (isPathDirectory) {
-			if (nameFlag.equals("-name")) {
-				File dir = new File(pathDir);
-				listAllDirectories(dir, pattern, stdout, pathDir);
-			} else {
-				throw new FindException("Invalid Find Command");
-			}
+		if (args.length == 0) {
+			throw new FindException("No parameters");
 		}
-	}
-
-	public static void listAllDirectories(File dir, String criteria, OutputStream stdout, String pathDir) throws FindException {
-		criteria = criteria.replace("*", ".*");
-
-		final String findExpression = criteria;
-
-		File[] filesArray = dir.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-
-				return (new File(dir, name).isDirectory() || name
-						.matches(findExpression));
+		
+		if (args.length == 1) {
+			throw new FindException("Too few parameters");
+		}
+		
+		if (args.length > 3) {
+			throw new FindException("Too many parameters");
+		}
+		
+		String specifiedPath;
+		final String pattern;
+		
+		if (args[0].equals("-name")) {
+			specifiedPath = ".";
+			
+			if (args.length < 2) {
+				throw new FindException("Too few parameters");
 			}
-		});
+			
+			pattern = args[1];
+			
+			if (args.length == 3) { // Is this correct?
+				specifiedPath = args[2];
+			}
+			
+		}else{
+			
+			specifiedPath = args[0];
+			
+			if (args.length < 3) {
+				throw new FindException("Too few parameters");
+			}
+			
+			if (!args[1].equals("-name")){
+				throw new FindException("Invalid parameter format");
+			}
+			
+			pattern = args[2];
+			
+		}
+		
+		Path basePath = FileSystems.getDefault().getPath(Environment.currentDirectory);
+		Path resolvedPath = basePath.resolve(specifiedPath);
+		Path newAbsolutePath = resolvedPath.normalize();
+		
+		if (!Files.exists(newAbsolutePath)){
+			throw new FindException("Path specified is not a valid folder");
+		}
+		
+		try {
+			Files.walkFileTree(newAbsolutePath, new FileVisitor<Path>(){
 
-		for (File file : filesArray) {
-			if (file.isDirectory()) {
-				listAllDirectories(file, criteria, stdout, pathDir);
-			} else {
-				//System.out.println(file.getAbsolutePath());
-				String absolutePath = file.getAbsolutePath();
-				String relativePath = absolutePath.substring(pathDir.length()+1);
-				//System.out.println("relative path: "+ relativePath);
-				try {
-					stdout.write(relativePath.getBytes("UTF-8"));
-					stdout.write(System.lineSeparator().getBytes("UTF-8"));
-				} catch (Exception e) {
-					throw new FindException("Exception Caught");
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir,
+						BasicFileAttributes attrs) throws IOException {
+					
+					if (matchFileName(dir, pattern)){
+						Path relativePath = FileSystems.getDefault().getPath(Environment.currentDirectory).relativize(dir);
+						stdoutWriter.println(relativePath.toString());
+					}
+					
+					return FileVisitResult.CONTINUE;
 				}
-			}
+
+				@Override
+				public FileVisitResult visitFile(Path file,
+						BasicFileAttributes attrs) throws IOException {
+					
+					if (matchFileName(file, pattern)){
+						Path relativePath = FileSystems.getDefault().getPath(Environment.currentDirectory).relativize(file);
+						stdoutWriter.println(relativePath.toString());
+					}
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult visitFileFailed(Path file,
+						IOException exc) throws IOException {
+					// TODO Auto-generated method stub
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult postVisitDirectory(Path dir,
+						IOException exc) throws IOException {
+					// TODO Auto-generated method stub
+					return FileVisitResult.CONTINUE;
+				}
+				
+			});
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+		stdoutWriter.flush();
+
+	}
+	
+	boolean matchFileName(Path file, String expression){
+		
+		Path fileName = file.getFileName();
+		String fileString = fileName.toString();
+		
+		return matchString(fileString, expression);
+		
 	}
 
-	private boolean checkPathIsDirectory(String directoryPath)
-			throws FindException {
-		File dirFile = new File(directoryPath);
-
-		if (dirFile.exists()) {
-			if (dirFile.isDirectory()) {
-				return true;
-			} else {
-				throw new FindException("Path is not a directory");
+	boolean matchString(String inputString, String expression) {
+		String[] expressionParts = expression.split(Pattern.quote("*"), -1); // negative number to keep empty substrings
+		
+		// System.out.println(Arrays.toString(expressionParts));
+		
+		StringBuffer stringBuf = new StringBuffer();
+		for(int i = 0; i<expressionParts.length; i++) {
+			if (i > 0) {
+				stringBuf.append(".*");
 			}
-		} else {
-			throw new FindException("Path do not exist");
+			stringBuf.append(Pattern.quote(expressionParts[i]));
 		}
+		
+		// System.out.println(stringBuf);
+		
+		Pattern p = Pattern.compile(stringBuf.toString());
+		
+		Matcher m = p.matcher(inputString);
+		
+		return m.matches();
 	}
+
 }
