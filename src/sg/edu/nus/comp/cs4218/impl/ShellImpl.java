@@ -226,7 +226,7 @@ public class ShellImpl implements Shell {
 		return newEndIdx;
 	}
 
-	private String[] processBQ(String... argsArray)
+	public String[] processBQ(String... argsArray)
 			throws AbstractApplicationException, ShellException {
 		// echo "this is space `echo "nbsp"`"
 		// Back quoted: any char except \n,`
