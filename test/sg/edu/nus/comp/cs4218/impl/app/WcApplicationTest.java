@@ -68,6 +68,17 @@ public class WcApplicationTest {
 		}
 	}
 
+	public void testInvalidArgument(){
+		WcApplication myWc = new WcApplication();
+		try{
+			String str[] = {"a",TEMP_FILE_PATH};
+			myWc.run(str,null,new ByteArrayOutputStream());
+			fail("Should throw exception");
+		}catch(WcException we){
+			assertEquals(we.getLocalizedMessage(), "wc: OutputStream not provided");
+		}
+	}
+
 	@Test
 	public void testOneCharacterFileInput(){
 		WcApplication myWc = new WcApplication();
@@ -103,7 +114,7 @@ public class WcApplicationTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"m",TEMP_FILE_PATH};
+		String[] str = {"-m",TEMP_FILE_PATH};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,null,myOutputStream);
@@ -126,7 +137,7 @@ public class WcApplicationTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"w",TEMP_FILE_PATH};
+		String[] str = {"-w",TEMP_FILE_PATH};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,null,myOutputStream);
@@ -149,7 +160,7 @@ public class WcApplicationTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"l",TEMP_FILE_PATH};
+		String[] str = {"-l",TEMP_FILE_PATH};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,null,myOutputStream);
@@ -172,7 +183,7 @@ public class WcApplicationTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"m","w",TEMP_FILE_PATH};
+		String[] str = {"-m","-w",TEMP_FILE_PATH};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,null,myOutputStream);
@@ -195,7 +206,7 @@ public class WcApplicationTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"w","l",TEMP_FILE_PATH};
+		String[] str = {"-wl",TEMP_FILE_PATH};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,null,myOutputStream);
@@ -218,7 +229,7 @@ public class WcApplicationTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"m","l",TEMP_FILE_PATH};
+		String[] str = {"-m","-l",TEMP_FILE_PATH};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,null,myOutputStream);
@@ -241,7 +252,7 @@ public class WcApplicationTest {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"m","w","l",TEMP_FILE_PATH};
+		String[] str = {"-mwl",TEMP_FILE_PATH};
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try{
 			myWc.run(str,null,myOutputStream);
@@ -355,7 +366,7 @@ public class WcApplicationTest {
 			String testStr = myOutputStream.toString();
 			assertEquals("7	2	3\n",testStr);
 		}catch(WcException we){
-			fail("Should not throw exception!");
+			fail("Should not throw wcexception");
 		}
 	}
 
@@ -426,14 +437,18 @@ public class WcApplicationTest {
 	@Test
 	public void testFuncParseArgument(){
 		WcApplication myWc = new WcApplication();
-		String[] args = {"w","m", TEMP_FILE_PATH};
-		String[] filePath = myWc.parseArgument(args);
-		
-		assertEquals(true, myWc.printChar);
-		assertEquals(true, myWc.printWord);
-		assertEquals(false, myWc.printLine);
-		assertEquals(1, filePath.length);
-		assertEquals(TEMP_FILE_PATH, filePath[0]);
+		String[] args = {"-w","-m", TEMP_FILE_PATH};
+		String[] filePath;
+		try {
+			filePath = myWc.parseArgument(args);
+			assertEquals(true, myWc.printChar);
+			assertEquals(true, myWc.printWord);
+			assertEquals(false, myWc.printLine);
+			assertEquals(1, filePath.length);
+			assertEquals(TEMP_FILE_PATH, filePath[0]);
+		} catch (WcException e) {
+			fail("Should not throw exception!");
+		}
 	}
 
 	@Test

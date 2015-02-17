@@ -75,20 +75,31 @@ public class WcApplication implements Application {
 	}
 
 	//return array of filePath string
-	String[] parseArgument(String... args){
+	String[] parseArgument(String... args) throws WcException{
 		String filePath[] = new String[args.length];
 		int pathCount = 0;
 		boolean isOptionSet = false;
 		for(int i=0;i<args.length;i++){
-			if(args[i].equals("m")){
-				printChar = true;
-				isOptionSet = true;
-			}else if (args[i].equals("w")){
-				printWord = true;
-				isOptionSet = true;
-			}else if (args[i].equals("l")){
-				printLine = true;
-				isOptionSet = true;
+			if(args[i].startsWith("-")){
+				String str = args[i];
+				for(int j=1 ; j<str.length() ; j++){
+					switch(args[i].charAt(j)){
+						case 'm':
+							printChar = true;
+							isOptionSet = true;
+							break;
+						case 'w':
+							printWord = true;
+							isOptionSet = true;
+							break;
+						case 'l':
+							printLine = true;
+							isOptionSet = true;
+							break;
+						default:
+							throw new WcException("Invalid flag");
+					}
+				}
 			}else{
 				filePath[pathCount++] = args[i];
 			}
