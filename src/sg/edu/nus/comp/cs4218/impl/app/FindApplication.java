@@ -25,6 +25,10 @@ public class FindApplication implements Application {
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws AbstractApplicationException {
 		
+		if (stdin == null || stdout == null) {
+			throw new FindException("Null input/output stream");
+		}
+		
 		final PrintWriter stdoutWriter = new PrintWriter(stdout);
 		
 		if (args == null) {
