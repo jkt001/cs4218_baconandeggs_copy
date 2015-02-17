@@ -163,15 +163,15 @@ public class ShellImplTest {
 		}
 	}
 	
-/*	@Test
+	@Test
 	public void testHeadWithInputDir() {
 		try {
-			String readLine = "head -n 1 < " + testFileName;
+			String readLine = "head -n 1 < " + TEST_FILE_NAME;
 			shell.parseAndEvaluate(readLine, outputStream);
 		} catch (Exception e) {
-			fail(validCmdNoExp);
+			fail(VALID_CMD_NO_EXP);
 		}
-	}*/
+	}
 
 	@Test
 	public void testPELs() {
