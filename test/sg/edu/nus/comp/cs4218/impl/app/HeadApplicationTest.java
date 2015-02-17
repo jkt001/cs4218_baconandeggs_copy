@@ -24,6 +24,7 @@ public class HeadApplicationTest {
 	private String[] args;
 	private File file;
 	static String tempFilePath = "testHead.txt";
+	private FileOutputStream myFileOutputStream;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -45,6 +46,19 @@ public class HeadApplicationTest {
 			fail("Cannot create temporary file to test");
 		}
 
+		try {
+			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
+			BufferedWriter buffWriter = new BufferedWriter(new OutputStreamWriter(
+					myFileOutputStream));
+			for (int intCount = 0; intCount < 4; intCount++) {
+				buffWriter.write(intCount + "aaa dddd ");
+				buffWriter.write(System.lineSeparator());
+				buffWriter.write(System.lineSeparator());
+			}
+			buffWriter.close();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	@After
@@ -56,12 +70,12 @@ public class HeadApplicationTest {
 
 	@Test
 	public void testNullInputStreamException() {
+
 		try {
 			headApp.run(args, null, System.out);
 			fail("Should have thrown SomeException but did not!");
 		} catch (Exception e) {
-			String exceptionMsg = "head: "
-					+ "Null Pointer Exception";
+			String exceptionMsg = "head: " + "Null Pointer Exception";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
@@ -70,6 +84,7 @@ public class HeadApplicationTest {
 	public void testFileNotExistException() {
 		args = new String[1];
 		args[0] = "fileNotExist";
+		
 		try {
 			headApp.run(args, System.in, System.out);
 			fail("Should have thrown SomeException but did not!");
@@ -81,6 +96,7 @@ public class HeadApplicationTest {
 
 	@Test
 	public void testFileIsDirException() {
+		
 		args = new String[1];
 		args[0] = "tempHeadDir";
 
@@ -100,24 +116,27 @@ public class HeadApplicationTest {
 
 	@Test
 	public void testInvalidHeadCommandException() {
-		args = new String[] { "-n", "2" };
-
+		
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		
+		args = new String[] { "-n" };
+		
 		try {
 			headApp.run(args, null, myOutputStream);
 			fail("Should have thrown SomeException but did not!");
 		} catch (HeadException e) {
-			String exceptionMsg = "head: " + "Invalid Head Command";
+			String exceptionMsg = "head: " + "No such file exists";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
-
 	}
 
 	@Test
 	public void testNotANumberException() {
+		
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		
 		args = new String[] { "-n", "oooo", tempFilePath };
 
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try {
 			headApp.run(args, null, myOutputStream);
 			fail("Should have thrown SomeException but did not!");
@@ -126,6 +145,7 @@ public class HeadApplicationTest {
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
+
 	@Test
 	public void testNegativeNumberException() {
 		args = new String[] { "-n", "-1", tempFilePath };
@@ -135,31 +155,40 @@ public class HeadApplicationTest {
 			headApp.run(args, null, myOutputStream);
 			fail("Should have thrown SomeException but did not!");
 		} catch (HeadException e) {
-			String exceptionMsg = "head: " + "Number of lines cannot be negative";
+			String exceptionMsg = "head: "
+					+ "Number of lines cannot be negative";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
+
 	@Test
 	public void testReadFromStdin() throws HeadException, IOException {
+
+		String inputString = "1\n" + "2\n" + "3\n" + "4\n" + "5\n" + "6\n"
+				+ "7\n" + "8\n" + "9\n" + "10\n";
+
 		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
-				"test".getBytes());
+				inputString.getBytes("UTF-8"));
+
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
 		try {
 			headApp.run(args, myInputStream, myOutputStream);
-			String expected = "test";
-			assertEquals(expected, myOutputStream.toString());
+			assertEquals(inputString, myOutputStream.toString());
 		} catch (HeadException e) {
 			fail("Should not throw exception");
 		}
 	}
 
 	@Test
-	public void testReadEmptyFile() throws HeadException,
-			IOException {
+	public void testReadEmptyFile() throws HeadException, IOException {
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
-		args = new String[] {"-n","10", tempFilePath };
+		File emptyFile = new File("HeadEmptyFileTest.txt");
+		emptyFile.createNewFile();
+		args = new String[] { "-n", "10", "HeadEmptyFileTest.txt" };
+
+		// create emptyFile
 
 		try {
 			headApp.run(args, null, myOutputStream);
@@ -167,28 +196,27 @@ public class HeadApplicationTest {
 		} catch (HeadException e) {
 			fail("Should not throw exception");
 		}
-
+		emptyFile.delete();
 	}
 
 	@Test
-	public void testReadZeroLines() throws HeadException,
-			IOException {
-		FileOutputStream myFileOutputStream;
+	public void testReadZeroLines() throws HeadException, IOException {
+		// FileOutputStream myFileOutputStream;
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
 		// write to temp file to test head reading of file
-		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-				bw.write("aaa dddd ");
-				bw.write(System.lineSeparator());
-			bw.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
+		// try {
+		// myFileOutputStream = new FileOutputStream(new File("HeadZero"));
+		// BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+		// myFileOutputStream));
+		// bw.write("aaa dddd ");
+		// bw.write(System.lineSeparator());
+		// bw.close();
+		// } catch (Exception e1) {
+		// e1.printStackTrace();
+		// }
 
-		args = new String[] { "-n", "0",tempFilePath };
+		args = new String[] { "-n", "0", tempFilePath };
 		try {
 			headApp.run(args, null, myOutputStream);
 			assertEquals("", myOutputStream.toString());
@@ -197,36 +225,22 @@ public class HeadApplicationTest {
 		}
 
 	}
-	
+
 	@Test
 	public void testReadFileLessThanTenLines() throws HeadException,
 			IOException {
-		FileOutputStream myFileOutputStream;
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-
-		// write to temp file to test head reading of file
-		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-			for (int intCount = 0; intCount < 4; intCount++) {
-				bw.write("aaa dddd ");
-				bw.write(System.lineSeparator());
-				bw.write(System.lineSeparator());
-			}
-			bw.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-
-		args = new String[] { tempFilePath };
+	
 		StringBuilder expected = new StringBuilder();
 		for (int intCount = 0; intCount < 4; intCount++) {
-			expected.append("aaa dddd ");
+			expected.append(intCount + "aaa dddd ");
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
+		
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
+		args = new String[] { tempFilePath };
+		
 		try {
 			headApp.run(args, null, myOutputStream);
 			assertEquals(expected.toString(), myOutputStream.toString());
@@ -239,29 +253,16 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFileMoreThanLinesRequired() throws HeadException,
 			IOException {
-		FileOutputStream myFileOutputStream;
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		args = new String[] { "-n", "15", tempFilePath };
-
-		// write to temp file
-		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-			for (int i = 0; i < 20; i++) {
-				bw.write("aaa dddd ");
-				bw.newLine();
-			}
-			bw.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-
+		
 		StringBuilder expected = new StringBuilder();
-		for (int i = 0; i < 15; i++) {
-			expected.append("aaa dddd ");
+		for (int intCount = 0; intCount < 3; intCount++) {
+			expected.append(intCount + "aaa dddd ");
+			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
+
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		args = new String[] { "-n", "6", tempFilePath };
 
 		try {
 			headApp.run(args, null, myOutputStream);
@@ -276,27 +277,38 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFileLessThanLinesRequired() throws HeadException,
 			IOException {
-		FileOutputStream myFileOutputStream;
+
+		StringBuilder expected = new StringBuilder();
+		for (int intCount = 0; intCount < 4; intCount++) {
+			expected.append(intCount + "aaa dddd ");
+			expected.append(System.lineSeparator());
+			expected.append(System.lineSeparator());
+		}
+
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		args = new String[] { "-n", "15", tempFilePath };
 
-		// write to temp file
 		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-			for (int i = 0; i < 10; i++) {
-				bw.write("aaa dddd ");
-				bw.newLine();
-			}
-			bw.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
+			headApp.run(args, null, myOutputStream);
+			String testStr = myOutputStream.toString();
+			assertEquals(expected.toString(), testStr);
+		} catch (HeadException e) {
+			fail("Should not throw exception");
 		}
 
+	}
+
+	@Test
+	public void testReadFileSameAsLineRequired() throws HeadException,
+			IOException {
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		args = new String[] { "-n", "8", tempFilePath };
+
+		int intCount = 0;
 		StringBuilder expected = new StringBuilder();
-		for (int i = 0; i < 10; i++) {
-			expected.append("aaa dddd ");
+		for (intCount = 0; intCount < 4; intCount++) {
+			expected.append(intCount + "aaa dddd ");
+			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
 
@@ -310,67 +322,40 @@ public class HeadApplicationTest {
 
 	}
 
-	@Test
-	public void testReadFileSameAsLineRequired() throws HeadException, IOException {
-		FileOutputStream myFileOutputStream;
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		args = new String[] { "-n", "1", tempFilePath };
-
-		// write to temp file
-		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-			bw.newLine();
-			bw.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-
-		try {
-			headApp.run(args, null, myOutputStream);
-			String testStr = myOutputStream.toString();
-			assertEquals(System.lineSeparator(), testStr);
-		} catch (HeadException e) {
-			fail("Should not throw exception");
-		}
-
-	}
-
 	// not working currently due to the set readable
 	@Test
 	public void testFileNotReadable() throws HeadException, IOException {
-		try {
-
-			File file = new File("tempCat.txt");
-			if (file.createNewFile()) {
-				System.out.println("File is created!");
-			} else {
-				System.out.println("File already exists.");
-			}
-			if (file.exists()) {
-				System.out.println("Is Execute allow : " + file.canExecute());
-				System.out.println("Is Write allow : " + file.canWrite());
-				System.out.println("Is Read allow : " + file.canRead());
-			}
-
-			file.setExecutable(false);
-			file.setReadable(false);
-			file.setWritable(false);
-
-			System.out.println("Is Execute allow : " + file.canExecute());
-			System.out.println("Is Write allow : " + file.canWrite());
-			System.out.println("Is Read allow : " + file.canRead());
-
-			if (file.createNewFile()) {
-				System.out.println("File is created!");
-			} else {
-				System.out.println("File already exists.");
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		// try {
+		//
+		// File file = new File("tempCat.txt");
+		// if (file.createNewFile()) {
+		// System.out.println("File is created!");
+		// } else {
+		// System.out.println("File already exists.");
+		// }
+		// if (file.exists()) {
+		// System.out.println("Is Execute allow : " + file.canExecute());
+		// System.out.println("Is Write allow : " + file.canWrite());
+		// System.out.println("Is Read allow : " + file.canRead());
+		// }
+		//
+		// file.setExecutable(false);
+		// file.setReadable(false);
+		// file.setWritable(false);
+		//
+		// System.out.println("Is Execute allow : " + file.canExecute());
+		// System.out.println("Is Write allow : " + file.canWrite());
+		// System.out.println("Is Read allow : " + file.canRead());
+		//
+		// if (file.createNewFile()) {
+		// System.out.println("File is created!");
+		// } else {
+		// System.out.println("File already exists.");
+		// }
+		//
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// }
 
 	}
 

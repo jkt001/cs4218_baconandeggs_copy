@@ -9,12 +9,17 @@ import java.nio.file.Path;
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.CdException;
+import sg.edu.nus.comp.cs4218.exception.FindException;
 
 public class CdApplication implements Application {
 
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws CdException {
+		
+		if (stdin == null || stdout == null) {
+			throw new CdException("Null input/output stream");
+		}
 
 		if (args == null) {
 			throw new CdException("No parameters");
