@@ -22,6 +22,7 @@ public class EchoApplication implements Application{
 			stdout.write("\n".getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
+			throw new EchoException("IOException");
 		}
 	}
 
