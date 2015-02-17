@@ -42,7 +42,7 @@ public class LsApplication implements Application{
 		}
 	}
 	
-	protected String[] getListOfFileFromDirectory(String directory) throws LsException{
+	String[] getListOfFileFromDirectory(String directory) throws LsException{
 		File theDir = new File(directory);
 		
 		if(!theDir.isDirectory()){
@@ -52,7 +52,7 @@ public class LsApplication implements Application{
         return theDir.list();
 	}
 	
-	protected void writeStringToOutputStream(String[] str, OutputStream stdout){
+	void writeStringToOutputStream(String[] str, OutputStream stdout) throws LsException{
 		try {
 			for(int i=0;i<str.length-1;i++){
 				if(!str[i].startsWith(".")){
@@ -63,7 +63,7 @@ public class LsApplication implements Application{
 			stdout.write(str[str.length-1].getBytes());
 			stdout.write("\n".getBytes());
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new LsException("IOException");
 		}
 	}
 }
