@@ -20,9 +20,9 @@ public class LsApplication implements Application{
 		if (stdout == null) {
 			throw new LsException("OutputStream not provided");
 		}
-		
+
 		if(args.length == 0){
-	        String str[] = getListOfFileFromDirectory(Environment.currentDirectory);
+			String str[] = getListOfFileFromDirectory(Environment.currentDirectory);
 			writeStringToOutputStream(str, stdout);
 		}else if(args.length == 1){
 			String str[] = getListOfFileFromDirectory(args[0]);
@@ -31,7 +31,7 @@ public class LsApplication implements Application{
 			for(int i=0 ; i<args.length ; i++){
 				String str[] = {args[i]+File.separator+":"};
 				writeStringToOutputStream(str, stdout);
-		        str = getListOfFileFromDirectory(args[i]);
+				str = getListOfFileFromDirectory(args[i]);
 				writeStringToOutputStream(str, stdout);
 				if(i<args.length-1){
 					str = new String[1];
@@ -41,27 +41,31 @@ public class LsApplication implements Application{
 			}
 		}
 	}
-	
+
 	String[] getListOfFileFromDirectory(String directory) throws LsException{
 		File theDir = new File(directory);
-		
+
 		if(!theDir.isDirectory()){
 			throw new LsException("Directory does not exist");
 		}
-		
-        return theDir.list();
+
+		return theDir.list();
 	}
-	
+
 	void writeStringToOutputStream(String[] str, OutputStream stdout) throws LsException{
 		try {
-			for(int i=0;i<str.length-1;i++){
-				if(!str[i].startsWith(".")){
-					stdout.write(str[i].getBytes());
-					stdout.write("\t".getBytes());
-				}			
+			if(str.length==0){
+				stdout.write("".getBytes());
+			}else{
+				for(int i=0;i<str.length-1;i++){
+					if(!str[i].startsWith(".")){
+						stdout.write(str[i].getBytes());
+						stdout.write("\t".getBytes());
+					}			
+				}
+				stdout.write(str[str.length-1].getBytes());
+				stdout.write("\n".getBytes());
 			}
-			stdout.write(str[str.length-1].getBytes());
-			stdout.write("\n".getBytes());
 		} catch (IOException e) {
 			throw new LsException("IOException");
 		}

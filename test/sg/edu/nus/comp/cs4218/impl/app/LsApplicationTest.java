@@ -18,12 +18,15 @@ public class LsApplicationTest {
 	final static String TEMP_FILE_NAME = "a.txt";
 	final static String TEMP_FOLDER_PATH2 = "testLsApplicationTempDir2";
 	final static String TEMP_FILE_NAME2 = "b.txt";
+	final static String TEMP_FOLDER_PATH3 = "testLsApplicationTempDir3";
 	final static String NOT_EXISTS_PATH = "testLsApplicationNotExistsTempDir";
+	final static String DIR_NOT_EXIST_MSG = "ls: Directory does not exist";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		//testLsApplicationTempDir - a.txt, b.txt
 		//testLsApplicationTempDir - b.txt
+		//testLsApplicationTempDir3
 		File theDir = new File(TEMP_FOLDER_PATH);
 		if (!theDir.exists()) {
 			try{
@@ -43,6 +46,14 @@ public class LsApplicationTest {
 				theDir2.mkdir();
 				File subFile = new File(TEMP_FOLDER_PATH2, TEMP_FILE_NAME2);
 				subFile.createNewFile();
+			} catch(SecurityException se){
+				se.printStackTrace();
+			}    
+		}
+		File theDir3 = new File(TEMP_FOLDER_PATH3);
+		if (!theDir3.exists()) {
+			try{
+				theDir3.mkdir();
 			} catch(SecurityException se){
 				se.printStackTrace();
 			}    
@@ -105,10 +116,39 @@ public class LsApplicationTest {
 			myLs.getListOfFileFromDirectory(NOT_EXISTS_PATH);
 			fail("Should throw exception for folder that does not exists.");
 		} catch (LsException e) {
-			assertEquals(e.getLocalizedMessage(), "ls: Directory does not exist");
+			assertEquals(e.getLocalizedMessage(), DIR_NOT_EXIST_MSG);
 		}
 	}
 
+	@Test
+	public void testDirectoryWithEmptyFile(){
+		LsApplication myLs = new LsApplication();
+		String[] str = {TEMP_FOLDER_PATH3};
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		try {
+			myLs.run(str, null, myOutputStream);
+			assertEquals("",myOutputStream.toString());
+		} catch (LsException e) {
+			fail("Not supposed to have exception for folder that exists.");
+		}
+	}
+	
+	@Test
+	public void testFileAsDirectory(){
+		LsApplication myLs = new LsApplication();
+		String temp = Environment.currentDirectory;
+		Environment.currentDirectory += File.separator + TEMP_FOLDER_PATH; 
+		String[] str = {TEMP_FILE_NAME};
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		try {
+			myLs.run(str, null, myOutputStream);
+			fail("Should throw directory not found exception.");
+		} catch (LsException e) {
+			assertEquals(e.getLocalizedMessage(), DIR_NOT_EXIST_MSG);
+		}
+		Environment.currentDirectory = temp;
+	}
+	
 	@Test
 	public void testTempDirectoryAsCurrentDirectory() {
 		LsApplication myLs = new LsApplication();
@@ -172,7 +212,7 @@ public class LsApplicationTest {
 			myLs.run(str, null, new ByteArrayOutputStream());
 			fail("Should throw directory not exist exception");
 		}catch(LsException le){
-			assertEquals(le.getLocalizedMessage(), "ls: Directory does not exist");
+			assertEquals(le.getLocalizedMessage(), DIR_NOT_EXIST_MSG);
 		}
 		Environment.currentDirectory = temp;
 
@@ -187,7 +227,7 @@ public class LsApplicationTest {
 			myLs.run(str, null, new ByteArrayOutputStream());
 			fail("Should throw directory not exist exception");
 		}catch(LsException le){
-			assertEquals(le.getLocalizedMessage(), "ls: Directory does not exist");
+			assertEquals(le.getLocalizedMessage(), DIR_NOT_EXIST_MSG);
 		}
 	}
 
@@ -207,6 +247,11 @@ public class LsApplicationTest {
 			File subFile = new File(TEMP_FOLDER_PATH2,TEMP_FILE_NAME2);
 			subFile.delete();
 			theDir2.delete();
+		}
+		
+		File theDir3 = new File(TEMP_FOLDER_PATH3);
+		if(theDir3.exists()){
+			theDir3.delete();
 		}
 	}
 }

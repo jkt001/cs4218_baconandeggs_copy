@@ -23,6 +23,19 @@ public class EchoApplicationTest {
 	}
 	
 	@Test
+	public void testEmptyArgument(){
+		EchoApplication myEcho = new EchoApplication();
+		try{
+			String str[] = {};
+			ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+			myEcho.run(str,null,myOutputStream);
+			assertEquals("\n",myOutputStream.toString());
+		}catch(EchoException ee){
+			fail("Should not throw echo exception.");
+		}
+	}
+	
+	@Test
 	public void testOneArgument(){
 		EchoApplication myEcho = new EchoApplication();
 		try{
