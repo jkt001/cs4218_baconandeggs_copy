@@ -22,6 +22,7 @@ public class EchoApplicationTest {
 		}
 	}
 	
+	@Test
 	public void testOneArgument(){
 		EchoApplication myEcho = new EchoApplication();
 		try{
@@ -34,6 +35,7 @@ public class EchoApplicationTest {
 		}
 	}
 	
+	@Test
 	public void testTwoArgument(){
 		EchoApplication myEcho = new EchoApplication();
 		try{

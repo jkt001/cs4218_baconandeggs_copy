@@ -17,19 +17,29 @@ public class LsApplication implements Application{
 		if (args == null){
 			throw new LsException("Null arguments");
 		}
-		if (args.length > 1) {
-			throw new LsException("Too many parameters");
+		if (stdout == null) {
+			throw new LsException("OutputStream not provided");
 		}
 		
-		String directory;
 		if(args.length == 0){
-			directory = Environment.currentDirectory;
+	        String str[] = getListOfFileFromDirectory(Environment.currentDirectory);
+			writeStringToOutputStream(str, stdout);
+		}else if(args.length == 1){
+			String str[] = getListOfFileFromDirectory(args[0]);
+			writeStringToOutputStream(str, stdout);
 		}else{
-			directory = args[0];
+			for(int i=0 ; i<args.length ; i++){
+				String str[] = {args[i]+File.separator+":"};
+				writeStringToOutputStream(str, stdout);
+		        str = getListOfFileFromDirectory(args[i]);
+				writeStringToOutputStream(str, stdout);
+				if(i<args.length-1){
+					str = new String[1];
+					str[0] = "";
+					writeStringToOutputStream(str, stdout);
+				}
+			}
 		}
-		
-        String str[] = getListOfFileFromDirectory(directory);
-		writeStringToOutputStream(str, stdout);
 	}
 	
 	protected String[] getListOfFileFromDirectory(String directory) throws LsException{
