@@ -16,9 +16,9 @@ import sg.edu.nus.comp.cs4218.impl.cmd.PipeCommand;
 
 public class ShellImpl implements Shell {
 
-	public static final String INVALID_CMD = "Invalid command.";
-	public static final String ERROR_REDIR_IN = "Error opening input stream for redirection.";
-	public static final String ERROR_REDIR_OUT = "Error opening output stream for redirection.";
+	static final String INVALID_CMD = "Invalid command.";
+	static final String ERROR_REDIR_IN = "Error opening input stream for redirection.";
+	static final String ERROR_REDIR_OUT = "Error opening output stream for redirection.";
 
 	@Override
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
@@ -39,7 +39,7 @@ public class ShellImpl implements Shell {
 	}
 
 	// process command
-	private void evaluateCall(String cmd, InputStream stdin, OutputStream stdout)
+	void evaluateCall(String cmd, InputStream stdin, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
 
 		String[] cmdTokensArray = splitString(cmd), argsArray;
@@ -70,7 +70,7 @@ public class ShellImpl implements Shell {
 		closeDir(inputStream, outputStream);
 	}
 
-	private void runApp(String app, String[] argsArray,
+	void runApp(String app, String[] argsArray,
 			InputStream inputStream, OutputStream outputStream)
 			throws AbstractApplicationException, ShellException {
 		Application absApp = null;
@@ -107,7 +107,7 @@ public class ShellImpl implements Shell {
 	}
 
 	// Open input stream for redirection
-	public InputStream openInputRedir(String inputStreamS)
+	InputStream openInputRedir(String inputStreamS)
 			throws ShellException {
 		File inputFile = new File(inputStreamS);
 		FileInputStream fInputStream = null;
@@ -120,7 +120,7 @@ public class ShellImpl implements Shell {
 	}
 
 	// Open output stream for redirection
-	public OutputStream openOutputRedir(String outputStreamS)
+	OutputStream openOutputRedir(String outputStreamS)
 			throws ShellException {
 		File outputFile = new File(outputStreamS);
 		FileOutputStream fOutputStream = null;
@@ -133,7 +133,7 @@ public class ShellImpl implements Shell {
 	}
 
 	// Closes streams from redir
-	private void closeDir(InputStream inputStream, OutputStream outputStream) throws ShellException{
+	void closeDir(InputStream inputStream, OutputStream outputStream) throws ShellException{
 		if(inputStream != System.in){
 			try {
 				inputStream.close();
@@ -151,7 +151,7 @@ public class ShellImpl implements Shell {
 	}
 	// Splits cmd line to app word, args and redirections, using the extraction
 	// methods above
-	public String[] splitString(String cmdStr) throws ShellException,
+	String[] splitString(String cmdStr) throws ShellException,
 			AbstractApplicationException {
 		int endIdx = 0;
 		String str = " " + cmdStr + " ";
@@ -175,7 +175,7 @@ public class ShellImpl implements Shell {
 	// -Single quoted: any char except \n, '
 	// -Back quotes in Double Quote for command substitution:
 	// "DQ rules `anything but \n` DQ rules"
-	public int extractArgs(String str, Vector<String> cmdVector, int endIdx)
+	int extractArgs(String str, Vector<String> cmdVector, int endIdx)
 			throws AbstractApplicationException, ShellException {
 		String patternDash = "[\\s]+(-[A-Za-z]*)[\\s]";
 		String patternUQ = "[\\s]+([^\\s\"'`\\n;|<>]*)[\\s]";
@@ -207,7 +207,6 @@ public class ShellImpl implements Shell {
 					}
 				}
 			}
-
 			// if a pattern is found
 			if (smallestPattIdx != -1) {
 				Pattern pattern = Pattern.compile(patterns[smallestPattIdx]);
@@ -226,7 +225,7 @@ public class ShellImpl implements Shell {
 		return newEndIdx;
 	}
 
-	public String[] processBQ(String... argsArray)
+	String[] processBQ(String... argsArray)
 			throws AbstractApplicationException, ShellException {
 		// echo "this is space `echo "nbsp"`"
 		// Back quoted: any char except \n,`
@@ -262,7 +261,7 @@ public class ShellImpl implements Shell {
 	// assume that input redir and output redir are always at the end of the command
 	// assume input stream first the output stream if both are in the args
 	// even if not found, put in empty strings
-	public int extractInputRedir(String str, Vector<String> cmdVector,
+	int extractInputRedir(String str, Vector<String> cmdVector,
 			int endIdx) throws ShellException {
 		int newEndIdx = -1;
 		Pattern inputRedirP = Pattern.compile("[\\s]+<[\\s]+(([^\\n\"`'<>]*))[\\s]");
@@ -279,7 +278,7 @@ public class ShellImpl implements Shell {
 	}
 
 	// Extraction of output direction from cmdLine
-	public int extractOutputRedir(String str, Vector<String> cmdVector,
+	int extractOutputRedir(String str, Vector<String> cmdVector,
 			int endIdx) throws ShellException {
 		int newEndIdx = -1;
 		Pattern outputRedirP = Pattern.compile("[\\s]+>[\\s]+(([^\\n\"`'<>]*))[\\s]");
@@ -296,7 +295,7 @@ public class ShellImpl implements Shell {
 	}
 
 	// TODO: Evaluation of pipe commands
-	private void evaluatePipe(String cmd) throws AbstractApplicationException,
+	void evaluatePipe(String cmd) throws AbstractApplicationException,
 			ShellException {
 		String[] pipeCmdArray = cmd.split("\\|");
 
