@@ -327,6 +327,9 @@ public class ShellImpl implements Shell {
 				if (readLine == null) {
 					break;
 				}
+				if(readLine.equals("")){
+					continue;
+				}
 				shell.parseAndEvaluate(readLine, System.out);
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
