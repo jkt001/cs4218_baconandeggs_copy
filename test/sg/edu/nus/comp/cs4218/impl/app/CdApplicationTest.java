@@ -1,9 +1,8 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static sg.edu.nus.comp.cs4218.OSCheck.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -13,10 +12,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.Environment;
@@ -25,7 +21,15 @@ import sg.edu.nus.comp.cs4218.impl.app.CdApplication;
 
 public class CdApplicationTest {
 	
-	private static final String MESSAGE_FAIL = "Not supposed to succeed.";
+	private static final String PARENT_DIR = "..";
+	private static final String WIN_GRANDPARENT = "..\\..";
+	private static final String UNIX_GRANDPARENT = "../..";
+
+	private static final String UNIX_VAR_DIR = "/var";
+	private static final String MAC_SYSTEM_DIR = "/System";
+	private static final String WIN_WINDOWS_DIR = "C:\\Windows";
+	private static final String UNIX_ROOT = "/";
+	private static final String WIN_DRIVE_ROOT = "C:\\";
 	
 	CdApplication app;
 
@@ -33,66 +37,14 @@ public class CdApplicationTest {
 	public void setUp() throws Exception {
 		app = new CdApplication();
 	}
-	
-	// Test null parameters
-	@Test
-	public void testNullParams() {
-		CdApplication app = new CdApplication();
-		String[] params = null;
-		try {
-			app.run(params, System.in, System.out);
-			fail(MESSAGE_FAIL);
-		} catch (CdException e) {
-			
-		}
-	}
-	
-	// Test zero parameters
-	@Test
-	public void testZeroParams() {
-		CdApplication app = new CdApplication();
-		String[] params = {};
-		try {
-			app.run(params, System.in, System.out);
-			fail(MESSAGE_FAIL);
-		} catch (CdException e) {
-			
-		}
-	}
-	
-	// Test one parameter, but null value
-	@Test
-	public void testOneNullParams() {
-		CdApplication app = new CdApplication();
-		String[] params = {null};
-		try {
-			app.run(params, System.in, System.out);
-			fail(MESSAGE_FAIL);
-		} catch (CdException e) {
-			
-		}
-	}
-	
-	// Test two parameters
-	@Test
-	public void testTwoParams() {
-		
-		String[] params = {"a", "b"};
-		try {
-			app.run(params, System.in, System.out);
-			fail(MESSAGE_FAIL);
-		} catch (CdException e) {
-			
-		}
-	}
 
 	// Test folder that exists, absolute path
 	@Test
 	public void testSimpleAbsolutePathThatExists() {
 		if (isWindows()) {
-			testCdExpectSuccess(getUserDir(), "C:\\", "C:\\");
+			testCdExpectSuccess(getUserDir(), WIN_DRIVE_ROOT, WIN_DRIVE_ROOT);
 		}else{
-			testCdExpectSuccess(getUserDir(), "/", "/");
+			testCdExpectSuccess(getUserDir(), UNIX_ROOT, UNIX_ROOT);
 		}
 	}
 	
@@ -100,11 +52,11 @@ public class CdApplicationTest {
 	@Test
 	public void testAbsolutePathWithOneFolderThatExists() {
 		if (isWindows()) {
-			testCdExpectSuccess(getUserDir(), "C:\\Windows", "C:\\Windows");
+			testCdExpectSuccess(getUserDir(), WIN_WINDOWS_DIR, WIN_WINDOWS_DIR);
 		}else if (isMac()){
-			testCdExpectSuccess(getUserDir(), "/System", "/System");
+			testCdExpectSuccess(getUserDir(), MAC_SYSTEM_DIR, MAC_SYSTEM_DIR);
 		}else{
-			testCdExpectSuccess(getUserDir(), "/var", "/var");
+			testCdExpectSuccess(getUserDir(), UNIX_VAR_DIR, UNIX_VAR_DIR);
 		}
 	}
 	
@@ -112,11 +64,11 @@ public class CdApplicationTest {
 	@Test
 	public void testAbsolutePathWithOneFolderWithExtraSlashThatExists() {
 		if (isWindows()) {
-			testCdExpectSuccess(getUserDir(), "C:\\Windows\\", "C:\\Windows");
+			testCdExpectSuccess(getUserDir(), WIN_WINDOWS_DIR+"\\", WIN_WINDOWS_DIR);
 		}else if (isMac()){
-			testCdExpectSuccess(getUserDir(), "/System/", "/System");
+			testCdExpectSuccess(getUserDir(), MAC_SYSTEM_DIR+"/", MAC_SYSTEM_DIR);
 		}else{
-			testCdExpectSuccess(getUserDir(), "/var/", "/var");
+			testCdExpectSuccess(getUserDir(), UNIX_VAR_DIR+"/", UNIX_VAR_DIR);
 		}
 	}
 	
@@ -134,11 +86,11 @@ public class CdApplicationTest {
 	@Test
 	public void testRelativePathToParent() {
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\Windows", "..", "C:\\");
+			testCdExpectSuccess(WIN_WINDOWS_DIR, PARENT_DIR, WIN_DRIVE_ROOT);
 		}else if (isMac()){
-			testCdExpectSuccess("/System/", "..", "/");
+			testCdExpectSuccess(MAC_SYSTEM_DIR, PARENT_DIR, UNIX_ROOT);
 		}else{
-			testCdExpectSuccess("/var/", "..", "/");
+			testCdExpectSuccess(UNIX_VAR_DIR, PARENT_DIR, UNIX_ROOT);
 		}
 	}
 	
@@ -146,11 +98,11 @@ public class CdApplicationTest {
 	@Test
 	public void testRelativePathUpTwoLevels() {
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\Windows\\System32", "..\\..", "C:\\");
+			testCdExpectSuccess(WIN_WINDOWS_DIR+"\\System32", WIN_GRANDPARENT, WIN_DRIVE_ROOT);
 		}else if (isMac()){
-			testCdExpectSuccess("/System/Library", "../..", "/");
+			testCdExpectSuccess(MAC_SYSTEM_DIR+"/Library", UNIX_GRANDPARENT, UNIX_ROOT);
 		}else{
-			testCdExpectSuccess("/var/tmp", "../..", "/");
+			testCdExpectSuccess(UNIX_VAR_DIR+"/tmp", UNIX_GRANDPARENT, UNIX_ROOT);
 		}
 	}
 	
@@ -158,11 +110,11 @@ public class CdApplicationTest {
 	@Test
 	public void testRelativePathToParentAndSubdirectory() {
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\Windows\\System32", "..\\System", "C:\\Windows\\System");
+			testCdExpectSuccess(WIN_WINDOWS_DIR+"\\System32", "..\\System", "C:\\Windows\\System");
 		}else if (isMac()){
-			testCdExpectSuccess("/System/Library", "../..", "/"); //TODO: Blaa blaa
+			testCdExpectSuccess(MAC_SYSTEM_DIR+"/Library", UNIX_GRANDPARENT, UNIX_ROOT); //TODO: Blaa blaa
 		}else{
-			testCdExpectSuccess("/var/tmp", "../log", "/var/log");
+			testCdExpectSuccess(UNIX_VAR_DIR+"/tmp", "../log", "/var/log");
 		}
 	}
 	
@@ -170,11 +122,11 @@ public class CdApplicationTest {
 	@Test
 	public void testRootRelativePath() {		
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\Windows", "\\", "C:\\");
+			testCdExpectSuccess(WIN_WINDOWS_DIR, "\\", WIN_DRIVE_ROOT);
 		}else if (isMac()){
-			testCdExpectSuccess("/System", "/", "/");
+			testCdExpectSuccess(MAC_SYSTEM_DIR, UNIX_ROOT, UNIX_ROOT);
 		}else{
-			testCdExpectSuccess("/var", "/", "/");
+			testCdExpectSuccess(UNIX_VAR_DIR, UNIX_ROOT, UNIX_ROOT);
 		}
 	}
 	
@@ -182,11 +134,11 @@ public class CdApplicationTest {
 	@Test
 	public void testRootRelativePathWithSubdirectory() {		
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\Windows", "\\Users", "C:\\Users");
+			testCdExpectSuccess(WIN_WINDOWS_DIR, "\\Users", "C:\\Users");
 		}else if (isMac()){
-			testCdExpectSuccess("/System", "/Applications", "/Applications");
+			testCdExpectSuccess(MAC_SYSTEM_DIR, "/Applications", "/Applications");
 		}else{
-			testCdExpectSuccess("/var", "/usr", "/usr");
+			testCdExpectSuccess(UNIX_VAR_DIR, "/usr", "/usr");
 		}
 	}
 	
@@ -194,9 +146,9 @@ public class CdApplicationTest {
 	@Test
 	public void testRelativePathBeyondRoot() {		
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\", "..", "C:\\");
+			testCdExpectSuccess(WIN_DRIVE_ROOT, PARENT_DIR, WIN_DRIVE_ROOT);
 		}else{
-			testCdExpectSuccess("/", "..", "/");
+			testCdExpectSuccess(UNIX_ROOT, PARENT_DIR, UNIX_ROOT);
 		}
 	}
 	
@@ -204,11 +156,11 @@ public class CdApplicationTest {
 	@Test
 	public void testRelativePathBeyondRootByGoingUpTwoLevels() {
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\Windows", "..\\..", "C:\\");
+			testCdExpectSuccess(WIN_WINDOWS_DIR, WIN_GRANDPARENT, WIN_DRIVE_ROOT);
 		}else if (isMac()){
-			testCdExpectSuccess("/System", "../..", "/");
+			testCdExpectSuccess(MAC_SYSTEM_DIR, UNIX_GRANDPARENT, UNIX_ROOT);
 		}else{
-			testCdExpectSuccess("/var", "../..", "/");
+			testCdExpectSuccess(UNIX_VAR_DIR, UNIX_GRANDPARENT, UNIX_ROOT);
 		}
 	}
 	
@@ -216,11 +168,11 @@ public class CdApplicationTest {
 	@Test
 	public void testRelativePathBeyondRootByRootAndParent() {
 		if (isWindows()) {
-			testCdExpectSuccess("C:\\Windows", "\\..", "C:\\");
+			testCdExpectSuccess(WIN_WINDOWS_DIR, "\\..", WIN_DRIVE_ROOT);
 		}else if (isMac()){
-			testCdExpectSuccess("/System", "/..", "/");
+			testCdExpectSuccess(MAC_SYSTEM_DIR, "/..", UNIX_ROOT);
 		}else{
-			testCdExpectSuccess("/var", "/..", "/");
+			testCdExpectSuccess(UNIX_VAR_DIR, "/..", UNIX_ROOT);
 		}
 	}
 	
@@ -235,7 +187,7 @@ public class CdApplicationTest {
 			} catch (CdException e) {
 				System.out.println(e.getMessage());
 			}
-			testCdExpectFailure("C:\\", "C:\\System Volume Information");
+			testCdExpectFailure(WIN_DRIVE_ROOT, "C:\\System Volume Information");
 		}else{
 			// Create directory with no permissions to CD into
 			// in POSIX operating systems this is denoted by the
@@ -276,7 +228,7 @@ public class CdApplicationTest {
 			} catch (CdException e) {
 				System.out.println(e.getMessage());
 			}
-			testCdExpectSuccess("C:\\", "C:\\$RECYCLE.BIN", "C:\\$RECYCLE.BIN");
+			testCdExpectSuccess(WIN_DRIVE_ROOT, "C:\\$RECYCLE.BIN", "C:\\$RECYCLE.BIN");
 		}else{
 			// Create directory with no permissions to list contents of
 			// in POSIX operating systems this is denoted by the lack of 
@@ -335,27 +287,6 @@ public class CdApplicationTest {
 		}
 		
 		assertEquals(expectedDirectory, Environment.currentDirectory);
-	}
-	
-	public boolean isWindows(){
-		if (System.getProperty("os.name").startsWith("Windows")) {
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean isMac(){
-		if (System.getProperty("os.name").startsWith("Mac OS X")) {
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean isLinux(){
-		if (System.getProperty("os.name").startsWith("Linux")) {
-			return true;
-		}
-		return false;
 	}
 	
 	private String getUserDir() {

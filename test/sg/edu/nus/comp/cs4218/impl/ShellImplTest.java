@@ -641,4 +641,38 @@ public class ShellImplTest {
 		String[] argsArray = {"echo","this is space `echo \"nbsp`","",""};
 		argsArray = shell.processBQ(argsArray);
 	}
+	
+	@Test
+	public void testProcessgjsdflkdsfdsf()
+	{
+		try {
+			shell.parseAndEvaluate("echo `find -name *;cat hello.txt`", outputStream);
+		} catch (AbstractApplicationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ShellException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+		try {
+			shell.parseAndEvaluate("find -name \"asdf;asdf\"", outputStream);
+		} catch (AbstractApplicationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ShellException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+		try {
+			shell.parseAndEvaluate("echo `find . -name *.java|wc -m` | cat", outputStream);
+		} catch (AbstractApplicationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ShellException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
 }
