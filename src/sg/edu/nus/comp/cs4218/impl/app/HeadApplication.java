@@ -1,7 +1,9 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,18 +19,22 @@ public class HeadApplication implements Application {
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws HeadException {
 
-		if (args == null || args.length == 0) {
+		// head
+		if (args == null || args.length == 0 || args.length == 2) {
+
 			if (stdin == null || stdout == null) {
 				throw new HeadException("Null Pointer Exception");
 			}
-			try {
-				int intCount;
-				while ((intCount = stdin.read()) != -1) {
-					stdout.write(intCount);
-				}
-			} catch (Exception e) {
-				throw new HeadException("Exception Caught");
+			int numLinesToRead = 0;
+
+			if (args == null || args.length == 0) {
+				numLinesToRead = 10;
+			} else if (args.length == 2 && args[0].equals("-n")) {
+				numLinesToRead = checkNumberOfLinesInput(args[1]);
+			} else {
+				throw new HeadException("Invalid Head Command");
 			}
+			readFromStdinAndWriteToStdout(stdout, numLinesToRead, stdin);
 		} else {
 			int numLines;
 			if (args.length == 3 || args.length == 1) {
@@ -49,10 +55,27 @@ public class HeadApplication implements Application {
 				isFileReadable = checkIfFileIsReadable(filePath);
 
 				if (isFileReadable) {
-					readAndWriteToStdout(stdout, numLines, filePath);
+					readFronFileAndWriteToStdout(stdout, numLines, filePath);
 				}
 			} else {
 				throw new HeadException("Invalid Head Command");
+			}
+		}
+	}
+
+	private void readFromStdinAndWriteToStdout(OutputStream stdout,
+			int numLinesToRead, InputStream stdin) throws HeadException {
+		BufferedReader buffReader = new BufferedReader(new InputStreamReader(
+				stdin));
+		int numRead = 0;
+		while (numLinesToRead != numRead) {
+			try {
+				String inputString = buffReader.readLine();
+				stdout.write(inputString.getBytes("UTF-8"));
+				stdout.write("\n".getBytes("UTF-8"));
+				numRead++;
+			} catch (IOException e) {
+				throw new HeadException("IO Exception");
 			}
 		}
 	}
@@ -73,7 +96,7 @@ public class HeadApplication implements Application {
 		return numLines;
 	}
 
-	private void readAndWriteToStdout(OutputStream stdout,
+	private void readFronFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws HeadException {
 		String encoding = "UTF-8";
 		byte[] byteFileArray;
