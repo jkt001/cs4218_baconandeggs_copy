@@ -8,6 +8,7 @@ import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.CdException;
+import sg.edu.nus.comp.cs4218.exception.FindException;
 import sg.edu.nus.comp.cs4218.exception.PwdException;
 
 public class PwdApplication implements Application {
@@ -15,6 +16,10 @@ public class PwdApplication implements Application {
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws AbstractApplicationException {
+		
+		if (stdin == null || stdout == null) {
+			throw new PwdException("Null input/output stream");
+		}
 
 		if (args != null && args.length > 0) {
 			throw new PwdException("Too many parameters");
@@ -24,7 +29,7 @@ public class PwdApplication implements Application {
 			stdout.write(Environment.currentDirectory.getBytes());
 			stdout.write(System.getProperty("line.separator").getBytes());
 		} catch (IOException e) {
-			throw new PwdException("Unable to print working directory");
+			throw new PwdException("Unable to print working directory " + e);
 		}
 	}
 
