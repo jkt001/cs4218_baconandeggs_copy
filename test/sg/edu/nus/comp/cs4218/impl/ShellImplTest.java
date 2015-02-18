@@ -133,6 +133,16 @@ public class ShellImplTest {
 	}
 	
 	@Test
+	public void testPEEchoWithSemiColon() {
+		String readLine = "echo \"" + TEST_STR+"; "+TEST_STR+"\"";
+		try {
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(VALID_CMD_NO_EXP);
+		}
+	}
+	
+	@Test
 	public void testPEEchoWithOutputDir() {
 		String readLine = "echo " + TEST_STR + " > " +TEST_FILE_NAME;
 		try {
@@ -237,7 +247,7 @@ public class ShellImplTest {
 		inputLine = "-token1 -token2 -token3";
 		try {
 			shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
-		} catch (AbstractApplicationException | ShellException e) {
+		} catch (ShellException e) {
 			fail(VALID_CMD_NO_EXP);
 		}
 		String[] resultStrArr = { "-token1", "-token2", "-token3" };
@@ -250,13 +260,15 @@ public class ShellImplTest {
 	public void testSplitStringDash(){
 		inputLine = "-token1 -token2 -token3";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[] { "-token1", "-token2",
+							"-token3", "", "" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "-token1", "-token2",
-				"-token3", "", "" });
 	}
 
 	@Test
@@ -264,7 +276,7 @@ public class ShellImplTest {
 		inputLine = "token1 dir/token-2.txt token3";
 		try {
 			shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
-		} catch (AbstractApplicationException | ShellException e) {
+		} catch (ShellException e) {
 			fail(VALID_CMD_NO_EXP);
 		}
 		String[] resultStrArr = { "token1", "dir/token-2.txt", "token3" };
@@ -277,13 +289,15 @@ public class ShellImplTest {
 	public void testSplitStringUnquoted(){
 		inputLine = "token1 dir/token-2.txt token3";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[]{ "token1", "dir/token-2.txt",
+					"token3", "", "" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
-				"token3", "", "" });
 	}
 
 	@Test
@@ -291,7 +305,7 @@ public class ShellImplTest {
 		inputLine = "'token1' 'token2' 'token3'";
 		try {
 			shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
-		} catch (AbstractApplicationException | ShellException e) {
+		} catch (ShellException e) {
 			fail(VALID_CMD_NO_EXP);
 		}
 		String[] resultStrArr = { "token1", "token2", "token3" };
@@ -304,13 +318,15 @@ public class ShellImplTest {
 	public void testSplitStringSingleQuoted(){
 		inputLine = "\'token1\' \'dir/token-2.txt\' \'token3 token3\'";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[]{"token1", "dir/token-2.txt",
+					"token3 token3", "", "" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
-				"token3 token3", "", "" });
 	}
 
 	@Test
@@ -318,7 +334,7 @@ public class ShellImplTest {
 		inputLine = "\"token1\" \"token2\" \"token3\"";
 		try {
 			shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
-		} catch (AbstractApplicationException | ShellException e) {
+		} catch (ShellException e) {
 			fail(VALID_CMD_NO_EXP);
 		}
 		String[] resultStrArr = { "token1", "token2", "token3" };
@@ -331,13 +347,15 @@ public class ShellImplTest {
 	public void testSplitStringDoubleQuoted(){
 		inputLine = "\"token1\" \"dir/token-2.txt\" \"token3 token3\"";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[]{"token1", "dir/token-2.txt",
+					"token3 token3", "", "" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
-				"token3 token3", "", "" });
 	}
 
 	@Test
@@ -345,7 +363,7 @@ public class ShellImplTest {
 		inputLine = "token1 \"token2 `token2.2` token2.3\" token3";
 		try {
 			shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
-		} catch (AbstractApplicationException | ShellException e) {
+		} catch (ShellException e) {
 			fail(VALID_CMD_NO_EXP);
 		}
 		String[] resultStrArr = { "token1", "token2 `token2.2` token2.3",
@@ -359,13 +377,16 @@ public class ShellImplTest {
 	public void testSplitStringBackQuotesinDQ(){
 		inputLine = "token1 \"token2 `token2.2` token2.3\" token3";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[]{"token1",
+					"token2 `token2.2` token2.3", "token3", "", "" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "token1",
-				"token2 `token2.2` token2.3", "token3", "", "" });
 	}
 
 	// Testing for extraction input & output redir streams
@@ -387,13 +408,16 @@ public class ShellImplTest {
 	public void testSplitStringInputRedir(){
 		inputLine = "token1 dir/token-2.txt token3 < inputDir";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[]{ "token1", "dir/token-2.txt",
+					"token3", "inputDir", "" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
-				"token3", "inputDir", "" });
 	}
 
 	@Test
@@ -414,13 +438,16 @@ public class ShellImplTest {
 	public void testSplitStringOutputRedir(){
 		inputLine = "token1 dir/token-2.txt token3 > outputDir";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[] {"token1", "dir/token-2.txt",
+					"token3", "", "outputDir" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
-				"token3", "", "outputDir" });
 	}
 	
 	// Testing for opening of input & output redir streams
@@ -501,14 +528,16 @@ public class ShellImplTest {
 	public void testSplitStringMultipleTypesTest(){
 		inputLine = "token1 \"dir/token-2.txt\" \'token3\' -token4 \"token5 `token5.2`\" < inputDir.txt > dir/outputDir.txt";
 		String strArray[] = new String[0];
-		try {
-			strArray = shell.splitString(inputLine);
-		} catch (ShellException | AbstractApplicationException e) {
+		Vector<String> cmdVector = new Vector<String>();
+		if(shell.splitString(inputLine, cmdVector)){
+			strArray = cmdVector.toArray(new String[cmdVector.size()]);
+			assertArrayEquals(strArray, new String[]{"token1", "dir/token-2.txt",
+					"token3", "-token4", "token5 `token5.2`", "inputDir.txt",
+					"dir/outputDir.txt" });
+		}
+		else{
 			fail(VALID_CMD_NO_EXP);
 		}
-		assertArrayEquals(strArray, new String[] { "token1", "dir/token-2.txt",
-				"token3", "-token4", "token5 `token5.2`", "inputDir.txt",
-				"dir/outputDir.txt" });
 	}
 
 	@Test
@@ -516,7 +545,7 @@ public class ShellImplTest {
 		inputLine = "token1 \"dir/token-2.txt\" \'token3\' -token4 \"token5 `token5.2`\"";
 		try {
 			shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
-		} catch (AbstractApplicationException | ShellException e) {
+		} catch (ShellException e) {
 			fail(VALID_CMD_NO_EXP);
 		}
 		String[] resultStrArr = { "token1", "dir/token-2.txt",
@@ -527,11 +556,11 @@ public class ShellImplTest {
 	}
 	
 	// Testing splitString for throwing of exceptions
-	@Test(expected = ShellException.class)
+	@Test
 	public void testSplitStringInvalidDoubleQuoted() throws ShellException,
 			AbstractApplicationException {
 		inputLine = "token1 \"invalid double quotes\"\" token3";
-		shell.splitString(inputLine);
+		assertFalse(shell.splitString(inputLine, new Vector<String>()));
 	}
 	
 	@Test(expected = ShellException.class)
@@ -541,11 +570,10 @@ public class ShellImplTest {
 		shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
 	}
 
-	@Test(expected = ShellException.class)
+	@Test
 	public void testSplitStringInvalidSingleQuoted() throws ShellException,
 			AbstractApplicationException {
 		inputLine = "token1 \'invalid single quotes\'\' token3";
-		shell.splitString(inputLine);
 	}
 	
 	@Test(expected = ShellException.class)
@@ -555,11 +583,11 @@ public class ShellImplTest {
 		shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
 	}
 
-	@Test(expected = ShellException.class)
+	@Test
 	public void testSplitStringInvalidQuoted() throws ShellException,
 			AbstractApplicationException {
 		inputLine = "token1 \"invalid token' token3";
-		shell.splitString(inputLine);
+		assertFalse(shell.splitString(inputLine, new Vector<String>()));
 	}
 	
 	@Test(expected = ShellException.class)
@@ -571,11 +599,11 @@ public class ShellImplTest {
 
 	//testing splitString for invalid symbols
 	// string containing newlines, semicolons “;”, “|”, “<” and “>”.
-	@Test(expected = ShellException.class)
+	@Test
 	public void testSplitStringInvalidSemicolon() throws ShellException,
 			AbstractApplicationException {
 		inputLine = "token1 token2; token3";
-		shell.splitString(inputLine);
+		assertFalse(shell.splitString(inputLine, cmdVector));
 	}
 	
 	@Test(expected = ShellException.class)
@@ -585,18 +613,18 @@ public class ShellImplTest {
 		shell.extractArgs(" " + inputLine + " ", cmdVector, 0);
 	}
 
-	@Test(expected = ShellException.class)
+	@Test
 	public void testSplitStringinvalidDivider() throws ShellException,
 			AbstractApplicationException {
 		inputLine = "token1 token2|token3";
-		shell.splitString(inputLine);
+		assertFalse(shell.splitString(inputLine, new Vector<String>()));
 	}
 	
-	@Test(expected = ShellException.class)
+	@Test
 	public void testSplitStringInvalidLeftAngleBracket() throws ShellException,
 			AbstractApplicationException {
 		inputLine = "token1 token2< token3";
-		shell.splitString(inputLine);
+		assertFalse(shell.splitString(inputLine, new Vector<String>()));
 	}
 	
 	@Test(expected = ShellException.class)
@@ -607,11 +635,11 @@ public class ShellImplTest {
 	}
 
 
-	@Test(expected = ShellException.class)
+	@Test
 	public void testSplitStringInvalidRightAngleBracket() throws ShellException,
 			AbstractApplicationException {
 		inputLine = "token1 token2> token3";
-		shell.splitString(inputLine);
+		assertFalse(shell.splitString(inputLine, new Vector<String>()));
 	}
 	
 	@Test(expected = ShellException.class)
@@ -638,7 +666,7 @@ public class ShellImplTest {
 	@Test(expected = ShellException.class)
 	public void testProcessInvalidBQ() throws AbstractApplicationException, ShellException
 	{
-		String[] argsArray = {"echo","this is space `echo \"nbsp`","",""};
+		String[] argsArray = {"echo","this is wrong because `echo \"missing2ndDoubleQuote`","",""};
 		argsArray = shell.processBQ(argsArray);
 	}
 	
