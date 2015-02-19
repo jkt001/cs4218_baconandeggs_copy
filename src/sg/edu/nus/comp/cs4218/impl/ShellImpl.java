@@ -5,98 +5,96 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.Shell;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
+import sg.edu.nus.comp.cs4218.impl.app.CatApplication;
+import sg.edu.nus.comp.cs4218.impl.app.CdApplication;
+import sg.edu.nus.comp.cs4218.impl.app.EchoApplication;
+import sg.edu.nus.comp.cs4218.impl.app.FindApplication;
+import sg.edu.nus.comp.cs4218.impl.app.HeadApplication;
+import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
+import sg.edu.nus.comp.cs4218.impl.app.PwdApplication;
+import sg.edu.nus.comp.cs4218.impl.app.TailApplication;
+import sg.edu.nus.comp.cs4218.impl.app.WcApplication;
 import sg.edu.nus.comp.cs4218.impl.cmd.CallCommand;
+import sg.edu.nus.comp.cs4218.impl.cmd.PipeCommand;
+import sg.edu.nus.comp.cs4218.impl.cmd.SeqCommand;
 
 public class ShellImpl implements Shell {
 
 	static final String INVALID_CMD = "Invalid command.";
-	static final String ERROR_REDIR_IN = "Error opening input stream for redirection.";
-	static final String ERROR_REDIR_OUT = "Error opening output stream for redirection.";
 
 	@Override
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
 
-		// searches for semicolon
-		int indexSemicolon = -1, strStartIdx = 0, searchStartIdx = 0;
-		String rightCmd = cmdline;
-		Boolean eval = false;
-		//TODO: suport pipe
-		//TODO: to move this to a seq command?
-		do {
-			eval = false;
-			rightCmd = rightCmd.substring(strStartIdx);
-			indexSemicolon = rightCmd.indexOf(';', searchStartIdx);
-			String subCmd = "";
-			if (indexSemicolon > -1) {
-				subCmd = rightCmd.substring(0, indexSemicolon);
-			} else {
-				subCmd = rightCmd;
-			}
-			Vector<String> cmdVector = new Vector<String>();
-			if (splitString(subCmd, cmdVector)) {
-				evaluateCall(cmdVector, System.in, stdout);
-				strStartIdx = indexSemicolon + 1;
-				searchStartIdx = 0;
-				eval = true;
-			} else {
-				strStartIdx = 0;
-				searchStartIdx = indexSemicolon + 1;
-				eval = false;
-			}
-		} while (indexSemicolon != -1
-				&& indexSemicolon != rightCmd.length() - 1);
-
-		if (!eval) {
+		SeqCommand seqCmd = new SeqCommand(cmdline);
+		try {
+			seqCmd.evaluate(System.in, stdout);
+		} catch (Exception e) {
 			throw new ShellException(INVALID_CMD);
 		}
+
+		runCmdline(seqCmd, stdout);
 	}
 
-	// process command
-	private void evaluateCall(Vector<String> cmdVector, InputStream stdin,
-			OutputStream stdout) throws AbstractApplicationException,
-			ShellException {
+	void runCmdline(SeqCommand seqCommand, OutputStream stdout)
+			throws AbstractApplicationException, ShellException {
 
-		String[] cmdTokensArray = cmdVector
-				.toArray(new String[cmdVector.size()]), argsArray;
-		String app = cmdTokensArray[0];
-		int nTokens = cmdTokensArray.length;
-		InputStream inputStream = stdin;
+		Vector<PipeCommand> pipeCommandList = seqCommand.getPipeCommandList();
+		InputStream inputStream = System.in;
 		OutputStream outputStream = stdout;
 
-		// process inputRedir and/or outputRedir
-		if (nTokens >= 3) { // last 2 for inputRedir & >outputRedir
-			if (!cmdTokensArray[nTokens - 2].equals("")) {
-				String inputStreamS = cmdTokensArray[nTokens - 2].trim();
-				inputStream = openInputRedir(inputStreamS);
+		for (int i = 0; i < pipeCommandList.size(); i++) {
+			PipeCommand pipeCommand = pipeCommandList.get(i);
+			Vector<CallCommand> callCommandList = pipeCommand
+					.getCallCommandList();
+			for (int j = 0; j < callCommandList.size(); j++) {
+				CallCommand callCommand = callCommandList.get(j);
+
+				String app = callCommand.getApp();
+				String[] argsArray = callCommand.getArgs();
+				String inputStreamS = callCommand.getInputStreamS();
+				String outputStreamS = callCommand.getOutputStreamS();
+
+				argsArray = processBQ(argsArray);
+
+				if (!("").equals(inputStreamS)) {
+					inputStream = openInputRedir(inputStreamS);
+				}
+				if (("").equals(outputStreamS)) {
+					outputStream = new ByteArrayOutputStream();
+				} else {
+					outputStream = openOutputRedir(outputStreamS);
+				}
+
+				runApp(app, argsArray, inputStream, outputStream);
+
+				closeDir(inputStream, outputStream);
 			}
-			if (!cmdTokensArray[nTokens - 1].equals("")) {
-				String outputStreamS = cmdTokensArray[nTokens - 1].trim();
-				outputStream = openOutputRedir(outputStreamS);
+			// pipe outputStream to inputStream
+			if (i != pipeCommandList.size() - 1) {// not last
+				inputStream = new ByteArrayInputStream(
+						((ByteArrayOutputStream) outputStream).toByteArray());
+				outputStream = new ByteArrayOutputStream();
 			}
-			argsArray = Arrays.copyOfRange(cmdTokensArray, 1,
-					cmdTokensArray.length - 2);
-		} else {
-			argsArray = new String[0];
 		}
-
-		// process backquotes
-		argsArray = processBQ(argsArray);
-		runApp(app, argsArray, inputStream, outputStream);
-		closeDir(inputStream, outputStream);
+		
+		//write content of last outputstream to stdout
+		if (!(outputStream instanceof FileOutputStream)) {
+			try {
+				stdout.write(((ByteArrayOutputStream) outputStream)
+						.toByteArray());
+			} catch (IOException e) {
+				throw new ShellException("Error in writing to stdout");
+			}
+		}
 	}
 
-	private void runApp(String app, String[] argsArray,
-			InputStream inputStream, OutputStream outputStream)
-			throws AbstractApplicationException, ShellException {
-		(new CallCommand(app, argsArray)).evaluate(inputStream, outputStream);
-	}
-
-	// Open input stream for redirection
+	// Open fileinputstream for redirection
 	InputStream openInputRedir(String inputStreamS) throws ShellException {
 		File inputFile = new File(inputStreamS);
 		FileInputStream fInputStream = null;
@@ -108,7 +106,7 @@ public class ShellImpl implements Shell {
 		return fInputStream;
 	}
 
-	// Open output stream for redirection
+	// Open fileoutputstream for redirection
 	OutputStream openOutputRedir(String outputStreamS) throws ShellException {
 		File outputFile = new File(outputStreamS);
 		FileOutputStream fOutputStream = null;
@@ -120,7 +118,7 @@ public class ShellImpl implements Shell {
 		return fOutputStream;
 	}
 
-	// Closes streams from redir
+	// Closes streams from redirection
 	private void closeDir(InputStream inputStream, OutputStream outputStream)
 			throws ShellException {
 		if (inputStream != System.in) {
@@ -139,81 +137,38 @@ public class ShellImpl implements Shell {
 		}
 	}
 
-	// Splits cmd line to app word, args and redirections, using the extraction
-	// methods above
-	Boolean splitString(String cmdStr, Vector<String> cmdVector) {
-		int endIdx = 0;
-		String str = " " + cmdStr + " ";
-		// Vector<String> cmdVector = new Vector<String>();
-
-		// endIdx = extractAppWord(str, cmdVector, endIdx);
-		try {
-			endIdx = extractArgs(str, cmdVector, endIdx);
-			endIdx = extractInputRedir(str, cmdVector, endIdx);
-			endIdx = extractOutputRedir(str, cmdVector, endIdx);
-		} catch (ShellException e) {
-			return false;
+	private void runApp(String app, String[] argsArray,
+			InputStream inputStream, OutputStream outputStream)
+			throws AbstractApplicationException, ShellException {
+		Application absApp = null;
+		if (("pwd".equals(app))) {
+			absApp = new PwdApplication();
+		} else if (("cd").equals(app)) {// cd PATH
+			absApp = new CdApplication();
+		} else if (("ls").equals(app)) {// ls
+			absApp = new LsApplication();
+		} else if (("cat").equals(app)) {// cat [FILE]...
+			absApp = new CatApplication();
+		} else if (("echo").equals(app)) {// echo [args]...
+			absApp = new EchoApplication();
+		} else if (("head").equals(app)) {// head [OPTIONS] [FILE]
+			absApp = new HeadApplication();
+		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
+			absApp = new TailApplication();
+		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
+			throw new ShellException("Grep not supported yet.");
+			// absApp = new GrepApplication();
+		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
+			throw new ShellException("Sed not supported yet.");
+			// absApp = new SedApplication();
+		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
+			absApp = new FindApplication();
+		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
+			absApp = new WcApplication();
+		} else { // invalid command
+			throw new ShellException(INVALID_CMD);
 		}
-		// System.out.println(cmdVector.toString());
-		if (endIdx != cmdStr.length() + 1) {
-			return false;
-		}
-		// return cmdVector.toArray(new String[cmdVector.size()]);
-		return true;
-	}
-
-	// Extraction of args from cmd line
-	// -Unquoted: any char except for whitespace characters, quotes,
-	// newlines, semicolons “;”, “|”, “<” and “>”.
-	// -Double quoted: any char except \n, ", `
-	// -Single quoted: any char except \n, '
-	// -Back quotes in Double Quote for command substitution:
-	// "DQ rules `anything but \n` DQ rules"
-	int extractArgs(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		String patternDash = "[\\s]+(-[A-Za-z]*)[\\s]";
-		String patternUQ = "[\\s]+([^\\s\"'`\\n;|<>]*)[\\s]";
-		String patternDQ = "[\\s]+\"([^\\n\"`]*)\"[\\s]";
-		String patternSQ = "[\\s]+\'([^\\n']*)\'[\\s]";
-		String patternBQ = "[\\s]+(`[^\\n`]*`)[\\s]";
-		String patternBQinDQ = "[\\s]+\"([^\\n\"`]*`[^\\n]*`[^\\n\"`]*)\"[\\s]";
-		String[] patterns = { patternDash, patternUQ, patternDQ, patternSQ,
-				patternBQ, patternBQinDQ };
-		String substring;
-		int newStartIdx = endIdx, smallestStartIdx, smallestPattIdx, newEndIdx = endIdx;
-		do {
-			substring = str.substring(newEndIdx);
-			smallestStartIdx = -1;
-			smallestPattIdx = -1;
-			if (substring.trim().startsWith("<")
-					|| substring.trim().startsWith(">")) {
-				break;
-			}
-			for (int i = 0; i < patterns.length; i++) {
-				Pattern pattern = Pattern.compile(patterns[i]);
-				Matcher matcher = pattern.matcher(substring);
-				if (matcher.find()
-						&& (matcher.start() < smallestStartIdx || smallestStartIdx == -1)) {
-					smallestPattIdx = i;
-					smallestStartIdx = matcher.start();
-
-				}
-			}
-			if (smallestPattIdx != -1) { // if a pattern is found
-				Pattern pattern = Pattern.compile(patterns[smallestPattIdx]);
-				Matcher matcher = pattern.matcher(str.substring(newEndIdx));
-				if (matcher.find()) {
-					String matchedStr = matcher.group(1);
-					newStartIdx = newEndIdx + matcher.start();
-					if (newStartIdx != newEndIdx) {
-						throw new ShellException(INVALID_CMD);
-					} // check if there's any invalid token not detected
-					cmdVector.add(matchedStr);
-					newEndIdx = newEndIdx + matcher.end() - 1;
-				}
-			}
-		} while (smallestPattIdx != -1);
-		return newEndIdx;
+		absApp.run(argsArray, inputStream, outputStream);
 	}
 
 	String[] processBQ(String... argsArray)
@@ -231,6 +186,7 @@ public class ShellImpl implements Shell {
 				String bqStr = matcherBQ.group(1);
 				// cmdVector.add(bqStr.trim());
 				// process back quote
+				System.out.println("backquote" + bqStr);
 				OutputStream bqOutputStream = new ByteArrayOutputStream();
 				parseAndEvaluate(bqStr, bqOutputStream);
 
@@ -238,6 +194,7 @@ public class ShellImpl implements Shell {
 				byte[] byteArray = outByte.toByteArray();
 				String bqResult = new String(byteArray).replace("\n", "")
 						.replace("\r", "");
+
 				// replace substring of back quote with result
 				String replacedStr = argsArray[i].replace("`" + bqStr + "`",
 						bqResult);
@@ -247,62 +204,6 @@ public class ShellImpl implements Shell {
 		return resultArr;
 	}
 
-	// Extraction of input direction from cmdLine
-	// two slots at end of cmdVector reserved for <inputredir and >outredir
-	// assume that input redir and output redir are always at the end of the
-	// command
-	// assume input stream first the output stream if both are in the args
-	// even if not found, put in empty strings
-	int extractInputRedir(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern inputRedirP = Pattern
-				.compile("[\\s]+<[\\s]+(([^\\n\"`'<>]*))[\\s]");
-		Matcher inputRedirM = inputRedirP.matcher(str.substring(endIdx));
-		String inputRedirS = "";
-		if (inputRedirM.find()) {
-			inputRedirS = inputRedirM.group(1);
-			newEndIdx = endIdx + inputRedirM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
-		}
-		cmdVector.add(inputRedirS);
-		return newEndIdx;
-	}
-
-	// Extraction of output direction from cmdLine
-	int extractOutputRedir(String str, Vector<String> cmdVector, int endIdx)
-			throws ShellException {
-		int newEndIdx = -1;
-		Pattern outputRedirP = Pattern
-				.compile("[\\s]+>[\\s]+(([^\\n\"`'<>]*))[\\s]");
-		Matcher outputRedirM = outputRedirP.matcher(str.substring(endIdx));
-		String outputRedirS = "";
-		if (outputRedirM.find()) {
-			outputRedirS = outputRedirM.group(1);
-			newEndIdx = endIdx + outputRedirM.end() - 1;
-		} else {
-			newEndIdx = endIdx;
-		}
-		cmdVector.add(outputRedirS);
-		return newEndIdx;
-	}
-
-	// TODO: Evaluation of pipe commands
-	/*
-	 * private void evaluatePipe(String cmd) throws
-	 * AbstractApplicationException, ShellException { String[] pipeCmdArray =
-	 * cmd.split("\\|");
-	 * 
-	 * byte[] buffer = new byte[1024]; InputStream stdin = new
-	 * ByteArrayInputStream(buffer); OutputStream stdout = new
-	 * ByteArrayOutputStream();
-	 * 
-	 * for (int i = 0; i < pipeCmdArray.length; i++) {
-	 * evaluateCall(pipeCmdArray[i].trim(), stdin, stdout); stdin = new
-	 * ByteArrayInputStream( ((ByteArrayOutputStream) stdout).toByteArray());
-	 * stdout = new ByteArrayOutputStream(); } }
-	 */
 	public static void main(String... args) {
 		ShellImpl shell = new ShellImpl();
 
