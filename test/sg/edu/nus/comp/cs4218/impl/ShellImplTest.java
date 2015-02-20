@@ -58,6 +58,7 @@ public class ShellImplTest {
 		File file = new File(fileName);
 		file.setWritable(true);
 		file.delete();
+		System.out.println("remove file");
 	}
 
 	public static void createTestFolder(String folderName) throws IOException {

@@ -26,14 +26,12 @@ public class SeqCommand implements Command {
 	@Override
 	public void evaluate(InputStream stdin, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-
 		// searches for divider
 		int indexDivider = -1, strStartIdx = 0, searchStartIdx = 0;
 		String rightCmd = cmdline;
 		Boolean eval = false;
-		InputStream inputStream = stdin;
-		OutputStream outputStream = new ByteArrayOutputStream();
-
+		PipeCommand pipeCommand;
+		
 		do {
 			eval = false;
 			rightCmd = rightCmd.substring(strStartIdx);
@@ -45,11 +43,11 @@ public class SeqCommand implements Command {
 				subCmd = rightCmd;
 			}
 
-			PipeCommand pipeCommand = new PipeCommand(subCmd);
+			pipeCommand = new PipeCommand(subCmd);
 
 			Boolean isValid = true;
 			try {
-				pipeCommand.evaluate(inputStream, outputStream);
+				pipeCommand.evaluate(stdin, stdout);
 			} catch (Exception e) {
 				isValid = false;
 			}
@@ -64,15 +62,11 @@ public class SeqCommand implements Command {
 				searchStartIdx = indexDivider + 1;
 				eval = false;
 			}
-
-			// pipe outputStream to inputStream
-			inputStream = new ByteArrayInputStream(
-					((ByteArrayOutputStream) outputStream).toByteArray());
-			outputStream = new ByteArrayOutputStream();
 		} while (indexDivider != -1 && indexDivider != rightCmd.length() - 1);
 		
 		if (!eval) {
-			throw new ShellException(INVALID_CMD);
+			pipeCommandList.add(pipeCommand);
+			//throw new ShellException(INVALID_CMD);
 		}
 	}
 	

@@ -22,10 +22,16 @@ public class CallCommand implements Command {
 	String app;
 	String cmdline, inputStreamS, outputStreamS;
 	String[] argsArray;
+	Boolean error;
 
 	public CallCommand(String cmdline) {
 		this.cmdline = cmdline;
 		app = inputStreamS = outputStreamS = "";
+		error = false;
+	}
+
+	public CallCommand() {
+		this("");
 	}
 
 	@Override
@@ -33,16 +39,12 @@ public class CallCommand implements Command {
 			throws AbstractApplicationException, ShellException {
 
 		Vector<String> cmdVector = new Vector<String>();
-		if (splitString(cmdline, cmdVector)) {
-			evaluateCall(cmdVector, System.in, stdout);
-		} else {
+		if (!splitString(cmdline, cmdVector)) {
+			this.app = cmdVector.get(0);
+			error = true;
 			throw new ShellException(INVALID_CMD);
 		}
-	}
 
-	private void evaluateCall(Vector<String> cmdVector, InputStream stdin,
-			OutputStream stdout) throws AbstractApplicationException,
-			ShellException {
 		String[] cmdTokensArray = cmdVector
 				.toArray(new String[cmdVector.size()]);
 		this.app = cmdTokensArray[0];
@@ -58,7 +60,6 @@ public class CallCommand implements Command {
 			this.argsArray = new String[0];
 		}
 	}
-
 
 	// Open input stream for redirection
 	InputStream openInputRedir(String inputStreamS) throws ShellException {
@@ -96,7 +97,7 @@ public class CallCommand implements Command {
 		} catch (ShellException e) {
 			return false;
 		}
-		 //System.out.println(cmdVector.toString());
+		// System.out.println(cmdVector.toString());
 		if (endIdx != cmdStr.length() + 1) {
 			return false;
 		}
@@ -211,6 +212,10 @@ public class CallCommand implements Command {
 
 	public String getOutputStreamS() {
 		return outputStreamS;
+	}
+
+	public Boolean isError() {
+		return error;
 	}
 
 	// TODO: figure out what to do with this

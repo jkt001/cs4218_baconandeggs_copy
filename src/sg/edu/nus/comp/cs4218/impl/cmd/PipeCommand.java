@@ -25,13 +25,13 @@ public class PipeCommand implements Command {
 
 	@Override
 	public void evaluate(InputStream stdin, OutputStream stdout)
-			throws AbstractApplicationException, ShellException {
+			throws ShellException {
 
 		// searches for semicolon
 		int indexSemicolon = -1, strStartIdx = 0, searchStartIdx = 0;
 		String rightCmd = cmdline;
 		Boolean eval = false;
-
+		CallCommand callCommand;
 		do {
 			eval = false;
 			rightCmd = rightCmd.substring(strStartIdx);
@@ -44,7 +44,7 @@ public class PipeCommand implements Command {
 			}
 
 			// send to callCommand
-			CallCommand callCommand = new CallCommand(subCmd);
+			callCommand = new CallCommand(subCmd);
 			Boolean isValid = true;
 			try {
 				callCommand.evaluate(stdin, stdout);
@@ -65,10 +65,11 @@ public class PipeCommand implements Command {
 		} while (indexSemicolon != -1
 				&& indexSemicolon != rightCmd.length() - 1);
 		if (!eval) {
-			throw new ShellException(INVALID_CMD);
+			callCommandList.add(callCommand);
+			// throw new ShellException(INVALID_CMD);
 		}
 	}
-	
+
 	public Vector<CallCommand> getCallCommandList() {
 		return callCommandList;
 	}
