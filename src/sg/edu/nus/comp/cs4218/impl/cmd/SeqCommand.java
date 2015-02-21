@@ -1,8 +1,5 @@
 package sg.edu.nus.comp.cs4218.impl.cmd;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
@@ -13,13 +10,11 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
 
 public class SeqCommand implements Command {
 
-	// TODO: write test case
-	static final String INVALID_CMD = "Invalid command.";
 	Vector<PipeCommand> pipeCommandList;
 	String cmdline;
 
 	public SeqCommand(String cmdline) {
-		this.cmdline = cmdline;
+		this.cmdline = cmdline.trim();
 		this.pipeCommandList = new Vector<PipeCommand>();
 	}
 
@@ -66,7 +61,7 @@ public class SeqCommand implements Command {
 		
 		if (!eval) {
 			pipeCommandList.add(pipeCommand);
-			//throw new ShellException(INVALID_CMD);
+			//throw new ShellException(EXP_INVALID_SYNTAX);
 		}
 	}
 	
@@ -74,7 +69,6 @@ public class SeqCommand implements Command {
 		return pipeCommandList;
 	}
 
-	// TODO: figure out what to do with this
 	@Override
 	public void terminate() {
 		// TODO Auto-generated method stub

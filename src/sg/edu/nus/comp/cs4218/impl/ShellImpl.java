@@ -25,87 +25,72 @@ import sg.edu.nus.comp.cs4218.impl.cmd.SeqCommand;
 
 public class ShellImpl implements Shell {
 
-	static final String INVALID_CMD = "Invalid command.";
+	public static final String EXP_INVALID_APP = "Invalid app.";
+	public static final String EXP_SYNTAX = "Invalid syntax encountered.";
+	public static final String EXP_REDIR_PIPE = "File output redirection and pipe operator cannot be used side by side.";
+	public static final String EXP_SAME_REDIR = "Input redirection file same as output redirection file.";
+	public static final String EXP_STDOUT = "Error writing to stdout.";
+	public static final String EXP_NOT_SUPPORTED = " not supported yet";
 
 	@Override
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
 
 		SeqCommand seqCmd = new SeqCommand(cmdline);
-		try {
-			seqCmd.evaluate(System.in, stdout);
-		} catch (Exception e) {
-			throw new ShellException(INVALID_CMD);
-		}
-
+		seqCmd.evaluate(System.in, stdout);
 		runCmdline(seqCmd, stdout);
 	}
 
 	void runCmdline(SeqCommand seqCommand, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-
+		InputStream inputStream = System.in, currInputStream = inputStream;
+		OutputStream outputStream = stdout, currOutputStream = outputStream;
 		Vector<PipeCommand> pipeCommandList = seqCommand.getPipeCommandList();
-		InputStream inputStream = System.in;
-		OutputStream outputStream = stdout;
-		OutputStream fileOutputStream;
-
 		for (int i = 0; i < pipeCommandList.size(); i++) {
 			PipeCommand pipeCommand = pipeCommandList.get(i);
 			Vector<CallCommand> callCommandList = pipeCommand
 					.getCallCommandList();
-			OutputStream currOutputStream = outputStream;
-			InputStream currInputStream = inputStream;
 			for (int j = 0; j < callCommandList.size(); j++) {
 				CallCommand callCommand = callCommandList.get(j);
 				if (callCommand.isError()) {
-					throw new ShellException("Sytax error encountered.");
+					throw new ShellException(callCommand.getErrorMsg());
 				}
 				String app = callCommand.getApp();
-				String[] argsArray = callCommand.getArgs();
 				String inputStreamS = callCommand.getInputStreamS();
 				String outputStreamS = callCommand.getOutputStreamS();
-				argsArray = processBQ(argsArray);
-				if (("").equals(inputStreamS)) {
+				String[] argsArray = processBQ(callCommand.getArgs());
+				if (("").equals(inputStreamS)) {// empty
 					currInputStream = inputStream;
-				} else {
-					if (inputStreamS.equals(outputStreamS)) {
-						throw new ShellException(
-								"Input redirection file is same as output redirection file.");
-					}
+				} else { // not empty
 					currInputStream = openInputRedir(inputStreamS);
 				}
-				if (("").equals(outputStreamS)) {
-					currOutputStream = outputStream;
+				if (("").equals(outputStreamS)) { // empty
+					if (j == callCommandList.size() - 1) { // last
+						currOutputStream = new ByteArrayOutputStream();
+					} else { // not last, write to stdout
+						currOutputStream = outputStream;
+					}
 				} else {
-					fileOutputStream = openOutputRedir(outputStreamS);
-					currOutputStream = fileOutputStream;
+					currOutputStream = openOutputRedir(outputStreamS);
 				}
 				runApp(app, argsArray, currInputStream, currOutputStream);
-				// closeDir(inputStream, outputStream);
 				closeInputStream(currInputStream);
-				if (j != callCommandList.size() - 1) {
+				if (j != callCommandList.size() - 1) { // not last->close
+														// outputstream
 					closeOutputStream(currOutputStream);
 				}
 			}
-			// pipe outputStream to inputStream ==> not tested
-			if (i != pipeCommandList.size() - 1) {// not last
-				if (currOutputStream instanceof FileOutputStream) {
-					throw new ShellException(
-							"File output redirection and pipe operator cannot be used side by side");
-				}
-				inputStream = new ByteArrayInputStream(
-						((ByteArrayOutputStream) currOutputStream)
-								.toByteArray());
-				outputStream = new ByteArrayOutputStream();
-			}
-			else{
+			if (i == pipeCommandList.size() - 1) { // last
 				closeOutputStream(currOutputStream);
+			} else {// not last: pipe outputStream to inputStream
+				inputStream = outputStreamToInputStream(currOutputStream);
+				currOutputStream = new ByteArrayOutputStream();
 			}
 		}
-
+		writeToStdout(currOutputStream, stdout);
 	}
 
-	// Open fileinputstream for redirection
+	// Open fileinputStream for redirection
 	InputStream openInputRedir(String inputStreamS) throws ShellException {
 		File inputFile = new File(inputStreamS);
 		FileInputStream fInputStream = null;
@@ -127,63 +112,6 @@ public class ShellImpl implements Shell {
 			throw new ShellException(e.getMessage());
 		}
 		return fOutputStream;
-	}
-
-	// Closes streams from redirection
-	private void closeInputStream(InputStream inputStream)
-			throws ShellException {
-		if (inputStream != System.in) {
-			try {
-				inputStream.close();
-			} catch (IOException e) {
-				throw new ShellException(e.getMessage());
-			}
-		}
-	}
-
-	private void closeOutputStream(OutputStream outputStream)
-			throws ShellException {
-		if (outputStream != System.out) {
-			try {
-				outputStream.close();
-			} catch (IOException e) {
-				throw new ShellException(e.getMessage());
-			}
-		}
-	}
-
-	private void runApp(String app, String[] argsArray,
-			InputStream inputStream, OutputStream outputStream)
-			throws AbstractApplicationException, ShellException {
-		Application absApp = null;
-		if (("pwd".equals(app))) {
-			absApp = new PwdApplication();
-		} else if (("cd").equals(app)) {// cd PATH
-			absApp = new CdApplication();
-		} else if (("ls").equals(app)) {// ls
-			absApp = new LsApplication();
-		} else if (("cat").equals(app)) {// cat [FILE]...
-			absApp = new CatApplication();
-		} else if (("echo").equals(app)) {// echo [args]...
-			absApp = new EchoApplication();
-		} else if (("head").equals(app)) {// head [OPTIONS] [FILE]
-			absApp = new HeadApplication();
-		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
-			absApp = new TailApplication();
-		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
-			throw new ShellException("Grep not supported yet.");
-			// absApp = new GrepApplication();
-		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
-			throw new ShellException("Sed not supported yet.");
-			// absApp = new SedApplication();
-		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
-			absApp = new FindApplication();
-		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
-			absApp = new WcApplication();
-		} else { // invalid command
-			throw new ShellException(app + ": " + INVALID_CMD);
-		}
-		absApp.run(argsArray, inputStream, outputStream);
 	}
 
 	String[] processBQ(String... argsArray)
@@ -217,6 +145,85 @@ public class ShellImpl implements Shell {
 			}
 		}
 		return resultArr;
+	}
+
+	private void runApp(String app, String[] argsArray,
+			InputStream inputStream, OutputStream outputStream)
+			throws AbstractApplicationException, ShellException {
+		Application absApp = null;
+		if (("pwd".equals(app))) {
+			absApp = new PwdApplication();
+		} else if (("cd").equals(app)) {// cd PATH
+			absApp = new CdApplication();
+		} else if (("ls").equals(app)) {// ls
+			absApp = new LsApplication();
+		} else if (("cat").equals(app)) {// cat [FILE]...
+			absApp = new CatApplication();
+		} else if (("echo").equals(app)) {// echo [args]...
+			absApp = new EchoApplication();
+		} else if (("head").equals(app)) {// head [OPTIONS] [FILE]
+			absApp = new HeadApplication();
+		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
+			absApp = new TailApplication();
+		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
+			throw new ShellException(app + EXP_NOT_SUPPORTED);
+			// absApp = new GrepApplication();
+		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
+			throw new ShellException(app + EXP_NOT_SUPPORTED);
+			// absApp = new SedApplication();
+		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
+			absApp = new FindApplication();
+		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
+			absApp = new WcApplication();
+		} else { // invalid command
+			throw new ShellException(app + ": " + EXP_INVALID_APP);
+		}
+		absApp.run(argsArray, inputStream, outputStream);
+	}
+
+	// Helper methods for converting streams
+	// Closes streams from redirection
+	private void closeInputStream(InputStream inputStream)
+			throws ShellException {
+		if (inputStream != System.in) {
+			try {
+				inputStream.close();
+			} catch (IOException e) {
+				throw new ShellException(e.getMessage());
+			}
+		}
+	}
+
+	private void closeOutputStream(OutputStream outputStream)
+			throws ShellException {
+		if (outputStream != System.out) {
+			try {
+				outputStream.close();
+			} catch (IOException e) {
+				throw new ShellException(e.getMessage());
+			}
+		}
+	}
+
+	private InputStream outputStreamToInputStream(OutputStream outputStream)
+			throws ShellException {
+		if (outputStream instanceof FileOutputStream) {
+			throw new ShellException(EXP_REDIR_PIPE);
+		}
+		return new ByteArrayInputStream(
+				((ByteArrayOutputStream) outputStream).toByteArray());
+	}
+
+	private void writeToStdout(OutputStream outputStream, OutputStream stdout)
+			throws ShellException {
+		if (outputStream instanceof FileOutputStream) {
+			return;
+		}
+		try {// pipe last outputStream to stdout
+			stdout.write(((ByteArrayOutputStream) outputStream).toByteArray());
+		} catch (IOException e) {
+			throw new ShellException(EXP_STDOUT);
+		}
 	}
 
 	public static void main(String... args) {

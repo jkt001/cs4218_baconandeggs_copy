@@ -41,17 +41,9 @@ public class CallCommandTest {
 		callCmd = new CallCommand();
 	}
 
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		cmdVector = new Vector<String>();
-	}
-
-	@After
-	public void tearDown() throws Exception {
 	}
 
 	public static void createTestFile(String fileName) throws IOException {

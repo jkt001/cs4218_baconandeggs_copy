@@ -14,20 +14,21 @@ import java.util.regex.Pattern;
 import sg.edu.nus.comp.cs4218.Command;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
+import sg.edu.nus.comp.cs4218.impl.ShellImpl;
 
 public class CallCommand implements Command {
-
-	// TODO: write test case
-	public static final String INVALID_CMD = "Invalid command.";
+	
 	String app;
 	String cmdline, inputStreamS, outputStreamS;
 	String[] argsArray;
 	Boolean error;
+	String errorMsg;
 
 	public CallCommand(String cmdline) {
-		this.cmdline = cmdline;
+		this.cmdline = cmdline.trim();
 		app = inputStreamS = outputStreamS = "";
 		error = false;
+		errorMsg = "";
 	}
 
 	public CallCommand() {
@@ -42,7 +43,10 @@ public class CallCommand implements Command {
 		if (!splitString(cmdline, cmdVector)) {
 			this.app = cmdVector.get(0);
 			error = true;
-			throw new ShellException(INVALID_CMD);
+			if(("").equals(errorMsg)){
+				errorMsg = ShellImpl.EXP_SYNTAX;
+			}
+			throw new ShellException(errorMsg);
 		}
 
 		String[] cmdTokensArray = cmdVector
@@ -54,6 +58,11 @@ public class CallCommand implements Command {
 		if (nTokens >= 3) { // last 2 for inputRedir & >outputRedir
 			this.inputStreamS = cmdTokensArray[nTokens - 2].trim();
 			this.outputStreamS = cmdTokensArray[nTokens - 1].trim();
+			if (!("").equals(inputStreamS) && inputStreamS.equals(outputStreamS)){
+				error = true;
+				errorMsg = ShellImpl.EXP_SAME_REDIR;
+				throw new ShellException(errorMsg);
+			}
 			this.argsArray = Arrays.copyOfRange(cmdTokensArray, 1,
 					cmdTokensArray.length - 2);
 		} else {
@@ -97,7 +106,7 @@ public class CallCommand implements Command {
 		} catch (ShellException e) {
 			return false;
 		}
-		// System.out.println(cmdVector.toString());
+		//System.out.println(cmdVector.toString());
 		if (endIdx != cmdStr.length() + 1) {
 			return false;
 		}
@@ -147,7 +156,9 @@ public class CallCommand implements Command {
 					String matchedStr = matcher.group(1);
 					newStartIdx = newEndIdx + matcher.start();
 					if (newStartIdx != newEndIdx) {
-						throw new ShellException(INVALID_CMD);
+						error = true;
+						errorMsg = ShellImpl.EXP_SYNTAX;
+						throw new ShellException(errorMsg);
 					} // check if there's any invalid token not detected
 					cmdVector.add(matchedStr);
 					newEndIdx = newEndIdx + matcher.end() - 1;
@@ -217,8 +228,11 @@ public class CallCommand implements Command {
 	public Boolean isError() {
 		return error;
 	}
+	
+	public String getErrorMsg(){
+		return errorMsg;
+	}
 
-	// TODO: figure out what to do with this
 	@Override
 	public void terminate() {
 		// TODO Auto-generated method stub

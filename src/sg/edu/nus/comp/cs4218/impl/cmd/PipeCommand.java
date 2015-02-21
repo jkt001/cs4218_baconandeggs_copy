@@ -8,24 +8,23 @@ import java.util.Vector;
 import sg.edu.nus.comp.cs4218.Command;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
+import sg.edu.nus.comp.cs4218.impl.ShellImpl;
 
 public class PipeCommand implements Command {
 
-	// TODO: write test case
-	static final String INVALID_CMD = "Invalid command.";
 	Vector<CallCommand> callCommandList;
 
 	String cmdline;
 
 	public PipeCommand(String cmdline) {
-		this.cmdline = cmdline;
+		this.cmdline = cmdline.trim();
 		this.callCommandList = new Vector<CallCommand>();
 		// System.out.println("pipe:"+cmdline);
 	}
 
 	@Override
 	public void evaluate(InputStream stdin, OutputStream stdout)
-			throws ShellException {
+			throws AbstractApplicationException, ShellException {
 
 		// searches for semicolon
 		int indexSemicolon = -1, strStartIdx = 0, searchStartIdx = 0;
@@ -66,7 +65,7 @@ public class PipeCommand implements Command {
 				&& indexSemicolon != rightCmd.length() - 1);
 		if (!eval) {
 			callCommandList.add(callCommand);
-			// throw new ShellException(INVALID_CMD);
+			throw new ShellException(ShellImpl.EXP_SYNTAX);
 		}
 	}
 
@@ -117,7 +116,6 @@ public class PipeCommand implements Command {
 
 	}
 
-	// TODO: figure out what to do with this
 	@Override
 	public void terminate() {
 		// TODO Auto-generated method stub

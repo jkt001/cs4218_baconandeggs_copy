@@ -31,8 +31,8 @@ public class ShellImplTest {
 	final static String TEST_FILE_NAME = "testShell.txt";
 	final static String TEST_FOLDER_NAME = "testShellFolder";
 	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception for valid command.";
-	final static String ERROR_REDIR_IN = "Error opening input stream for redirection.";
-	final static String ERROR_REDIR_OUT = "Error opening output stream for redirection.";
+	final static String VALID_FILE_NO_EXP = "Not supposed to have exception for valid file.";
+	final static String READONLY_EXP = "Supposed to have exception opening outputstream to read-only file.";
 	static String originalFilePath;
 
 	@BeforeClass
@@ -94,7 +94,6 @@ public class ShellImplTest {
 	}
 
 	// testing parseAndEvaluate
-
 	@Test
 	public void testPECat() {
 		try {
@@ -127,8 +126,60 @@ public class ShellImplTest {
 	}
 
 	@Test
-	public void testPEEchoWithSemiColon() {
-		String readLine = "echo \"" + TEST_STR + "; " + TEST_STR + "\"";
+	public void testPEEchoWithDoubleQuotes() {
+		String readLine = "echo \"" + TEST_STR + "\"";
+		try {
+			System.out.println(readLine);
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(VALID_CMD_NO_EXP);
+		}
+	}
+
+	@Test
+	public void testPEEchoWithSemiColonInDoubleQuotes() {
+		String readLine = "echo \"" + TEST_STR + "; " + TEST_STR + "\";";
+		try {
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(VALID_CMD_NO_EXP);
+		}
+	}
+
+	@Test
+	public void testPEEchoWithDividerInDoubleQuotes() {
+		String readLine = "echo \"" + TEST_STR + "| " + TEST_STR + "\";";
+		try {
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(VALID_CMD_NO_EXP);
+		}
+	}
+
+	@Test
+	public void testPEEchoWithSingleQuotes() {
+		String readLine = "echo '" + TEST_STR + "'";
+		try {
+			System.out.println(readLine);
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(VALID_CMD_NO_EXP);
+		}
+	}
+
+	@Test
+	public void testPEEchoWithSemiColonInSingleQuotes() {
+		String readLine = "echo '" + TEST_STR + "; " + TEST_STR + "';";
+		try {
+			shell.parseAndEvaluate(readLine, outputStream);
+		} catch (Exception e) {
+			fail(VALID_CMD_NO_EXP);
+		}
+	}
+
+	@Test
+	public void testPEEchoWithDividerInSingleQuotes() {
+		String readLine = "echo '" + TEST_STR + "| " + TEST_STR + "';";
 		try {
 			shell.parseAndEvaluate(readLine, outputStream);
 		} catch (Exception e) {
@@ -139,17 +190,6 @@ public class ShellImplTest {
 	@Test
 	public void testPEEchoWithOutputDir() {
 		String readLine = "echo " + TEST_STR + " > " + TEST_FILE_NAME;
-		try {
-			System.out.println(readLine);
-			shell.parseAndEvaluate(readLine, outputStream);
-		} catch (Exception e) {
-			fail(VALID_CMD_NO_EXP);
-		}
-	}
-
-	@Test
-	public void testPEEchoWithDoubleQuotes() {
-		String readLine = "echo \"" + TEST_STR + "\"";
 		try {
 			System.out.println(readLine);
 			shell.parseAndEvaluate(readLine, outputStream);
@@ -220,7 +260,7 @@ public class ShellImplTest {
 			fail(VALID_CMD_NO_EXP);
 		}
 	}
-	
+
 	@Test
 	public void testPETail() {
 		try {
@@ -230,7 +270,7 @@ public class ShellImplTest {
 			fail(VALID_CMD_NO_EXP);
 		}
 	}
-	
+
 	@Test
 	public void testTailWithInputDir() {
 		try {
@@ -284,7 +324,7 @@ public class ShellImplTest {
 	}
 
 	@Test(expected = ShellException.class)
-	public void testInvalidSemicolon() throws IOException,
+	public void testInvalidSemicolons() throws IOException,
 			AbstractApplicationException, ShellException {
 		String readLine = "wc " + TEST_FILE_NAME + ";" + "pwd" + ";;" + "cd "
 				+ TEST_FOLDER_NAME + ";";
@@ -312,7 +352,7 @@ public class ShellImplTest {
 			scanner.close();
 			assertEquals(intputSreamStr, TEST_STR);
 		} catch (ShellException e) {
-			fail("Not supposed to have exception for file that exists.");
+			fail(VALID_FILE_NO_EXP);
 		}
 	}
 
@@ -337,13 +377,13 @@ public class ShellImplTest {
 			writeToStream(myOutputStream);
 			myOutputStream.close();
 		} catch (IOException | ShellException le) {
-			fail("Not supposed to have exception for creating and writing to test file.");
+			fail(VALID_FILE_NO_EXP);
 		}
 		try {
 			String testFileStr = fileToString(TEST_FILE_NAME);
 			assertEquals(testFileStr, TEST_STR);
 		} catch (IOException e) {
-			fail("Not supposed to have exception for file that exists.");
+			fail(VALID_FILE_NO_EXP);
 		}
 	}
 
@@ -353,6 +393,7 @@ public class ShellImplTest {
 		file.setReadOnly();
 		Boolean exceptionThrown = false;
 		OutputStream myoutputStream;
+		String errorMsg = "";
 		try {
 			myoutputStream = shell.openOutputRedir(TEST_FILE_NAME);
 			myoutputStream.write(TEST_STR.getBytes());
@@ -360,15 +401,16 @@ public class ShellImplTest {
 			myoutputStream.close();
 			myoutputStream = null;
 		} catch (ShellException | IOException e) {
+			errorMsg = e.getMessage();
 			exceptionThrown = true;
 		}
 
 		file.setWritable(true);
 
 		if (exceptionThrown) {
-			throw new ShellException(ERROR_REDIR_OUT);
+			throw new ShellException(errorMsg);
 		} else {
-			fail("Supposed to have exception opening outputstream to read-only file.");
+			fail(READONLY_EXP);
 		}
 	}
 
