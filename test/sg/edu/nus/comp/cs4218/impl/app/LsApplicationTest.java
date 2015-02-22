@@ -5,6 +5,18 @@ import static sg.edu.nus.comp.cs4218.OSCheck.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclEntryPermission;
+import java.nio.file.attribute.AclEntryType;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.UserPrincipalLookupService;
+import java.util.Collections;
+import java.util.EnumSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -12,6 +24,7 @@ import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.OSCheck;
+import sg.edu.nus.comp.cs4218.WindowsPermission;
 import sg.edu.nus.comp.cs4218.exception.LsException;
 import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
 
@@ -88,28 +101,29 @@ public class LsApplicationTest {
 	@Test
 	public void testDirectoryWithoutReadPermission(){
 		LsApplication myLs = new LsApplication();
-		
-		if (OSCheck.isWindows()){
+		try {
 			try{
-				String str[] = {"C:\\System Volume Information"};
+				File file = new File(TEMP_FOLDER_PATH);
+				if (isWindows()){
+					WindowsPermission.setReadable(file, false);
+				}else{
+					file.setReadable(false);
+				}
+				String str[] = {TEMP_FOLDER_PATH};
 				myLs.run(str,null,new ByteArrayOutputStream());
 				fail("Should throw exception");
 			}catch(LsException le){
+				File file = new File(TEMP_FOLDER_PATH);
+				if (isWindows()){
+					WindowsPermission.setReadable(file, true);
+				}else{
+					file.setReadable(true);
+				}
 				assertEquals("ls: Permission denied", le.getLocalizedMessage());
 			}
-			return;
-		}
-		
-		try{
-			File file = new File(TEMP_FOLDER_PATH);
-			file.setReadable(false);
-			String str[] = {TEMP_FOLDER_PATH};
-			myLs.run(str,null,new ByteArrayOutputStream());
-			fail("Should throw exception");
-		}catch(LsException le){
-			File file = new File(TEMP_FOLDER_PATH);
-			file.setReadable(true);
-			assertEquals("ls: Permission denied", le.getLocalizedMessage());
+		} catch (IOException e) {
+			fail("IOException during test");
+			e.printStackTrace();
 		}
 	}
 
