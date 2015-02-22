@@ -33,6 +33,12 @@ public class WcApplication implements Application {
 				for(int i=0;i<filePath.length ; i++){
 					
 					File file = new File(filePath[i]);
+					if(!file.exists()){
+						throw new WcException("File Not Found.");
+					}
+					if(!file.canRead()){
+						throw new WcException("Don't have read permission");	
+					}
 					InputStream myInputStream = new FileInputStream(file);
 					if(filePath.length>1){
 						stdout.write(filePath[i].getBytes());

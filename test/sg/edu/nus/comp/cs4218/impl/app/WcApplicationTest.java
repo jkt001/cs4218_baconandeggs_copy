@@ -50,9 +50,9 @@ public class WcApplicationTest {
 		WcApplication myWc = new WcApplication();
 		try{
 			myWc.run(null,null,new ByteArrayOutputStream());
-			fail("Should throw exception");
+			fail("Should throw exception.");
 		}catch(WcException we){
-			assertEquals(we.getLocalizedMessage(), "wc: Null arguments");
+			assertEquals("wc: Null arguments", we.getLocalizedMessage());
 		}
 	}
 
@@ -64,10 +64,11 @@ public class WcApplicationTest {
 			myWc.run(str,null,null);
 			fail("Should throw exception");
 		}catch(WcException we){
-			assertEquals(we.getLocalizedMessage(), "wc: OutputStream not provided");
+			assertEquals("wc: OutputStream not provided", we.getLocalizedMessage());
 		}
 	}
 
+	@Test
 	public void testInvalidArgument(){
 		WcApplication myWc = new WcApplication();
 		try{
@@ -75,7 +76,23 @@ public class WcApplicationTest {
 			myWc.run(str,null,new ByteArrayOutputStream());
 			fail("Should throw exception");
 		}catch(WcException we){
-			assertEquals(we.getLocalizedMessage(), "wc: OutputStream not provided");
+			assertEquals("wc: File Not Found.", we.getLocalizedMessage());
+		}
+	}
+
+	@Test
+	public void testFileWithoutReadPermission(){
+		WcApplication myWc = new WcApplication();
+		try{
+			String str[] = {TEMP_FILE_PATH};
+			File file = new File(TEMP_FILE_PATH);
+			file.setReadable(false);
+			myWc.run(str,null,new ByteArrayOutputStream());
+			fail("Should throw exception");
+		}catch(WcException we){
+			File file = new File(TEMP_FILE_PATH);
+			file.setReadable(true);
+			assertEquals(we.getLocalizedMessage(), "wc: Don't have read permission");
 		}
 	}
 

@@ -48,7 +48,10 @@ public class LsApplication implements Application{
 		if(!theDir.isDirectory()){
 			throw new LsException("Directory does not exist");
 		}
-
+		if(!theDir.canRead()){
+			throw new LsException("Permission denied");
+		}
+		
 		return theDir.list();
 	}
 
