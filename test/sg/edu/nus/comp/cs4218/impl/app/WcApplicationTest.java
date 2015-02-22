@@ -62,9 +62,21 @@ public class WcApplicationTest {
 		try{
 			String str[] = {TEMP_FILE_PATH};
 			myWc.run(str,null,null);
-			fail("Should throw exception");
+			fail("Should throw exception.");
 		}catch(WcException we){
 			assertEquals("wc: OutputStream not provided", we.getLocalizedMessage());
+		}
+	}
+	
+	@Test
+	public void testExpectedStdinIsNull(){
+		WcApplication myWc = new WcApplication();
+		try{
+			String str[] = {};
+			myWc.run(str,null,new ByteArrayOutputStream());
+			fail("Should throw exception");
+		}catch(WcException we){
+			assertEquals("wc: Expected stdin input", we.getLocalizedMessage());
 		}
 	}
 
