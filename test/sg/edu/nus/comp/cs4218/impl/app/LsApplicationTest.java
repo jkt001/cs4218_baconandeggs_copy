@@ -88,28 +88,27 @@ public class LsApplicationTest {
 	@Test
 	public void testDirectoryWithoutReadPermission(){
 		LsApplication myLs = new LsApplication();
-		
-		if (OSCheck.isWindows()){
+
+		if (isWindows()){
 			try{
 				String str[] = {"C:\\System Volume Information"};
 				myLs.run(str,null,new ByteArrayOutputStream());
 				fail("Should throw exception");
 			}catch(LsException le){
+				assertEquals("ls: Cannot list files in the directory", le.getLocalizedMessage());
+			}
+		}else if(isMac()){
+			try{
+				File file = new File(TEMP_FOLDER_PATH);
+				file.setReadable(false);
+				String str[] = {TEMP_FOLDER_PATH};
+				myLs.run(str,null,new ByteArrayOutputStream());
+				fail("Should throw exception");
+			}catch(LsException le){
+				File file = new File(TEMP_FOLDER_PATH);
+				file.setReadable(true);
 				assertEquals("ls: Permission denied", le.getLocalizedMessage());
 			}
-			return;
-		}
-		
-		try{
-			File file = new File(TEMP_FOLDER_PATH);
-			file.setReadable(false);
-			String str[] = {TEMP_FOLDER_PATH};
-			myLs.run(str,null,new ByteArrayOutputStream());
-			fail("Should throw exception");
-		}catch(LsException le){
-			File file = new File(TEMP_FOLDER_PATH);
-			file.setReadable(true);
-			assertEquals("ls: Permission denied", le.getLocalizedMessage());
 		}
 	}
 
