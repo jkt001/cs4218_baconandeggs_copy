@@ -12,6 +12,7 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,8 +39,18 @@ public class CdApplicationTest {
 
 	@Before
 	public void setUp() throws Exception {
+		// Set current directory to standard current working directory
+		Environment.currentDirectory = PROPERTY_USER_DIR;
+		
 		app = new CdApplication();
 	}
+	
+	@After
+	public void tearDown() throws Exception {
+		// Set current directory to standard current working directory
+		Environment.currentDirectory = PROPERTY_USER_DIR;
+	}
+
 
 	// Test folder that exists, absolute path
 	@Test
