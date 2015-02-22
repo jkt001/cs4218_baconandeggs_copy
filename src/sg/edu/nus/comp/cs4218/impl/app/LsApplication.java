@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
@@ -55,7 +57,10 @@ public class LsApplication implements Application{
 			throw new LsException("Cannot list files in the directory");
 		}
 		
-		return theDir.list();
+		String[] list = theDir.list();
+		Arrays.sort(list);
+		
+		return list;
 	}
 
 	void writeStringToOutputStream(String[] str, OutputStream stdout) throws LsException{

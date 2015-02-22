@@ -92,7 +92,7 @@ public class CdApplicationTest {
 		if (isWindows()) {
 			testCdExpectFailure(getUserDir(), "C:\\InvalidDir");
 		}else{
-			testCdExpectSuccess(getUserDir(), "/BlaaBlaaBlaa", "/BlaaBlaaBlaa");
+			testCdExpectFailure(getUserDir(), "/BlaaBlaaBlaa");
 		}
 	}
 	
