@@ -13,6 +13,9 @@ public class EchoApplication implements Application{
 		if(args == null){
 			throw new EchoException("Null arguments");
 		}
+		if(stdout == null){
+			throw new EchoException("OutputStream not provided");
+		}
 		try {
 			if(args.length==0){
 				stdout.write("\n".getBytes());

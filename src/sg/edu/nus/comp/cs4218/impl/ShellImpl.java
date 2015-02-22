@@ -129,7 +129,7 @@ public class ShellImpl implements Shell {
 				String bqStr = matcherBQ.group(1);
 				// cmdVector.add(bqStr.trim());
 				// process back quote
-				System.out.println("backquote" + bqStr);
+				//System.out.println("backquote" + bqStr);
 				OutputStream bqOutputStream = new ByteArrayOutputStream();
 				parseAndEvaluate(bqStr, bqOutputStream);
 

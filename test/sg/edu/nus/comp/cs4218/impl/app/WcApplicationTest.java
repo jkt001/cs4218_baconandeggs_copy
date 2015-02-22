@@ -2,6 +2,7 @@ package sg.edu.nus.comp.cs4218.impl.app;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static sg.edu.nus.comp.cs4218.OSCheck.*;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -62,9 +63,21 @@ public class WcApplicationTest {
 		try{
 			String str[] = {TEMP_FILE_PATH};
 			myWc.run(str,null,null);
-			fail("Should throw exception");
+			fail("Should throw exception.");
 		}catch(WcException we){
 			assertEquals("wc: OutputStream not provided", we.getLocalizedMessage());
+		}
+	}
+
+	@Test
+	public void testExpectedStdinIsNull(){
+		WcApplication myWc = new WcApplication();
+		try{
+			String str[] = {};
+			myWc.run(str,null,new ByteArrayOutputStream());
+			fail("Should throw exception");
+		}catch(WcException we){
+			assertEquals("wc: Expected stdin input", we.getLocalizedMessage());
 		}
 	}
 
@@ -82,17 +95,19 @@ public class WcApplicationTest {
 
 	@Test
 	public void testFileWithoutReadPermission(){
-		WcApplication myWc = new WcApplication();
-		try{
-			String str[] = {TEMP_FILE_PATH};
-			File file = new File(TEMP_FILE_PATH);
-			file.setReadable(false);
-			myWc.run(str,null,new ByteArrayOutputStream());
-			fail("Should throw exception");
-		}catch(WcException we){
-			File file = new File(TEMP_FILE_PATH);
-			file.setReadable(true);
-			assertEquals(we.getLocalizedMessage(), "wc: Don't have read permission");
+		if(isMac()){
+			WcApplication myWc = new WcApplication();
+			try{
+				String str[] = {TEMP_FILE_PATH};
+				File file = new File(TEMP_FILE_PATH);
+				file.setReadable(false);
+				myWc.run(str,null,new ByteArrayOutputStream());
+				fail("Should throw exception");
+			}catch(WcException we){
+				File file = new File(TEMP_FILE_PATH);
+				file.setReadable(true);
+				assertEquals(we.getLocalizedMessage(), "wc: Don't have read permission");
+			}
 		}
 	}
 

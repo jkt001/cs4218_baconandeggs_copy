@@ -27,6 +27,9 @@ public class WcApplication implements Application {
 		String filePath[] = parseArgument(args);
 
 		if(filePath.length==0){
+			if(stdin == null){
+				throw new WcException("Expected stdin input");
+			}
 			writeWordCountsToOutputStream(wordCount(stdin), stdout);
 		}else{
 			try {
