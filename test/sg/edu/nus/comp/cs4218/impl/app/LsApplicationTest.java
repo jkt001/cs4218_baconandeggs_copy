@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.Environment;
+import sg.edu.nus.comp.cs4218.OSCheck;
 import sg.edu.nus.comp.cs4218.exception.LsException;
 import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
 
@@ -86,6 +87,18 @@ public class LsApplicationTest {
 	@Test
 	public void testDirectoryWithoutReadPermission(){
 		LsApplication myLs = new LsApplication();
+		
+		if (OSCheck.isWindows()){
+			try{
+				String str[] = {"C:\\$RECYCLE.BIN"};
+				myLs.run(str,null,new ByteArrayOutputStream());
+				fail("Should throw exception");
+			}catch(LsException le){
+				assertEquals("ls: Permission denied", le.getLocalizedMessage());
+			}
+			return;
+		}
+		
 		try{
 			File file = new File(TEMP_FOLDER_PATH);
 			file.setReadable(false);

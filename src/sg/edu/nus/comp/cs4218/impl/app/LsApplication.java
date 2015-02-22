@@ -44,11 +44,14 @@ public class LsApplication implements Application{
 
 	String[] getListOfFileFromDirectory(String directory) throws LsException{
 		File theDir = new File(directory);
-
+		
 		if(!theDir.isDirectory()){
 			throw new LsException("Directory does not exist");
 		}
 		if(!theDir.canRead()){
+			throw new LsException("Permission denied");
+		}
+		if (theDir.list() == null){
 			throw new LsException("Permission denied");
 		}
 		
