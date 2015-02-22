@@ -1,6 +1,7 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
 import static org.junit.Assert.*;
+import static sg.edu.nus.comp.cs4218.OSCheck.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -39,7 +40,7 @@ public class LsApplicationTest {
 				se.printStackTrace();
 			}    
 		}
-		
+
 		File theDir2 = new File(TEMP_FOLDER_PATH2);
 		if (!theDir2.exists()) {
 			try{
@@ -70,7 +71,7 @@ public class LsApplicationTest {
 			assertEquals("ls: Null arguments", le.getLocalizedMessage());
 		}
 	}
-	
+
 	@Test
 	public void testNullStdout(){
 		LsApplication myLs = new LsApplication();
@@ -82,20 +83,22 @@ public class LsApplicationTest {
 			assertEquals("ls: OutputStream not provided", le.getLocalizedMessage());
 		}
 	}
-	
+
 	@Test
 	public void testDirectoryWithoutReadPermission(){
-		LsApplication myLs = new LsApplication();
-		try{
-			File file = new File(TEMP_FOLDER_PATH);
-			file.setReadable(false);
-			String str[] = {TEMP_FOLDER_PATH};
-			myLs.run(str,null,new ByteArrayOutputStream());
-			fail("Should throw exception");
-		}catch(LsException le){
-			File file = new File(TEMP_FOLDER_PATH);
-			file.setReadable(true);
-			assertEquals("ls: Permission denied", le.getLocalizedMessage());
+		if(isMac()){
+			LsApplication myLs = new LsApplication();
+			try{
+				File file = new File(TEMP_FOLDER_PATH);
+				file.setReadable(false);
+				String str[] = {TEMP_FOLDER_PATH};
+				myLs.run(str,null,new ByteArrayOutputStream());
+				fail("Should throw exception");
+			}catch(LsException le){
+				File file = new File(TEMP_FOLDER_PATH);
+				file.setReadable(true);
+				assertEquals("ls: Permission denied", le.getLocalizedMessage());
+			}
 		}
 	}
 
@@ -111,7 +114,7 @@ public class LsApplicationTest {
 		}
 		assertEquals("a.txt	b.pdf\n", myStream.toString());
 	}
-	
+
 	@Test
 	public void testFunctionGetListOfFileFromDirectoryWithValidDirectory(){
 		LsApplication myLs = new LsApplication();
@@ -124,7 +127,7 @@ public class LsApplicationTest {
 			fail("Not supposed to throw exception.");
 		}
 	}
-	
+
 	@Test
 	public void testFunctionGetListOfFileFromDirectoryWithInvalidDirectory(){
 		LsApplication myLs = new LsApplication();
@@ -148,7 +151,7 @@ public class LsApplicationTest {
 			fail("Not supposed to have exception for folder that exists.");
 		}
 	}
-	
+
 	@Test
 	public void testFileAsDirectory(){
 		LsApplication myLs = new LsApplication();
@@ -164,7 +167,7 @@ public class LsApplicationTest {
 		}
 		Environment.currentDirectory = temp;
 	}
-	
+
 	@Test
 	public void testTempDirectoryAsCurrentDirectory() {
 		LsApplication myLs = new LsApplication();
@@ -207,16 +210,16 @@ public class LsApplicationTest {
 		try{
 			myLs.run(str,null,myOutputStream);
 			String expectedResult = TEMP_FOLDER_PATH + File.separator +":\n" 
-									+ TEMP_FILE_NAME + "\t" + TEMP_FILE_NAME2 + "\n" 
-									+ "\n"
-									+ TEMP_FOLDER_PATH2 + File.separator + ":\n"
-									+ TEMP_FILE_NAME2 + "\n" ;
+					+ TEMP_FILE_NAME + "\t" + TEMP_FILE_NAME2 + "\n" 
+					+ "\n"
+					+ TEMP_FOLDER_PATH2 + File.separator + ":\n"
+					+ TEMP_FILE_NAME2 + "\n" ;
 			assertEquals(expectedResult,myOutputStream.toString());
 		}catch(LsException le){
 			fail("Should not throw exception");
 		}
 	}
-	
+
 	@Test
 	public void testCurrentDirectoryNotExists(){
 		LsApplication myLs = new LsApplication();
@@ -257,14 +260,14 @@ public class LsApplicationTest {
 			subFile.delete();
 			theDir.delete();
 		}
-		
+
 		File theDir2 = new File(TEMP_FOLDER_PATH2);
 		if(theDir2.exists()){
 			File subFile = new File(TEMP_FOLDER_PATH2,TEMP_FILE_NAME2);
 			subFile.delete();
 			theDir2.delete();
 		}
-		
+
 		File theDir3 = new File(TEMP_FOLDER_PATH3);
 		if(theDir3.exists()){
 			theDir3.delete();
