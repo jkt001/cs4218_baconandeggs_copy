@@ -52,7 +52,7 @@ public class LsApplication implements Application{
 			throw new LsException("Permission denied");
 		}
 		if (theDir.list() == null){
-			throw new LsException("Permission denied");
+			throw new LsException("Cannot list files in the directory");
 		}
 		
 		return theDir.list();

@@ -119,7 +119,7 @@ public class LsApplicationTest {
 				}else{
 					file.setReadable(true);
 				}
-				assertEquals("ls: Permission denied", le.getLocalizedMessage());
+				assertTrue(le.getLocalizedMessage().equals("ls: Permission denied") || le.getLocalizedMessage().equals("ls: Cannot list files in the directory"));
 			}
 		} catch (IOException e) {
 			fail("IOException during test");
