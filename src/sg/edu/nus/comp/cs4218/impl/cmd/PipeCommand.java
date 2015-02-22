@@ -73,49 +73,6 @@ public class PipeCommand implements Command {
 		return callCommandList;
 	}
 
-	/*
-	 * //convert the output stream to the input stream ByteArrayOutputStream
-	 * outByte = (ByteArrayOutputStream)stdout;
-	 * 
-	 * byte[] byteArray= outByte.toByteArray();
-	 * System.out.println("byteArray "+new String(byteArray));
-	 * 
-	 * stdin = new ByteArrayInputStream (byteArray);
-	 */
-	// stdin.read(byteArray); //this part is ...wrong
-
-	/*
-	 * byte[] buffer = new byte[1024]; int len; try { while ((len =
-	 * stdin.read(buffer)) != -1) { stdout.write(buffer, 0, len); } } catch
-	 * (IOException e) { throw new ShellException("Error in pipe"); }
-	 */
-	private boolean finished = false;
-
-	public class ThreadedPipe implements Runnable {
-
-		private final InputStream inputStream;
-		private final OutputStream outputStream;
-
-		public ThreadedPipe(InputStream inputStream, OutputStream outputStream) {
-			this.inputStream = inputStream;
-			this.outputStream = outputStream;
-		}
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			while (!finished) {
-				try {
-					outputStream.write(inputStream.read());
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-	}
-
 	@Override
 	public void terminate() {
 		// TODO Auto-generated method stub
