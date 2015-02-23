@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import sg.edu.nus.comp.cs4218.OSCheck;
 import sg.edu.nus.comp.cs4218.WindowsPermission;
 import sg.edu.nus.comp.cs4218.exception.CatException;
 import sg.edu.nus.comp.cs4218.impl.app.CatApplication;
@@ -218,7 +219,9 @@ public class CatApplicationTest {
 
 			// Make file not readable
 			file.setReadable(false); // Unix
-			WindowsPermission.setReadable(file, false); // Windows
+			if (OSCheck.isWindows()){
+				WindowsPermission.setReadable(file, false); // Windows
+			}
 			
 			// Try to CAT file again			
 			args = new String[] {tempFilePath2};
