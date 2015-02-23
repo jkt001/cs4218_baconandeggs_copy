@@ -4,31 +4,56 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.StringBufferInputStream;
-import java.io.StringReader;
 
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.Environment;
-import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
+import sg.edu.nus.comp.cs4218.exception.PwdException;
 
 public class PwdApplicationTest {
+	
+	private PwdApplication app;
+	private ByteArrayInputStream bais;
+	private ByteArrayOutputStream baos;
 
+	@Before
+	public void setUp() throws Exception {		
+		app = new PwdApplication();
+		bais = new ByteArrayInputStream(new byte[1]);
+		baos = new ByteArrayOutputStream();
+	}
+	
+	// Test null parameters
 	@Test
-	public void test() {
-		PwdApplication app = new PwdApplication();
+	public void testNullParams() throws PwdException {
+		String[] params = null;
+		app.run(params, bais, baos);
+	}
+	
+	// Test zero parameters
+	@Test
+	public void testZeroParams() throws PwdException {
 		String[] params = {};
-		ByteArrayInputStream bais = new ByteArrayInputStream(new byte[1]);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		app.run(params, bais, baos);
+	}
+	
+	// Test one parameter, but null value
+	@Test(expected = PwdException.class)
+	public void testOneNullParams() throws PwdException {
+		String[] params = {null};
+		app.run(params, bais, baos);
+	}
+
+	// Test that pwd prints correct current directory
+	@Test
+	public void testExpectedBehavior() {
+		String[] params = {};
+		
 		try {
 			app.run(params, bais, baos);
-		} catch (AbstractApplicationException e) {
-			e.printStackTrace();
+		} catch (PwdException e) {
+			fail("Unknown error occured");
 		}
 		
 		String output = new String(baos.toByteArray());

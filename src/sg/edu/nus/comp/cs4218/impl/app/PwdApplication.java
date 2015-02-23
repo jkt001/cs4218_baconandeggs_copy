@@ -6,16 +6,13 @@ import java.io.OutputStream;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
-import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
-import sg.edu.nus.comp.cs4218.exception.CdException;
-import sg.edu.nus.comp.cs4218.exception.FindException;
 import sg.edu.nus.comp.cs4218.exception.PwdException;
 
 public class PwdApplication implements Application {
 
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
-			throws AbstractApplicationException {
+			throws PwdException {
 		
 		if (stdin == null || stdout == null) {
 			throw new PwdException("Null input/output stream");
