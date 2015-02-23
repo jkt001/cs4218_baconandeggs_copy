@@ -9,36 +9,31 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Paths;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.exception.HeadException;
 import sg.edu.nus.comp.cs4218.impl.app.HeadApplication;
 
 public class HeadApplicationTest {
+
 	private HeadApplication headApp;
 	private String[] args;
 	private File file;
-	static String tempFilePath = "testHead.txt";
-	private FileOutputStream myFileOutputStream;
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+	private ByteArrayOutputStream outStream;
+	
+	public static String tempFilePath = "testHead.txt";
+	public static final String APP_EXCEPTION = "head: ";
+	public static final String SHOULDNOT_FAIL = "Should not throw exception";
 
 	@Before
 	public void setUp() throws Exception {
 		headApp = new HeadApplication();
 		args = null;
-
+		outStream = new ByteArrayOutputStream();
 		try {
 			file = new File(tempFilePath);
 			file.createNewFile();
@@ -47,11 +42,13 @@ public class HeadApplicationTest {
 		}
 
 		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter buffWriter = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
+			FileOutputStream fos = new FileOutputStream(new File(tempFilePath));
+
+			BufferedWriter buffWriter = new BufferedWriter(
+					new OutputStreamWriter(fos));
+
 			for (int intCount = 0; intCount < 4; intCount++) {
-				buffWriter.write(intCount + "aaa dddd ");
+				buffWriter.write(intCount + " ");
 				buffWriter.write(System.lineSeparator());
 				buffWriter.write(System.lineSeparator());
 			}
@@ -69,45 +66,102 @@ public class HeadApplicationTest {
 	}
 
 	@Test
-	public void testNullInputStreamException() {
+	public void testReadFromStdinAndWriteToStdouNullInputStreamException() {
 
 		try {
-			headApp.run(args, null, System.out);
-			fail("Should have thrown SomeException but did not!");
+			headApp.readFromStdinAndWriteToStdout(System.out, 3, null);
+			fail("Should have thrown Null Pointer Exception but did not!");
 		} catch (Exception e) {
-			String exceptionMsg = "head: " + "Null Pointer Exception";
+			String exceptionMsg = APP_EXCEPTION + "Null Pointer Exception";
+			assertEquals(exceptionMsg, e.getMessage());
+		}
+	}
+
+	@Test
+	public void testInsufficentArgumentsException() {
+		
+		args = new String[] { "-n" };
+
+		try {
+			headApp.run(args, null, outStream);
+			fail("Should have thrown exception but did not!");
+		} catch (HeadException e) {
+			String exceptionMsg = APP_EXCEPTION + "No such file exists";
+			assertEquals(exceptionMsg, e.getMessage());
+		}
+	}
+
+	@Test
+	public void testInvalidArgumentsForStdinException() {
+
+		args = new String[] { "-", "15" };
+
+		try {
+			headApp.run(args, System.in, outStream);
+			fail("Should have thrown exception but did not!");
+		} catch (HeadException e) {
+			String exceptionMsg = APP_EXCEPTION
+					+ "Invalid Head Command for reading from stdin";
+			assertEquals(exceptionMsg, e.getMessage());
+		}
+	}
+
+	@Test
+	public void testInvalidHeadCommandException() {
+
+		args = new String[] { "-n", "15", tempFilePath, "lalala" };
+
+		try {
+			headApp.run(args, null, outStream);
+			fail("Should have thrown SomeException but did not!");
+		} catch (HeadException e) {
+			String exceptionMsg = APP_EXCEPTION + "Invalid Head Command";
+			assertEquals(exceptionMsg, e.getMessage());
+		}
+	}
+
+	@Test
+	public void testIncorrectFlagUsedException() {
+
+		args = new String[] { "-f", "15", tempFilePath };
+
+		try {
+			headApp.run(args, null, outStream);
+			fail("Should have thrown SomeException but did not!");
+		} catch (HeadException e) {
+			String exceptionMsg = APP_EXCEPTION + "Incorrect flag used";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
 
 	@Test
 	public void testFileNotExistException() {
-		args = new String[1];
-		args[0] = "fileNotExist";
+
+		boolean flag = false;
 		
 		try {
-			headApp.run(args, System.in, System.out);
-			fail("Should have thrown SomeException but did not!");
+			flag = headApp.checkIfFileIsReadable(Paths.get("fileNotExist"));
+			fail("Should have thrown no such file exist exception but did not!");
 		} catch (HeadException e) {
-			String exceptionMsg = "head: " + "No such file exists";
+			String exceptionMsg = APP_EXCEPTION + "No such file exists";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
 
 	@Test
 	public void testFileIsDirException() {
-		
-		args = new String[1];
-		args[0] = "tempHeadDir";
+
+		boolean flag = false;
 
 		File fileDir = new File("tempHeadDir");
 		fileDir.mkdir();
 
 		try {
-			headApp.run(args, System.in, System.out);
-			fail("Should have thrown SomeException but did not!");
+			flag = headApp.checkIfFileIsReadable(Paths.get("tempHeadDir"));
+			assertFalse(flag);
+			fail("Should have thrown file is directory exception but did not!");
 		} catch (HeadException e) {
-			String exceptionMsg = "head: " + "This is a directory";
+			String exceptionMsg = APP_EXCEPTION + "This is a directory";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 
@@ -115,113 +169,139 @@ public class HeadApplicationTest {
 	}
 
 	@Test
-	public void testInvalidHeadCommandException() {
-		
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		
-		args = new String[] { "-n" };
-		
+	public void testFileIsValid() throws HeadException {
+
+		boolean flag = false;
 		try {
-			headApp.run(args, null, myOutputStream);
-			fail("Should have thrown SomeException but did not!");
+			flag = headApp.checkIfFileIsReadable(Paths.get(tempFilePath));
+			assertTrue(flag);
 		} catch (HeadException e) {
-			String exceptionMsg = "head: " + "No such file exists";
-			assertEquals(exceptionMsg, e.getMessage());
+			fail("Path should be valid");
 		}
 	}
 
 	@Test
 	public void testNotANumberException() {
-		
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		
-		args = new String[] { "-n", "oooo", tempFilePath };
 
 		try {
-			headApp.run(args, null, myOutputStream);
-			fail("Should have thrown SomeException but did not!");
+			int numLines = headApp.checkNumberOfLinesInput("ooo");
+			fail("Should have thrown Not a number exception but did not!");
 		} catch (HeadException e) {
-			String exceptionMsg = "head: " + "Invalid command, not a number.";
+			String exceptionMsg = APP_EXCEPTION
+					+ "Invalid command, not a number.";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
 
 	@Test
 	public void testNegativeNumberException() {
-		args = new String[] { "-n", "-1", tempFilePath };
 
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try {
-			headApp.run(args, null, myOutputStream);
-			fail("Should have thrown SomeException but did not!");
+			int numLines = headApp.checkNumberOfLinesInput("-1");
+			fail("Should have thrown negative number exception but did not!");
 		} catch (HeadException e) {
-			String exceptionMsg = "head: "
+			String exceptionMsg = APP_EXCEPTION
 					+ "Number of lines cannot be negative";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
 
 	@Test
-	public void testReadFromStdin() throws HeadException, IOException {
+	public void testNumberIsValid() {
+
+		try {
+			int numLines = headApp.checkNumberOfLinesInput("10");
+			assertEquals(10, numLines);
+		} catch (HeadException e) {
+			fail("Number should be valid");
+		}
+	}
+
+	@Test
+	public void testReadFromStdinWithNullArgs() throws HeadException,
+			IOException {
 
 		String inputString = "1\n" + "2\n" + "3\n" + "4\n" + "5\n" + "6\n"
 				+ "7\n" + "8\n" + "9\n" + "10\n";
 
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
 				inputString.getBytes("UTF-8"));
 
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		try {
+			headApp.run(args, inStream, outStream);
+			assertEquals(inputString, outStream.toString());
+		} catch (HeadException e) {
+			fail(SHOULDNOT_FAIL);
+		}
+	}
+
+	@Test
+	public void testReadFromStdinWithValidNumber() throws HeadException,
+			IOException {
+
+		String inputString = "1\n";
+
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
+				inputString.getBytes("UTF-8"));
 
 		try {
-			headApp.run(args, myInputStream, myOutputStream);
-			assertEquals(inputString, myOutputStream.toString());
+			headApp.readFromStdinAndWriteToStdout(outStream, 1,
+					inStream);
+			assertEquals(inputString, outStream.toString());
 		} catch (HeadException e) {
-			fail("Should not throw exception");
+			fail(SHOULDNOT_FAIL);
+		}
+	}
+
+	@Test
+	public void testReadFromStdinWithFlag() throws HeadException, IOException {
+
+		String expected = "1\n" + "2\n" + "3\n" + "4\n";
+		String inputString = expected + "5\n";
+
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
+				inputString.getBytes("UTF-8"));
+
+		args = new String[2];
+		args[0] = "-n";
+		args[1] = "4";
+
+		try {
+			headApp.run(args, inStream, outStream);
+			assertEquals(expected, outStream.toString());
+		} catch (HeadException e) {
+			fail(SHOULDNOT_FAIL);
 		}
 	}
 
 	@Test
 	public void testReadEmptyFile() throws HeadException, IOException {
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
 		File emptyFile = new File("HeadEmptyFileTest.txt");
 		emptyFile.createNewFile();
+
 		args = new String[] { "-n", "10", "HeadEmptyFileTest.txt" };
 
-		// create emptyFile
-
 		try {
-			headApp.run(args, null, myOutputStream);
-			assertEquals("", myOutputStream.toString());
+			headApp.readFromFileAndWriteToStdout(outStream, 10, emptyFile.toPath());
+			assertEquals("", outStream.toString());
 		} catch (HeadException e) {
-			fail("Should not throw exception");
+			fail(SHOULDNOT_FAIL);
 		}
 		emptyFile.delete();
 	}
 
 	@Test
 	public void testReadZeroLines() throws HeadException, IOException {
-		// FileOutputStream myFileOutputStream;
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-
-		// write to temp file to test head reading of file
-		// try {
-		// myFileOutputStream = new FileOutputStream(new File("HeadZero"));
-		// BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-		// myFileOutputStream));
-		// bw.write("aaa dddd ");
-		// bw.write(System.lineSeparator());
-		// bw.close();
-		// } catch (Exception e1) {
-		// e1.printStackTrace();
-		// }
 
 		args = new String[] { "-n", "0", tempFilePath };
+
 		try {
-			headApp.run(args, null, myOutputStream);
-			assertEquals("", myOutputStream.toString());
+			
+			headApp.readFromFileAndWriteToStdout(outStream, 0, Paths.get(tempFilePath));
+			assertEquals("", outStream.toString());
 		} catch (HeadException e) {
-			fail("Should not throw exception");
+			fail(SHOULDNOT_FAIL);
 		}
 
 	}
@@ -229,23 +309,23 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFileLessThanTenLines() throws HeadException,
 			IOException {
-	
+
 		StringBuilder expected = new StringBuilder();
 		for (int intCount = 0; intCount < 4; intCount++) {
-			expected.append(intCount + "aaa dddd ");
+			expected.append(intCount);
+			expected.append(' ');
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
-		
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+
 
 		args = new String[] { tempFilePath };
-		
+
 		try {
-			headApp.run(args, null, myOutputStream);
-			assertEquals(expected.toString(), myOutputStream.toString());
+			headApp.run(args, null, outStream);
+			assertEquals(expected.toString(), outStream.toString());
 		} catch (HeadException e) {
-			fail("Should not throw exception");
+			fail(SHOULDNOT_FAIL);
 		}
 
 	}
@@ -253,23 +333,22 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFileMoreThanLinesRequired() throws HeadException,
 			IOException {
-		
+
 		StringBuilder expected = new StringBuilder();
 		for (int intCount = 0; intCount < 3; intCount++) {
-			expected.append(intCount + "aaa dddd ");
+			expected.append(intCount);
+			expected.append(' ');
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
 
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		args = new String[] { "-n", "6", tempFilePath };
 
 		try {
-			headApp.run(args, null, myOutputStream);
-			String testStr = myOutputStream.toString();
-			assertEquals(expected.toString(), testStr);
+			headApp.run(args, null, outStream);
+			assertEquals(expected.toString(), outStream.toString());
 		} catch (HeadException e) {
-			fail("Should not throw exception");
+			fail(SHOULDNOT_FAIL);
 		}
 
 	}
@@ -280,20 +359,19 @@ public class HeadApplicationTest {
 
 		StringBuilder expected = new StringBuilder();
 		for (int intCount = 0; intCount < 4; intCount++) {
-			expected.append(intCount + "aaa dddd ");
+			expected.append(intCount);
+			expected.append(' ');
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
 
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		args = new String[] { "-n", "15", tempFilePath };
 
 		try {
-			headApp.run(args, null, myOutputStream);
-			String testStr = myOutputStream.toString();
-			assertEquals(expected.toString(), testStr);
+			headApp.run(args, null, outStream);
+			assertEquals(expected.toString(), outStream.toString());
 		} catch (HeadException e) {
-			fail("Should not throw exception");
+			fail(SHOULDNOT_FAIL);
 		}
 
 	}
@@ -301,62 +379,56 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFileSameAsLineRequired() throws HeadException,
 			IOException {
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+
 		args = new String[] { "-n", "8", tempFilePath };
 
 		int intCount = 0;
 		StringBuilder expected = new StringBuilder();
+
 		for (intCount = 0; intCount < 4; intCount++) {
-			expected.append(intCount + "aaa dddd ");
+			expected.append(intCount);
+			expected.append(' ');
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
 
 		try {
-			headApp.run(args, null, myOutputStream);
-			String testStr = myOutputStream.toString();
-			assertEquals(expected.toString(), testStr);
+			headApp.run(args, null, outStream);
+			assertEquals(expected.toString(), outStream.toString());
 		} catch (HeadException e) {
-			fail("Should not throw exception");
+			fail(SHOULDNOT_FAIL);
+		}
+
+	}
+
+	@Test
+	public void testReadFileAndWriteToStdoutException() throws HeadException,
+			IOException {
+		args = new String[] { tempFilePath };
+		try {
+			headApp.readFromFileAndWriteToStdout(null, 10, Paths.get(tempFilePath));;
+		} catch (HeadException e) {
+			String expected = APP_EXCEPTION + "Stdout is null";
+			assertEquals(expected, e.getMessage());
 		}
 
 	}
 
 	// not working currently due to the set readable
-	@Test
-	public void testFileNotReadable() throws HeadException, IOException {
-		// try {
-		//
-		// File file = new File("tempCat.txt");
-		// if (file.createNewFile()) {
-		// System.out.println("File is created!");
-		// } else {
-		// System.out.println("File already exists.");
-		// }
-		// if (file.exists()) {
-		// System.out.println("Is Execute allow : " + file.canExecute());
-		// System.out.println("Is Write allow : " + file.canWrite());
-		// System.out.println("Is Read allow : " + file.canRead());
-		// }
-		//
-		// file.setExecutable(false);
-		// file.setReadable(false);
-		// file.setWritable(false);
-		//
-		// System.out.println("Is Execute allow : " + file.canExecute());
-		// System.out.println("Is Write allow : " + file.canWrite());
-		// System.out.println("Is Read allow : " + file.canRead());
-		//
-		// if (file.createNewFile()) {
-		// System.out.println("File is created!");
-		// } else {
-		// System.out.println("File already exists.");
-		// }
-		//
-		// } catch (IOException e) {
-		// e.printStackTrace();
-		// }
-
-	}
+	// @Test
+	// public void testFileNotReadable() throws HeadException, IOException {
+	// Path filePath = Files.setAttribute(Paths.get(tempFilePath),
+	// "dos:readonly", false);
+	// headApp.checkIfFileIsReadable(filePath);
+	// boolean flag = false;
+	// try {
+	// flag = headApp.checkIfFileIsReadable(filePath);
+	// fail("Should have thrown file is directory exception but did not!");
+	// } catch (HeadException e) {
+	// String exceptionMsg = "head: " + "Could not read file";
+	// assertEquals(exceptionMsg, e.getMessage());
+	// }
+	//
+	// }
 
 }

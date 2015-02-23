@@ -1,6 +1,7 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,55 +20,65 @@ public class HeadApplication implements Application {
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws HeadException {
 
-		// head
 		if (args == null || args.length == 0 || args.length == 2) {
-
-			if (stdin == null || stdout == null) {
-				throw new HeadException("Null Pointer Exception");
-			}
 			int numLinesToRead = 0;
 
 			if (args == null || args.length == 0) {
 				numLinesToRead = 10;
-			} else if (args.length == 2 && args[0].equals("-n")) {
-				numLinesToRead = checkNumberOfLinesInput(args[1]);
+			} else {
+				if (args.length == 2 && args[0].equals("-n")) {
+					numLinesToRead = checkNumberOfLinesInput(args[1]);
+				} else {
+					throw new HeadException(
+							"Invalid Head Command for reading from stdin");
+				}
+			}
+
+			readFromStdinAndWriteToStdout(stdout, numLinesToRead, stdin);
+
+		} else {
+			int numLines;
+
+			if (args.length == 3 || args.length == 1) {
+				if (args.length == 3 && args[0].equals("-n")) {
+					numLines = checkNumberOfLinesInput(args[1]);
+				} else if (args.length == 1) {
+					numLines = 10;
+				} else {
+					throw new HeadException("Incorrect flag used");
+				}
 			} else {
 				throw new HeadException("Invalid Head Command");
 			}
-			readFromStdinAndWriteToStdout(stdout, numLinesToRead, stdin);
-		} else {
-			int numLines;
-			if (args.length == 3 || args.length == 1) {
-				if ((args.length == 3) && (args[0].equals("-n"))) {
-					numLines = checkNumberOfLinesInput(args[1]);
-				} else {
-					numLines = 10;
-				}
 
-				// check file
-				Path currentDir = Paths.get(Environment.currentDirectory);
-				int filePosition = 0;
-				if (args.length == 3) {
-					filePosition = 2;
-				}
-				Path filePath = currentDir.resolve(args[filePosition]);
-				boolean isFileReadable = false;
-				isFileReadable = checkIfFileIsReadable(filePath);
+			// check file
+			Path currentDir = Paths.get(Environment.currentDirectory);
+			int filePosition = 0;
+			if (args.length == 3) {
+				filePosition = 2;
+			}
+			Path filePath = currentDir.resolve(args[filePosition]);
+			boolean isFileReadable = false;
+			isFileReadable = checkIfFileIsReadable(filePath);
 
-				if (isFileReadable) {
-					readFronFileAndWriteToStdout(stdout, numLines, filePath);
-				}
-			} else {
-				throw new HeadException("Invalid Head Command");
+			if (isFileReadable) {
+				readFromFileAndWriteToStdout(stdout, numLines, filePath);
 			}
 		}
 	}
 
-	private void readFromStdinAndWriteToStdout(OutputStream stdout,
-			int numLinesToRead, InputStream stdin) throws HeadException {
+	void readFromStdinAndWriteToStdout(OutputStream stdout, int numLinesToRead,
+			InputStream stdin) throws HeadException {
+
+		if (stdin == null || stdout == null) {
+			throw new HeadException("Null Pointer Exception");
+		}
+
 		BufferedReader buffReader = new BufferedReader(new InputStreamReader(
 				stdin));
+
 		int numRead = 0;
+
 		while (numLinesToRead != numRead) {
 			try {
 				String inputString = buffReader.readLine();
@@ -80,8 +91,7 @@ public class HeadApplication implements Application {
 		}
 	}
 
-	private int checkNumberOfLinesInput(String numLinesString)
-			throws HeadException {
+	int checkNumberOfLinesInput(String numLinesString) throws HeadException {
 		int numLines;
 		try {
 			numLines = Integer.parseInt(numLinesString);
@@ -96,51 +106,38 @@ public class HeadApplication implements Application {
 		return numLines;
 	}
 
-	private void readFronFileAndWriteToStdout(OutputStream stdout,
+	void readFromFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws HeadException {
+
 		String encoding = "UTF-8";
-		byte[] byteFileArray;
-		int numLinesToWrite = 0;
-		byte[] toWrite;
 
+		if (stdout == null) {
+			throw new HeadException("Stdout is null");
+		}
+		
 		try {
-
-			byteFileArray = Files.readAllBytes(filePath);
-
-			String fileContent = new String(byteFileArray, encoding);
-
-			fileContent = fileContent.replaceAll(System.lineSeparator(), " "
-					+ System.lineSeparator());
-
-			String[] spiltFileArray = fileContent.split(System.lineSeparator());
-
-			if (numLinesRequired > spiltFileArray.length) {
-				numLinesToWrite = spiltFileArray.length;
-			} else {
-				numLinesToWrite = numLinesRequired;
-			}
-
-			int intCount = 0;
-			while (intCount != numLinesToWrite) {
-
-				if (spiltFileArray[intCount].equals("")) {
-					stdout.write(spiltFileArray[intCount].getBytes(encoding));
-				} else {
-					int endPos = spiltFileArray[intCount].lastIndexOf(' ');
-					toWrite = spiltFileArray[intCount].substring(0, endPos)
-							.getBytes(encoding);
-					stdout.write(toWrite);
-					stdout.write(System.lineSeparator().getBytes(encoding));
+			FileInputStream fileInStream = new FileInputStream(filePath.toString());
+			BufferedReader buffReader = new BufferedReader(new InputStreamReader(fileInStream));
+			
+			int numLinesWrote = 0;
+			String input= "";
+			while((input = buffReader.readLine())!= null){
+				if(numLinesWrote == numLinesRequired){
+					break;
 				}
-				intCount++;
+				stdout.write(input.getBytes(encoding));
+				stdout.write(System.lineSeparator().getBytes(encoding));
+				numLinesWrote++;
 			}
+			buffReader.close();
+			
 		} catch (IOException e) {
 			throw new HeadException("IOException");
 		}
 
 	}
 
-	private boolean checkIfFileIsReadable(Path filePath) throws HeadException {
+	boolean checkIfFileIsReadable(Path filePath) throws HeadException {
 		if (Files.notExists(filePath)) {
 			throw new HeadException("No such file exists");
 		}
