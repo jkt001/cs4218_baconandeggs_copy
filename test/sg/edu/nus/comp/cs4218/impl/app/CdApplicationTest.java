@@ -23,7 +23,7 @@ import sg.edu.nus.comp.cs4218.impl.app.CdApplication;
 
 public class CdApplicationTest {
 	
-	private static final String PROPERTY_USER_DIR = System.getProperty("user.dir");
+	private static final String USER_DIR = System.getProperty("user.dir");
 	
 	private static final String PARENT_DIR = "..";
 	private static final String WIN_GRANDPARENT = "..\\..";
@@ -40,7 +40,7 @@ public class CdApplicationTest {
 	@Before
 	public void setUp() throws Exception {
 		// Set current directory to standard current working directory
-		Environment.currentDirectory = PROPERTY_USER_DIR;
+		Environment.currentDirectory = USER_DIR;
 		
 		app = new CdApplication();
 	}
@@ -48,17 +48,53 @@ public class CdApplicationTest {
 	@After
 	public void tearDown() throws Exception {
 		// Set current directory to standard current working directory
-		Environment.currentDirectory = PROPERTY_USER_DIR;
+		Environment.currentDirectory = USER_DIR;
+	}
+	
+	/*
+	 * Basic parameter handling tests
+	 */
+	
+	// Test null parameters
+	@Test(expected = CdException.class)
+	public void testNullParams() throws CdException {
+		String[] params = null;
+		app.run(params, System.in, System.out);
+	}
+	
+	// Test zero parameters
+	@Test(expected = CdException.class)
+	public void testZeroParams() throws CdException {
+		String[] params = {};
+		app.run(params, System.in, System.out);
+	}
+	
+	// Test one parameter, but null value
+	@Test(expected = CdException.class)
+	public void testOneNullParams() throws CdException {
+		String[] params = {null};
+		app.run(params, System.in, System.out);
+	}
+	
+	// Test two parameters
+	@Test(expected = CdException.class)
+	public void testTwoParams() throws CdException {		
+		String[] params = {"a", "b"};
+		app.run(params, System.in, System.out);
 	}
 
+	/*
+	 * Test various types of paths that can be specified
+	 * by the user, e.g. absolute, relative, etc.
+	 */
 
 	// Test folder that exists, absolute path
 	@Test
 	public void testSimpleAbsolutePathThatExists() {
 		if (isWindows()) {
-			testCdExpectSuccess(getUserDir(), WIN_DRIVE_ROOT, WIN_DRIVE_ROOT);
+			testCdExpectSuccess(USER_DIR, WIN_DRIVE_ROOT, WIN_DRIVE_ROOT);
 		}else{
-			testCdExpectSuccess(getUserDir(), UNIX_ROOT, UNIX_ROOT);
+			testCdExpectSuccess(USER_DIR, UNIX_ROOT, UNIX_ROOT);
 		}
 	}
 	
@@ -66,11 +102,11 @@ public class CdApplicationTest {
 	@Test
 	public void testAbsolutePathWithOneFolderThatExists() {
 		if (isWindows()) {
-			testCdExpectSuccess(getUserDir(), WIN_WINDOWS_DIR, WIN_WINDOWS_DIR);
+			testCdExpectSuccess(USER_DIR, WIN_WINDOWS_DIR, WIN_WINDOWS_DIR);
 		}else if (isMac()){
-			testCdExpectSuccess(getUserDir(), MAC_SYSTEM_DIR, MAC_SYSTEM_DIR);
+			testCdExpectSuccess(USER_DIR, MAC_SYSTEM_DIR, MAC_SYSTEM_DIR);
 		}else{
-			testCdExpectSuccess(getUserDir(), UNIX_VAR_DIR, UNIX_VAR_DIR);
+			testCdExpectSuccess(USER_DIR, UNIX_VAR_DIR, UNIX_VAR_DIR);
 		}
 	}
 	
@@ -78,11 +114,11 @@ public class CdApplicationTest {
 	@Test
 	public void testAbsolutePathWithOneFolderWithExtraSlashThatExists() {
 		if (isWindows()) {
-			testCdExpectSuccess(getUserDir(), WIN_WINDOWS_DIR+"\\", WIN_WINDOWS_DIR);
+			testCdExpectSuccess(USER_DIR, WIN_WINDOWS_DIR+"\\", WIN_WINDOWS_DIR);
 		}else if (isMac()){
-			testCdExpectSuccess(getUserDir(), MAC_SYSTEM_DIR+"/", MAC_SYSTEM_DIR);
+			testCdExpectSuccess(USER_DIR, MAC_SYSTEM_DIR+"/", MAC_SYSTEM_DIR);
 		}else{
-			testCdExpectSuccess(getUserDir(), UNIX_VAR_DIR+"/", UNIX_VAR_DIR);
+			testCdExpectSuccess(USER_DIR, UNIX_VAR_DIR+"/", UNIX_VAR_DIR);
 		}
 	}
 	
@@ -90,9 +126,9 @@ public class CdApplicationTest {
 	@Test
 	public void testNonExistentAbsolutePath() {		
 		if (isWindows()) {
-			testCdExpectFailure(getUserDir(), "C:\\InvalidDir");
+			testCdExpectFailure(USER_DIR, "C:\\InvalidDir");
 		}else{
-			testCdExpectFailure(getUserDir(), "/BlaaBlaaBlaa");
+			testCdExpectFailure(USER_DIR, "/BlaaBlaaBlaa");
 		}
 	}
 	
@@ -242,7 +278,7 @@ public class CdApplicationTest {
 
 			String tempFolderName = "testCdApplicationTempDir";
 			Path tempFolderPath = FileSystems.getDefault().getPath(
-					PROPERTY_USER_DIR, tempFolderName);
+					USER_DIR, tempFolderName);
 
 			Files.createDirectory(tempFolderPath);
 			WindowsPermission.setReadable(tempFolderPath, false);
@@ -259,7 +295,7 @@ public class CdApplicationTest {
 
 			String tempFolderName = "testCdApplicationTempDir";
 			Path tempFolderPath = FileSystems.getDefault().getPath(
-					PROPERTY_USER_DIR, tempFolderName);
+					USER_DIR, tempFolderName);
 
 			Set<PosixFilePermission> perms = PosixFilePermissions
 					.fromString("-wx-wx---");
@@ -273,6 +309,10 @@ public class CdApplicationTest {
 			Files.deleteIfExists(tempFolderPath);
 		}
 	}
+	
+	/*
+	 * Helper methods used by the tests above;
+	 */
 
 	private void testCdExpectFailure(String initialDirectory, String cdPath) {
 		Environment.currentDirectory = initialDirectory;
@@ -302,10 +342,6 @@ public class CdApplicationTest {
 		}
 		
 		assertEquals(expectedDirectory, Environment.currentDirectory);
-	}
-	
-	private String getUserDir() {
-		return PROPERTY_USER_DIR;
 	}
 
 }

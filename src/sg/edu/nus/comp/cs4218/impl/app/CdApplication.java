@@ -1,21 +1,13 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclEntryPermission;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
-
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.CdException;
-import sg.edu.nus.comp.cs4218.exception.FindException;
 
 public class CdApplication implements Application {
 
@@ -54,6 +46,7 @@ public class CdApplication implements Application {
 		
 		// Check if there is valid permissions to cd into the directory
 		// (replicating Windows command prompt and UNIX shell behavior)
+		//
 		// Disabled since this check doesn't work on Windows
 		/*
 		if (!newAbsolutePath.toFile().canExecute()){
