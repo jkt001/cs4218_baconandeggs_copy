@@ -6,9 +6,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -26,14 +26,10 @@ public class FindApplication implements Application {
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws FindException {
 		
-		if (stdin == null || stdout == null) {
-			throw new FindException("Null input/output stream");
-		}
-		
-		final PrintWriter stdoutWriter = new PrintWriter(stdout);
-		
+		checkInputOutputStreamSanity(stdin, stdout);		
 		checkParametersSanity(args);
-		
+				
+		// Parse parameters
 		String specifiedPath;
 		final String pattern;
 		
@@ -66,6 +62,24 @@ public class FindApplication implements Application {
 			
 		}
 		
+		List<String> foundItems = findPatternInPath(specifiedPath, pattern);		
+		outputItems(stdout, foundItems);
+
+	}
+
+	private void outputItems(OutputStream stdout, List<String> foundItems) {
+		final PrintWriter stdoutWriter = new PrintWriter(stdout);		
+		
+		Collections.sort(foundItems);
+		for(String item : foundItems){
+			stdoutWriter.println(item);
+		}
+		
+		stdoutWriter.flush();
+	}
+
+	private List<String> findPatternInPath(String specifiedPath,
+			final String pattern) throws FindException {
 		Path basePath = FileSystems.getDefault().getPath(Environment.currentDirectory);
 		Path resolvedPath = basePath.resolve(specifiedPath);
 		Path newAbsolutePath = resolvedPath.normalize();
@@ -77,7 +91,7 @@ public class FindApplication implements Application {
 		final List<String> foundItems = new LinkedList<String>();
 		
 		try {
-			Files.walkFileTree(newAbsolutePath, new FileVisitor<Path>(){
+			Files.walkFileTree(newAbsolutePath, new SimpleFileVisitor<Path>(){
 
 				@Override
 				public FileVisitResult preVisitDirectory(Path dir,
@@ -101,34 +115,20 @@ public class FindApplication implements Application {
 					}
 					return FileVisitResult.CONTINUE;
 				}
-
-				@Override
-				public FileVisitResult visitFileFailed(Path file,
-						IOException exc) throws IOException {
-					// TODO Auto-generated method stub
-					return FileVisitResult.CONTINUE;
-				}
-
-				@Override
-				public FileVisitResult postVisitDirectory(Path dir,
-						IOException exc) throws IOException {
-					// TODO Auto-generated method stub
-					return FileVisitResult.CONTINUE;
-				}
 				
 			});
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		Collections.sort(foundItems);
-		for(String item : foundItems){
-			stdoutWriter.println(item);
-		}
-		
-		stdoutWriter.flush();
+		return foundItems;
+	}
 
+	private void checkInputOutputStreamSanity(InputStream stdin,
+			OutputStream stdout) throws FindException {
+		if (stdin == null || stdout == null) {
+			throw new FindException("Null input/output stream");
+		}
 	}
 
 	private void checkParametersSanity(String[] args) throws FindException {
