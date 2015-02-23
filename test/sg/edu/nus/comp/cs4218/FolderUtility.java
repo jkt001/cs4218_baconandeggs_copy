@@ -68,12 +68,12 @@ public final class FolderUtility {
 				TestFolder folder = (TestFolder) entry;
 				Path newFolderPath = Paths.get(path, folder.getName()).toAbsolutePath();
 				Files.createDirectories(newFolderPath);
-				System.out.println(newFolderPath.toString());
+				// System.out.println(newFolderPath.toString());
 				generate(newFolderPath.toString(), folder.getContents());				
 			}else if (entry instanceof TestFile){
 				TestFile file = (TestFile) entry;
 				Path newFilePath = Paths.get(path, file.getName()).toAbsolutePath();
-				System.out.println(newFilePath.toString());
+				// System.out.println(newFilePath.toString());
 				Files.write(newFilePath, file.getData().getBytes());
 			}
 		}
