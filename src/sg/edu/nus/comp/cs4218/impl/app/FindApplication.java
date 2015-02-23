@@ -181,11 +181,10 @@ public class FindApplication implements Application {
 		
 		// System.out.println(stringBuf);
 		
-		Pattern p = Pattern.compile(stringBuf.toString());
+		Pattern pattern = Pattern.compile(stringBuf.toString());		
+		Matcher matcher = pattern.matcher(inputString);
 		
-		Matcher m = p.matcher(inputString);
-		
-		return m.matches();
+		return matcher.matches();
 	}
 
 }
