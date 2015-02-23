@@ -12,46 +12,34 @@ public class FindApplicationTest {
 	
 	FindApplication app;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
-
 	@Before
 	public void setUp() throws Exception {
 		app = new FindApplication();
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	}
-
 	@Test
 	public void testMatchString() {
-		assertTrue(app.matchString("hello", "hello"));
+		assertTrue(app.matchString("hello1", "hello1"));
 	}
 	
 	@Test
 	public void testMatchString2() {
-		assertTrue(app.matchString("hello", "*llo"));
+		assertTrue(app.matchString("hello2", "*llo2"));
 	}
 	
 	@Test
 	public void testMatchString3() {
-		assertTrue(app.matchString("hello", "hel*"));
+		assertTrue(app.matchString("hello3", "hel*"));
 	}
 	
 	@Test
 	public void testMatchString4() {
-		assertTrue(app.matchString("hello", "h*o"));
+		assertTrue(app.matchString("hello4", "h*o4"));
 	}
 	
 	@Test
 	public void testMatchString5() {
-		assertTrue(app.matchString("hello", "*"));
+		assertTrue(app.matchString("hello5", "*"));
 	}
 
 }

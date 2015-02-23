@@ -31,21 +31,7 @@ public class FindApplication implements Application {
 		
 		final PrintWriter stdoutWriter = new PrintWriter(stdout);
 		
-		if (args == null) {
-			throw new FindException("No parameters");
-		}
-		
-		if (args.length == 0) {
-			throw new FindException("No parameters");
-		}
-		
-		if (args.length == 1) {
-			throw new FindException("Too few parameters");
-		}
-		
-		if (args.length > 3) {
-			throw new FindException("Too many parameters");
-		}
+		checkParametersSanity(args);
 		
 		String specifiedPath;
 		final String pattern;
@@ -135,6 +121,24 @@ public class FindApplication implements Application {
 		
 		stdoutWriter.flush();
 
+	}
+
+	private void checkParametersSanity(String[] args) throws FindException {
+		if (args == null) {
+			throw new FindException("No parameters");
+		}
+		
+		if (args.length == 0) {
+			throw new FindException("No parameters");
+		}
+		
+		if (args.length == 1) {
+			throw new FindException("Too few parameters");
+		}
+		
+		if (args.length > 3) {
+			throw new FindException("Too many parameters");
+		}
 	}
 	
 	boolean matchFileName(Path file, String expression){

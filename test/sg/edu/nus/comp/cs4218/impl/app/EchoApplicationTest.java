@@ -15,10 +15,35 @@ public class EchoApplicationTest {
 	public void testNullArgument(){
 		EchoApplication myEcho = new EchoApplication();
 		try{
-			myEcho.run(null,null,null);
+			myEcho.run(null,null,new ByteArrayOutputStream());
 			fail("Should throw exception");
 		}catch(EchoException ee){
 			assertEquals(ee.getLocalizedMessage(), "echo: Null arguments");
+		}
+	}
+	
+	@Test
+	public void testNullStdout(){
+		EchoApplication myEcho = new EchoApplication();
+		try{
+			String str[] = {};
+			myEcho.run(str,null,null);
+			fail("Should throw exception");
+		}catch(EchoException ee){
+			assertEquals(ee.getLocalizedMessage(), "echo: OutputStream not provided");
+		}
+	}
+	
+	@Test
+	public void testEmptyArgument(){
+		EchoApplication myEcho = new EchoApplication();
+		try{
+			String str[] = {};
+			ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+			myEcho.run(str,null,myOutputStream);
+			assertEquals("\n",myOutputStream.toString());
+		}catch(EchoException ee){
+			fail("Should not throw echo exception.");
 		}
 	}
 	
