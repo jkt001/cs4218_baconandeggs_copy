@@ -21,6 +21,10 @@ public class FindApplicationTest {
 	private static final String TEST_FOLDER = "testFindApplicationFolder";
 	
 	FindApplication app;
+
+	private ByteArrayInputStream inputStream;
+
+	private ByteArrayOutputStream outputStream;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -59,55 +63,72 @@ public class FindApplicationTest {
 	@Before
 	public void setUp() throws Exception {
 		app = new FindApplication();
+		
+		inputStream = new ByteArrayInputStream("test".getBytes());
+		outputStream = new ByteArrayOutputStream();
 	}
 	
 	// Test null parameters
 	@Test(expected = FindException.class)
 	public void testNullParams() throws FindException {
 		String[] params = null;
-		app.run(params, System.in, System.out);
+		app.run(params, inputStream, outputStream);
 	}
-	
+
 	// Test zero parameters
 	@Test(expected = FindException.class)
 	public void testZeroParams() throws FindException {
 		String[] params = {};
-		app.run(params, System.in, System.out);
+		app.run(params, inputStream, outputStream);
 	}
-	
+
 	// Test one parameter, but null value
 	@Test(expected = FindException.class)
 	public void testOneNullParams() throws FindException {
-		String[] params = {null};
-		app.run(params, System.in, System.out);
+		String[] params = { null };
+		app.run(params, inputStream, outputStream);
 	}
-	
+
 	// Test two parameters, with null value
 	@Test(expected = FindException.class)
-	public void testTwoNullParams() throws FindException {		
-		String[] params = {null, null};
-		app.run(params, System.in, System.out);
+	public void testTwoNullParams() throws FindException {
+		String[] params = { null, null };
+		app.run(params, inputStream, outputStream);
 	}
-	
+
 	// Test two parameters, with null value
 	@Test(expected = FindException.class)
-	public void testTwoNullParamsA() throws FindException {		
-		String[] params = {"A", null};
-		app.run(params, System.in, System.out);
+	public void testTwoNullParamsA() throws FindException {
+		String[] params = { "A", null };
+		app.run(params, inputStream, outputStream);
 	}
-	
+
 	// Test two parameters, with null value
 	@Test(expected = FindException.class)
-	public void testTwoNullParamsB() throws FindException {		
-		String[] params = {null, "B"};
-		app.run(params, System.in, System.out);
+	public void testTwoNullParamsB() throws FindException {
+		String[] params = { null, "B" };
+		app.run(params, inputStream, outputStream);
 	}
 	
+	// Test two parameters, but invalid
+	@Test(expected = FindException.class)
+	public void testTwoNullParamsWithInvalidSecondParameter() throws FindException {
+		String[] params = { "src", "-name" };
+		app.run(params, inputStream, outputStream);
+	}
+
 	// Test three null parameters
 	@Test(expected = FindException.class)
 	public void testThreeNullParams() throws FindException {		
 		String[] params = {null, null, null};
-		app.run(params, System.in, System.out);
+		app.run(params,  inputStream, outputStream);
+	}
+	
+	// Test four null parameters
+	@Test(expected = FindException.class)
+	public void testFourNullParams() throws FindException {		
+		String[] params = {null, null, null, null};
+		app.run(params,  inputStream, outputStream);
 	}
 	
 	/*
@@ -146,8 +167,6 @@ public class FindApplicationTest {
 	// Match folder name
 	@Test
 	public void testFindMatchFolderName() throws FindException {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream("test".getBytes());
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		String[] params = {TEST_FOLDER, "-name", "Folder*"};
 		app.run(params, inputStream, outputStream);
 		
@@ -163,8 +182,7 @@ public class FindApplicationTest {
 	
 	@Test
 	public void testFindMatchFolderNameWithSpace() throws FindException {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream("test".getBytes());
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		
 		String[] params = {TEST_FOLDER, "-name", "Folder *"};
 		app.run(params, inputStream, outputStream);
 		
@@ -178,8 +196,6 @@ public class FindApplicationTest {
 	// Match file name
 	@Test
 	public void testFindMatchFileName() throws FindException {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream("test".getBytes());
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		String[] params = {TEST_FOLDER, "-name", "*stuff*"};
 		app.run(params, inputStream, outputStream);
 		
@@ -195,8 +211,6 @@ public class FindApplicationTest {
 	// Match file extension
 	@Test
 	public void testFindMatchFileExtension() throws FindException {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream("test".getBytes());
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		String[] params = {TEST_FOLDER, "-name", "*.txt"};
 		app.run(params, inputStream, outputStream);
 		
@@ -221,8 +235,6 @@ public class FindApplicationTest {
 	// Match both
 	@Test
 	public void testFindMatchFileAndFolderName() throws FindException {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream("test".getBytes());
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		String[] params = {TEST_FOLDER, "-name", "*a*"};
 		app.run(params, inputStream, outputStream);
 		
@@ -244,8 +256,6 @@ public class FindApplicationTest {
 	
 	@Test(expected = FindException.class)
 	public void testFindInInvalidDir() throws FindException {
-		ByteArrayInputStream inputStream = new ByteArrayInputStream("test".getBytes());
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		String[] params = {"someNonExistentFolder", "-name", "*"};
 		app.run(params, inputStream, outputStream);
 	}
