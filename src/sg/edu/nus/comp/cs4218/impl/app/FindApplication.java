@@ -20,8 +20,40 @@ import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.FindException;
 
+/**
+ * The find command recursively searches for files with matching names. 
+ * It outputs the list of relative paths, each followed by a newline.
+ * 
+ * <p>
+ * <b>Command format:</b> <code>find [PATH] name PATTERN</code>
+ * <dl>
+ * <dt>PATTERN</dt><dd>file name with some parts replaced with * (asterisk).</dd>
+ * <dt>PATH</dt><dd>the root directory for search. If not specified, use the current directory.</dd>
+ * </dl>
+ * </p>
+ */
 public class FindApplication implements Application {
 
+	/**
+	 * Runs the find application with the specified arguments.
+	 * 
+	 * @param args
+	 *            Array of arguments for the application.<br>
+	 *            If the directory is omitted, the current directory is used,
+	 *            and args should be {&quot;-name&quot;, PATTERN}. <br>
+	 *            If the directory is specified, it can come before or after the
+	 *            pattern, e.g. {PATH, &quot;-name&quot;, PATTERN} or
+	 *            {&quot;-name&quot;, PATTERN, PATHs}. *
+	 * @param stdin
+	 *            An InputStream. Unused but must be provided.
+	 * @param stdout
+	 *            An OutputStream. The relative path to the matching files and
+	 *            folders will be written to this OutputStream, separated by a
+	 *            newline.
+	 * 
+	 * @throws FindException
+	 *             If parameters are invalid or when path specified is invalid.
+	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws FindException {
@@ -118,8 +150,7 @@ public class FindApplication implements Application {
 				
 			});
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new FindException("Unable to traverse directory specified " + e);
 		}
 		return foundItems;
 	}

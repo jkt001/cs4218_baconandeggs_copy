@@ -11,8 +11,37 @@ import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.CatException;
 
+/**
+ * The cat command concatenates the content of given files and prints on the
+ * standard output.
+ * 
+ * <p>
+ * <b>Command format:</b> <code>cat [FILE]...</code>
+ * <dl>
+ * <dt>FILE</dt>
+ * <dd>the name of the file(s). If no files are specified, use stdin.</dd>
+ * </dl>
+ * </p>
+ */
 public class CatApplication implements Application {
 
+	/**
+	 * Runs the cat application with the specified arguments.
+	 * 
+	 * @param args
+	 *            Array of arguments for the application. Each array element is
+	 *            the path to a file. If no files are specified stdin is used.
+	 * @param stdin
+	 *            An InputStream. The input for the command is read from this
+	 *            InputStream if no files are specified.
+	 * @param stdout
+	 *            An OutputStream. The output of the command is written to this
+	 *            OutputStream.
+	 * 
+	 * @throws CatException
+	 *             If the file(s) specified do not exist, are unreadable, or an
+	 *             I/O exception occurs.
+	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws CatException {

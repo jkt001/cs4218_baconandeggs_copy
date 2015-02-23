@@ -9,8 +9,33 @@ import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.CdException;
 
+/**
+ * The cd command changes the current working directory.
+ * 
+ * <p>
+ * <b>Command format:</b> <code>cd PATH</code>
+ * <dl>
+ * <dt>PATH</dt><dd>relative directory path.</dd>
+ * </dl>
+ * </p>
+ */
 public class CdApplication implements Application {
 
+	/**
+	 * Runs the cd application with the specified arguments.
+	 * 
+	 * @param	args
+	 * 			Array of arguments for the application.
+	 * 			Must be an array of size 1, with the element containing
+	 * 			the path to CD to.
+	 * @param	stdin
+	 * 			An InputStream. Unused but must be provided.
+	 * @param	stdout
+	 * 			An OutputStream. Unused but must be provided.
+	 * 
+	 * @throws	CdException
+	 * 			If parameters are invalid or when path specified is invalid
+	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws CdException {

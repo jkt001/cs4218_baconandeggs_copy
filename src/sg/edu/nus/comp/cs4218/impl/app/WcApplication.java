@@ -12,9 +12,47 @@ import java.io.OutputStream;
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.exception.WcException;
 
+/**
+ * The wc command prints the number of bytes, words, and lines in given files (followed by a
+newline).
+ * 
+ * <p>
+ * <b>Command format:</b> <code>wc [OPTIONS] [FILE]...</code>
+ * <dl>
+ * <dt>OPTIONS</dt>
+ * <dd>
+ * -m : Print only the character counts<br>
+ * -w : Print only the word counts<br>
+ * -l : Print only the newline counts
+ * </dd>
+ * <dt>FILE</dt>
+ * <dd>the file(s), when no file is present, use stdin.</dd>
+ * </dl>
+ * </p>
+ */
 public class WcApplication implements Application {
 	boolean printChar = false, printWord = false, printLine = false;
 
+	/**
+	 * Runs the wc application with the specified arguments.
+	 * 
+	 * @param args
+	 *            Array of arguments for the application. The first element in
+	 *            the array should be &quot;-m&quot; (character counts),
+	 *            &quot;-w&quot; (word counts) or &quot;-l&quot; (line counts).
+	 *            The optional second element is a string to a file. If not
+	 *            specified input is read from stdin.
+	 * @param stdin
+	 *            An InputStream. Input is read from this InputStream if no file
+	 *            is specified.
+	 * @param stdout
+	 *            An OutputStream. The output of the command is written to this
+	 *            OutputStream.
+	 * 
+	 * @throws WcException
+	 *             If file specified does not exist or no permissions to read
+	 *             the file.
+	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws WcException {
 		if (args == null){
