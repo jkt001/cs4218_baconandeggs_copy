@@ -10,20 +10,21 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
-import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.FindException;
 
 public class FindApplication implements Application {
 
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
-			throws AbstractApplicationException {
+			throws FindException {
 		
 		if (stdin == null || stdout == null) {
 			throw new FindException("Null input/output stream");
@@ -73,6 +74,8 @@ public class FindApplication implements Application {
 			throw new FindException("Path specified is not a valid folder");
 		}
 		
+		final List<String> foundItems = new LinkedList<String>();
+		
 		try {
 			Files.walkFileTree(newAbsolutePath, new FileVisitor<Path>(){
 
@@ -82,7 +85,7 @@ public class FindApplication implements Application {
 					
 					if (matchFileName(dir, pattern)){
 						Path relativePath = FileSystems.getDefault().getPath(Environment.currentDirectory).relativize(dir);
-						stdoutWriter.println(relativePath.toString());
+						foundItems.add(relativePath.toString());
 					}
 					
 					return FileVisitResult.CONTINUE;
@@ -94,7 +97,7 @@ public class FindApplication implements Application {
 					
 					if (matchFileName(file, pattern)){
 						Path relativePath = FileSystems.getDefault().getPath(Environment.currentDirectory).relativize(file);
-						stdoutWriter.println(relativePath.toString());
+						foundItems.add(relativePath.toString());
 					}
 					return FileVisitResult.CONTINUE;
 				}
@@ -119,6 +122,11 @@ public class FindApplication implements Application {
 			e.printStackTrace();
 		}
 		
+		Collections.sort(foundItems);
+		for(String item : foundItems){
+			stdoutWriter.println(item);
+		}
+		
 		stdoutWriter.flush();
 
 	}
@@ -138,6 +146,14 @@ public class FindApplication implements Application {
 		
 		if (args.length > 3) {
 			throw new FindException("Too many parameters");
+		}
+		
+		if (args.length == 2 && (args[0] == null || args[1] == null)) {
+			throw new FindException("Null parameter");
+		}
+
+		if (args.length == 3 && (args[0] == null || args[1] == null || args[2] == null)) {
+			throw new FindException("Null parameter");
 		}
 	}
 	
