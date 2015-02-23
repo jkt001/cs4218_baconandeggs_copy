@@ -124,9 +124,9 @@ public class CdApplicationTest {
 	@Test
 	public void testRelativePathToParentAndSubdirectory() {
 		if (isWindows()) {
-			testCdExpectSuccess(WIN_WINDOWS_DIR+"\\System32", "..\\System", "C:\\Windows\\System");
+			testCdExpectSuccess(WIN_WINDOWS_DIR+"\\System32", "..\\System", WIN_WINDOWS_DIR+"\\System");
 		}else if (isMac()){
-			testCdExpectSuccess(MAC_SYSTEM_DIR+"/Library", UNIX_GRANDPARENT, UNIX_ROOT); //TODO: Blaa blaa
+			testCdExpectSuccess(MAC_SYSTEM_DIR+"/Library/Java", "../Spotlight", MAC_SYSTEM_DIR+"/Library/Spotlight");
 		}else{
 			testCdExpectSuccess(UNIX_VAR_DIR+"/tmp", "../log", "/var/log");
 		}
