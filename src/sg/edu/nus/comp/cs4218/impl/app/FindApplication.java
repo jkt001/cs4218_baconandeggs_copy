@@ -99,6 +99,13 @@ public class FindApplication implements Application {
 
 	}
 
+	/**
+	 * Writes each string in the List foundItems as a line on stdout
+	 * @param stdout
+	 * 		The OutputStream to write the items to
+	 * @param foundItems
+	 * 		The List that will be written to the stdout
+	 */
 	private void outputItems(OutputStream stdout, List<String> foundItems) {
 		final PrintWriter stdoutWriter = new PrintWriter(stdout);		
 		
@@ -110,6 +117,18 @@ public class FindApplication implements Application {
 		stdoutWriter.flush();
 	}
 
+	/**
+	 * Finds all the file and folder names that match the pattern specified.
+	 * 
+	 * @param specifiedPath
+	 * 		The path to a directory to search in
+	 * @param pattern
+	 * 		The pattern to match the file/folder name against
+	 * @return
+	 * 		A list of all the matching files/folders
+	 * @throws FindException
+	 * 		If path specified is invalid or there is no permission to traverse that directory.
+	 */
 	private List<String> findPatternInPath(String specifiedPath,
 			final String pattern) throws FindException {
 		Path basePath = FileSystems.getDefault().getPath(Environment.currentDirectory);
@@ -155,6 +174,15 @@ public class FindApplication implements Application {
 		return foundItems;
 	}
 
+	/**
+	 * Checks that stdin and stdout are not null
+	 * @param stdin
+	 * 		The InputStream to check
+	 * @param stdout
+	 * 		The OutputStream to check
+	 * @throws FindException
+	 * 		If at least one of stdin or stdout is null.
+	 */
 	private void checkInputOutputStreamSanity(InputStream stdin,
 			OutputStream stdout) throws FindException {
 		if (stdin == null || stdout == null) {
@@ -162,6 +190,14 @@ public class FindApplication implements Application {
 		}
 	}
 
+	/**
+	 * Check arguments are of the right number and are not null.
+	 * 
+	 * @param args
+	 * 		An array of String that are the arguments to the program.
+	 * @throws FindException
+	 * 		If the arguments are invalid
+	 */
 	private void checkParametersSanity(String[] args) throws FindException {
 		if (args == null) {
 			throw new FindException("No parameters");
@@ -188,6 +224,15 @@ public class FindApplication implements Application {
 		}
 	}
 	
+	/**
+	 * Matches a Path against a pattern
+	 * @param file
+	 * 		The Path object to match
+	 * @param expression
+	 * 		The pattern to match against
+	 * @return
+	 * 		True if it matches, false otherwise
+	 */
 	boolean matchFileName(Path file, String expression){
 		
 		Path fileName = file.getFileName();
@@ -197,6 +242,15 @@ public class FindApplication implements Application {
 		
 	}
 
+	/**
+	 * Matchs a String against a pattern
+	 * @param inputString
+	 * 		The string to match
+	 * @param expression
+	 * 		The pattern to match against. The pattern can contain asterisks (*) which is equivalent to one or more wildcard characters.
+	 * @return
+	 * 		True if it matches, false otherwise
+	 */
 	boolean matchString(String inputString, String expression) {
 		String[] expressionParts = expression.split(Pattern.quote("*"), -1); // negative number to keep empty substrings
 		
