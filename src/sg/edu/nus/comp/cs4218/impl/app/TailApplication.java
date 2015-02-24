@@ -1,19 +1,18 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
 import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
-import sg.edu.nus.comp.cs4218.exception.HeadException;
 import sg.edu.nus.comp.cs4218.exception.TailException;
 
 public class TailApplication implements Application {
@@ -32,12 +31,10 @@ public class TailApplication implements Application {
 					numLinesToRead = checkNumberOfLinesInput(args[1]);
 				} else {
 					throw new TailException(
-							"Invalid Tail Command for reading from stdin");
+							"Incorrect flag used for reading from stdin");
 				}
 			}
-
 			readFromStdinAndWriteToStdout(stdout, numLinesToRead, stdin);
-
 		} else {
 			int numLines;
 
@@ -53,7 +50,6 @@ public class TailApplication implements Application {
 				throw new TailException("Invalid Tail Command");
 			}
 
-			// check file
 			Path currentDir = Paths.get(Environment.currentDirectory);
 			int filePosition = 0;
 			if (args.length == 3) {
@@ -64,13 +60,16 @@ public class TailApplication implements Application {
 			isFileReadable = checkIfFileIsReadable(filePath);
 
 			if (isFileReadable) {
-				readFromFileAndWriteToStdout(stdout, numLines, filePath);
+				try {
+					readFromFileAndWriteToStdout(stdout, numLines, filePath);
+				} catch (Exception e) {
+					throw new TailException("Exception Caught");
+				}
 			}
 		}
 	}
 
-	private int checkNumberOfLinesInput(String numLinesString)
-			throws TailException {
+	int checkNumberOfLinesInput(String numLinesString) throws TailException {
 		int numLines;
 
 		try {
@@ -86,94 +85,101 @@ public class TailApplication implements Application {
 		return numLines;
 	}
 
-	private void readFromStdinAndWriteToStdout(OutputStream stdout,
+	void readFromStdinAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, InputStream stdin) throws TailException {
+
+		if (stdin == null || stdout == null) {
+			throw new TailException("Null Pointer Exception");
+		}
 
 		BufferedReader buffReader = new BufferedReader(new InputStreamReader(
 				stdin));
-		ArrayList<String> inputArray = new ArrayList<String>();
+		Queue<String> inputArray = new LinkedList<String>();
 		String input = "";
+		int intCount = 0;
+
 		try {
-			while ((input = buffReader.readLine()) != null) {
-				inputArray.add(input);
+			if (numLinesRequired == 0) {
+				stdout.write("".getBytes("UTF-8"));
+			} else {
+				while ((input = buffReader.readLine()) != null) {
+					if (intCount == numLinesRequired) {
+						inputArray.poll();
+						intCount--;
+					}
+					intCount++;
+					inputArray.add(input);
+				}
 			}
-		} catch (IOException e) {
-			throw new TailException("IO Exception");
+		} catch (Exception e) {
+			throw new TailException("Exception caught");
 		}
 
-		int writePos = 0;
-		if (numLinesRequired < inputArray.size()) {
-			writePos = inputArray.size() - numLinesRequired;
-		}
-
-		for (int intCount = writePos; intCount < inputArray.size(); intCount++) {
+		while (!inputArray.isEmpty()) {
 			try {
-				stdout.write(inputArray.get(intCount).getBytes("UTF-8"));
-				stdout.write(System.lineSeparator().getBytes("UTF-8"));
+				if (inputArray.peek().equals("")) {
+					inputArray.poll();
+					stdout.write(System.lineSeparator().getBytes("UTF-8"));
+				} else if (inputArray.size() == 1) {
+					stdout.write(inputArray.poll().getBytes("UTF-8"));
+				} else {
+					stdout.write(inputArray.poll().getBytes("UTF-8"));
+					stdout.write(System.lineSeparator().getBytes("UTF-8"));
+				}
+
 			} catch (Exception e) {
 				throw new TailException("Exception caught");
 			}
 		}
-		// int numRead = 0;
-		//
-		// while (numLinesToRead != numRead) {
-		// try {
-		// String inputString = buffReader.readLine();
-		// stdout.write(inputString.getBytes("UTF-8"));
-		// stdout.write("\n".getBytes("UTF-8"));
-		// numRead++;
-		// } catch (IOException e) {
-		// throw new TailException("IO Exception");
-		// }
-		// }
 	}
 
-	private void readFromFileAndWriteToStdout(OutputStream stdout,
+	void readFromFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws TailException {
 
 		String encoding = "UTF-8";
-		byte[] byteFileArray;
-		int numLinesInFile = 0;
-		int readLinePos = 0;
-		byte[] toWrite;
 
+		if (stdout == null) {
+			throw new TailException("Stdout is null");
+		}
 		try {
+			if (numLinesRequired == 0) {
+				stdout.write("".getBytes(encoding));
+			} else {
+				FileInputStream fileInStream = new FileInputStream(
+						filePath.toString());
+				BufferedReader buffReader = new BufferedReader(
+						new InputStreamReader(fileInStream));
 
-			byteFileArray = Files.readAllBytes(filePath);
-
-			String fileContent = new String(byteFileArray, encoding);
-
-			fileContent = fileContent.replaceAll(System.lineSeparator(), " "
-					+ System.lineSeparator());
-
-			String[] spiltFileArray = fileContent.split(System.lineSeparator());
-
-			numLinesInFile = spiltFileArray.length;
-			if (numLinesRequired < numLinesInFile) {
-				readLinePos = numLinesInFile - numLinesRequired;
-			}
-
-			int intCount;
-			for (intCount = readLinePos; intCount < numLinesInFile; intCount++) {
-				if (spiltFileArray[intCount].equals("")) {
-					stdout.write(spiltFileArray[intCount].getBytes(encoding));
-				} else {
-					int endPos = spiltFileArray[intCount].lastIndexOf(' ');
-
-					toWrite = spiltFileArray[intCount].substring(0, endPos)
-							.getBytes(encoding);
-
-					stdout.write(toWrite);
-					stdout.write(System.lineSeparator().getBytes(encoding));
+				Queue<String> inputArray = new LinkedList<String>();
+				String input = "";
+				int intCount = 0;
+				while ((input = buffReader.readLine()) != null) {
+					if (intCount == numLinesRequired) {
+						inputArray.poll();
+						intCount--;
+					}
+					inputArray.add(input);
+					intCount++;
+				}
+				buffReader.close();
+				while (!inputArray.isEmpty()) {
+					if (inputArray.peek().equals("")) {
+						inputArray.poll();
+						stdout.write(System.lineSeparator().getBytes(encoding));
+					} else if (inputArray.size() == 1) {
+						stdout.write(inputArray.poll().getBytes(encoding));
+					} else {
+						stdout.write(inputArray.poll().getBytes(encoding));
+						stdout.write(System.lineSeparator().getBytes(encoding));
+					}
 				}
 			}
-		} catch (IOException e) {
-			throw new TailException("IO Exception");
+		} catch (Exception e) {
+			throw new TailException("Exception caught");
 		}
-
 	}
 
-	private boolean checkIfFileIsReadable(Path filePath) throws TailException {
+	boolean checkIfFileIsReadable(Path filePath) throws TailException {
 
 		if (Files.notExists(filePath)) {
 			throw new TailException("No such file exists");

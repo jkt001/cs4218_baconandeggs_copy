@@ -52,6 +52,8 @@ public class HeadApplicationTest {
 				buffWriter.write(System.lineSeparator());
 				buffWriter.write(System.lineSeparator());
 			}
+			buffWriter.write("abcd");
+			buffWriter.write(System.lineSeparator());
 			buffWriter.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -220,16 +222,19 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFromStdinWithNullArgs() throws HeadException,
 			IOException {
-
-		String inputString = "1\n" + "2\n" + "3\n" + "4\n" + "5\n" + "6\n"
-				+ "7\n" + "8\n" + "9\n" + "10\n";
+		
+		StringBuilder input = new StringBuilder();
+		for(int i=1; i<=10; i++){
+			input.append(i);
+			input.append(System.lineSeparator());
+		}
 
 		ByteArrayInputStream inStream = new ByteArrayInputStream(
-				inputString.getBytes("UTF-8"));
+				input.toString().getBytes("UTF-8"));
 
 		try {
 			headApp.run(args, inStream, outStream);
-			assertEquals(inputString, outStream.toString());
+			assertEquals(input.toString(), outStream.toString());
 		} catch (HeadException e) {
 			fail(SHOULDNOT_FAIL);
 		}
@@ -239,15 +244,18 @@ public class HeadApplicationTest {
 	public void testReadFromStdinWithValidNumber() throws HeadException,
 			IOException {
 
-		String inputString = "1\n";
+		StringBuilder input = new StringBuilder();
+			input.append(1);
+			input.append(System.lineSeparator());
+		
 
 		ByteArrayInputStream inStream = new ByteArrayInputStream(
-				inputString.getBytes("UTF-8"));
+				input.toString().getBytes("UTF-8"));
 
 		try {
 			headApp.readFromStdinAndWriteToStdout(outStream, 1,
 					inStream);
-			assertEquals(inputString, outStream.toString());
+			assertEquals(input.toString(), outStream.toString());
 		} catch (HeadException e) {
 			fail(SHOULDNOT_FAIL);
 		}
@@ -256,7 +264,11 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFromStdinWithFlag() throws HeadException, IOException {
 
-		String expected = "1\n" + "2\n" + "3\n" + "4\n";
+		StringBuilder expected = new StringBuilder();
+		for(int i=1; i<=4; i++){
+			expected.append(i);
+			expected.append(System.lineSeparator());
+		}
 		String inputString = expected + "5\n";
 
 		ByteArrayInputStream inStream = new ByteArrayInputStream(
@@ -268,7 +280,7 @@ public class HeadApplicationTest {
 
 		try {
 			headApp.run(args, inStream, outStream);
-			assertEquals(expected, outStream.toString());
+			assertEquals(expected.toString(), outStream.toString());
 		} catch (HeadException e) {
 			fail(SHOULDNOT_FAIL);
 		}
@@ -318,7 +330,8 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 		}
 
-
+		expected.append("abcd");
+		expected.append(System.lineSeparator());
 		args = new String[] { tempFilePath };
 
 		try {
@@ -364,7 +377,9 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
-
+		expected.append("abcd");
+		expected.append(System.lineSeparator());
+		
 		args = new String[] { "-n", "15", tempFilePath };
 
 		try {

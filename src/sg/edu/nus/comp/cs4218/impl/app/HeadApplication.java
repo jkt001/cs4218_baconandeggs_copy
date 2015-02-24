@@ -83,7 +83,11 @@ public class HeadApplication implements Application {
 			try {
 				String inputString = buffReader.readLine();
 				stdout.write(inputString.getBytes("UTF-8"));
-				stdout.write("\n".getBytes("UTF-8"));
+				if(numLinesToRead == numRead){
+					break;
+				}
+				stdout.write(System.lineSeparator().getBytes("UTF-8"));
+				//stdout.write("\n".getBytes("UTF-8"));
 				numRead++;
 			} catch (IOException e) {
 				throw new HeadException("IO Exception");
