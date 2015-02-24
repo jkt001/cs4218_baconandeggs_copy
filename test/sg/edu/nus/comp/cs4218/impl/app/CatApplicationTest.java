@@ -163,9 +163,9 @@ public class CatApplicationTest {
 		expected.append("aaa dddd ")
 				.append(System.lineSeparator())
 				.append("abcd e")
-				.append("1")
+				.append(1)
 				.append(System.lineSeparator())
-				.append("2");
+				.append(2);
 
 		try {
 			catApp.run(args, null, outStream);
