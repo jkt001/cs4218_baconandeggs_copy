@@ -8,6 +8,8 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import org.junit.Test;
+
 /**
  * The FolderUtility class makes it easy to generate and delete folders for
  * testing purposes.
@@ -186,29 +188,5 @@ public final class FolderUtility {
 
 		});
 	}
-	
-	/*
-	public static void main(String args[]) throws IOException{
-		
-		FolderUtility.generate("testFolder", 
-			new TestFolder("F1",
-					new TestFile("a.txt", "hello world A"),
-					new TestFile("b.txt", "hello world B"),
-					new TestFile("c.txt", "hello world C")
-			),
-			new TestFolder("F2",
-					new TestFile("d.txt", "hello world D"),
-					new TestFile("e.txt", "hello world E"),
-					new TestFile("f.txt", "hello world F"),
-					new TestFolder("F3",
-							new TestFile("g.txt", "hello world G"),
-							new TestFile("h.txt", "hello world H"),
-							new TestFile("i.txt", "hello world I")
-					)
-			),
-			new TestFile("Data.txt", "data")
-		);
-	}
-	*/
 
 }
