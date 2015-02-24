@@ -62,7 +62,7 @@ public class ShellImplTest {
 	}
 
 	public static void removeTestFolder(String folderName) throws IOException {
-		File file = new File(folderName + "\\\\");
+		File file = new File(folderName);
 
 		String[] entries = file.list();
 		if (entries != null) {
