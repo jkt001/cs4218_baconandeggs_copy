@@ -15,6 +15,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import sg.edu.nus.comp.cs4218.OSCheck;
+import sg.edu.nus.comp.cs4218.WindowsPermission;
 import sg.edu.nus.comp.cs4218.exception.HeadException;
 import sg.edu.nus.comp.cs4218.impl.app.HeadApplication;
 
@@ -143,6 +145,7 @@ public class HeadApplicationTest {
 		
 		try {
 			flag = headApp.checkIfFileIsReadable(Paths.get("fileNotExist"));
+			assertFalse(flag);
 			fail("Should have thrown no such file exist exception but did not!");
 		} catch (HeadException e) {
 			String exceptionMsg = APP_EXCEPTION + "No such file exists";
@@ -429,21 +432,38 @@ public class HeadApplicationTest {
 
 	}
 
-	// not working currently due to the set readable
-	// @Test
-	// public void testFileNotReadable() throws HeadException, IOException {
-	// Path filePath = Files.setAttribute(Paths.get(tempFilePath),
-	// "dos:readonly", false);
-	// headApp.checkIfFileIsReadable(filePath);
-	// boolean flag = false;
-	// try {
-	// flag = headApp.checkIfFileIsReadable(filePath);
-	// fail("Should have thrown file is directory exception but did not!");
-	// } catch (HeadException e) {
-	// String exceptionMsg = "head: " + "Could not read file";
-	// assertEquals(exceptionMsg, e.getMessage());
-	// }
-	//
-	// }
+	@Test
+	public void testFileNotReadable() throws HeadException, IOException {
+
+		StringBuilder expected = new StringBuilder();
+		for (int intCount = 0; intCount < 4; intCount++) {
+			expected.append(intCount);
+			expected.append(' ');
+			expected.append(System.lineSeparator());
+			expected.append(System.lineSeparator());
+		}
+		expected.append("abcd");
+		expected.append(System.lineSeparator());
+
+		// Verify that file is written correctly and CAT works
+		args = new String[] { tempFilePath };
+		headApp.run(args, null, outStream);
+
+		assertEquals(expected.toString(), outStream.toString());
+
+		// Make file not readable
+		file.setReadable(false); // Unix
+		if (OSCheck.isWindows()) {
+			WindowsPermission.setReadable(file, false); // Windows
+		}
+
+		// Try to head file again
+		args = new String[] { tempFilePath };
+		try {
+			headApp.run(args, null, outStream);
+		} catch (HeadException e) {
+			assertEquals(APP_EXCEPTION +"Could not read file", e.getLocalizedMessage());
+		}
+	}
 
 }

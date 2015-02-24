@@ -200,7 +200,7 @@ public class CatApplicationTest {
 		try {
 			catApp.run(args, null, outStream);
 		} catch (CatException e) {
-			assertEquals("cat: Could not read file", e.getLocalizedMessage());
+			assertEquals(APP_EXCEPTION +"Could not read file", e.getLocalizedMessage());
 		}
 	}
 }

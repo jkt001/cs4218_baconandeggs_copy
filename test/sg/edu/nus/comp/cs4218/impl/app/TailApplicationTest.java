@@ -15,6 +15,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import sg.edu.nus.comp.cs4218.OSCheck;
+import sg.edu.nus.comp.cs4218.WindowsPermission;
 import sg.edu.nus.comp.cs4218.exception.TailException;
 import sg.edu.nus.comp.cs4218.impl.app.TailApplication;
 
@@ -429,5 +431,37 @@ public class TailApplicationTest {
 			fail(FAIL_MSG);
 		}
 	}
+	
+	@Test
+	public void testFileNotReadable() throws TailException, IOException {
 
+		StringBuilder expected = new StringBuilder();
+		for (int intCount = 0; intCount < 3; intCount++) {
+			expected.append(intCount);
+			expected.append(' ');
+			expected.append(System.lineSeparator());
+			expected.append(System.lineSeparator());
+		}
+		expected.append("abcd");
+
+		// Verify that file is written correctly and CAT works
+		args = new String[] { tempFilePath };
+		tailApp.run(args, null, outStream);
+
+		assertEquals(expected.toString(), outStream.toString());
+
+		// Make file not readable
+		file.setReadable(false); // Unix
+		if (OSCheck.isWindows()) {
+			WindowsPermission.setReadable(file, false); // Windows
+		}
+
+		// Try to head file again
+		args = new String[] { tempFilePath };
+		try {
+			tailApp.run(args, null, outStream);
+		} catch (TailException e) {
+			assertEquals(APP_EXCEPTION +"Could not read file", e.getLocalizedMessage());
+		}
+	}
 }

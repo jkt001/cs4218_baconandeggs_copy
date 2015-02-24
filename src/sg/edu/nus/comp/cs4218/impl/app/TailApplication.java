@@ -36,10 +36,13 @@ public class TailApplication implements Application {
 	 * Runs the tail application with the specified arguments.
 	 * 
 	 * @param args
-	 *            Array of arguments for the application. If a file is to be
-	 *            specified, the array should be of size 1 and the element is
-	 *            the path to the file. If no files are specified, the array
-	 *            should be empty and input is read from stdin.
+	 *            Array of arguments for the application. Only one file could be
+	 *            specified. If file is specified, the input should be read from
+	 *            the file, else, input is read from stdin. If a flag,-n, is
+	 *            specified, it should be accompanied by a number to indicate
+	 *            the number of lines. If flag is not specified, the last 10
+	 *            lines would be printed.
+	 * 
 	 * @param stdin
 	 *            An InputStream. The input for the command is read from this
 	 *            InputStream if no files are specified.
@@ -48,8 +51,9 @@ public class TailApplication implements Application {
 	 *            OutputStream.
 	 * 
 	 * @throws TailException
-	 *             If the file(s) specified do not exist, are unreadable, or an
-	 *             I/O exception occurs.
+	 *             If the file specified do not exist, are unreadable, or an I/O
+	 *             exception occurs. If the args array do not matches the
+	 *             criteria.
 	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
@@ -103,6 +107,16 @@ public class TailApplication implements Application {
 		}
 	}
 
+	/**
+	 * Parse the number of lines to print from String to int
+	 * 
+	 * @param numLinesString
+	 *            The number of lines received in String
+	 * @return numLines 
+	 * 		The number of lines received in int
+	 * @throws TailException
+	 *             If the numLinesString in not an Integer or a negative number.
+	 */
 	int checkNumberOfLinesInput(String numLinesString) throws TailException {
 		int numLines;
 
@@ -119,6 +133,20 @@ public class TailApplication implements Application {
 		return numLines;
 	}
 
+	/**
+	 * Read from stdin and output last number of lines specified to stdout
+	 * 
+	 * @param stdout
+	 *            An Output Stream. The output is written to this stream
+	 * @param numLinesRequired
+	 *            The number of lines required to output as received in the tail
+	 *            command or 10 if not specified in the command
+	 * @param stdin
+	 *            An input Stream. Reading from stdin and not a file
+	 * @throws TailException
+	 *             If stdin or stdout is null. Other exceptions caught when
+	 *             reading and writing from input and output streams.
+	 */
 	void readFromStdinAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, InputStream stdin) throws TailException {
 
@@ -167,6 +195,20 @@ public class TailApplication implements Application {
 		}
 	}
 
+	/**
+	 * Read from file and output last number of lines specified to stdout
+	 * 
+	 * @param stdout
+	 *            An Output Stream. The output is written to this stream
+	 * @param numLinesRequired
+	 *            The number of lines required to output as received in the tail
+	 *            command or 10 if not specified in the command
+	 * @param filePath
+	 *            A Path. Read file from the file path given
+	 * @throws TailException
+	 *             If stdout is null. Other exceptions caught when
+	 *             reading and writing from input and output streams.
+	 */
 	void readFromFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws TailException {
 
@@ -213,6 +255,15 @@ public class TailApplication implements Application {
 		}
 	}
 
+	/**
+	 * Checks if a file is readable.
+	 * @param filePath
+	 * 		The path to the file
+	 * @return
+	 * 		True if the file is readable.
+	 * @throws TailException
+	 * 		If the file is not readable
+	 */
 	boolean checkIfFileIsReadable(Path filePath) throws TailException {
 
 		if (Files.notExists(filePath)) {
