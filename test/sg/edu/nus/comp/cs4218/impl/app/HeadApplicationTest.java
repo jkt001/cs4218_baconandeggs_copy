@@ -189,7 +189,7 @@ public class HeadApplicationTest {
 	public void testNotANumberException() {
 
 		try {
-			int numLines = headApp.checkNumberOfLinesInput("ooo");
+			headApp.checkNumberOfLinesInput("ooo");
 			fail("Should have thrown Not a number exception but did not!");
 		} catch (HeadException e) {
 			String exceptionMsg = APP_EXCEPTION
@@ -202,7 +202,7 @@ public class HeadApplicationTest {
 	public void testNegativeNumberException() {
 
 		try {
-			int numLines = headApp.checkNumberOfLinesInput("-1");
+			headApp.checkNumberOfLinesInput("-1");
 			fail("Should have thrown negative number exception but did not!");
 		} catch (HeadException e) {
 			String exceptionMsg = APP_EXCEPTION

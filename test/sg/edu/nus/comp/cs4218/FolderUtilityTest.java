@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,10 +15,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.FolderUtility.TestFile;
