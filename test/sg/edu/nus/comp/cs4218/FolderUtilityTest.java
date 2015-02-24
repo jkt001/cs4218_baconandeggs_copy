@@ -26,25 +26,27 @@ public class FolderUtilityTest {
 
 	@Test
 	public void test() throws IOException {
-		FolderUtility.generate(TEST_FOLDER, 
-			new TestFolder("F1",
-					new TestFile("a.txt", "hello world A"),
-					new TestFile("b.txt", "hello world B"),
-					new TestFile("c.txt", "hello world C")
-			),
-			new TestFolder("F2",
-					new TestFile("d.txt", "hello world D"),
-					new TestFile("e.txt", "hello world E"),
-					new TestFile("f.txt", "hello world F"),
-					new TestFolder("F3",
-							new TestFile("g.txt", "hello world G"),
-							new TestFile("h.txt", "hello world H"),
-							new TestFile("i.txt", "hello world I")
-					)
-			),
-			new TestFile("j.txt", "data")
-		);
 		
+		generateTestFolder();		
+		String[] expectedOutput = generateExpectedOutput();
+		
+		List<String> actualOutput = getListOfItemsInFolder(TEST_FOLDER);
+
+		// Sort to make the array comparison position independent
+		Arrays.sort(expectedOutput);
+		Collections.sort(actualOutput);
+
+		// Assert contents of generated folder matches
+		assertArrayEquals(expectedOutput, actualOutput.toArray());
+
+		// Delete folder to clean up
+		FolderUtility.delete(TEST_FOLDER);
+
+		// Assert that folder was deleted successfully
+		assertTrue(Files.notExists(Paths.get(TEST_FOLDER)));
+	}
+
+	private String[] generateExpectedOutput() {
 		// Expected files in folder
 		String[] expectedOutput = {
 				// test folder itself
@@ -65,21 +67,28 @@ public class FolderUtilityTest {
 				TEST_FOLDER + File.separator + "F2" + File.separator + "F3" + File.separator + "i.txt",				
 				TEST_FOLDER + File.separator + "j.txt"
 		};
-		
-		List<String> actualOutput = getListOfItemsInFolder(TEST_FOLDER);
+		return expectedOutput;
+	}
 
-		// Sort to make the array comparison position independent
-		Arrays.sort(expectedOutput);
-		Collections.sort(actualOutput);
-
-		// Assert contents of generated folder matches
-		assertArrayEquals(expectedOutput, actualOutput.toArray());
-
-		// Delete folder to clean up
-		FolderUtility.delete(TEST_FOLDER);
-
-		// Assert that folder was deleted successfully
-		assertTrue(Files.notExists(Paths.get(TEST_FOLDER)));
+	private void generateTestFolder() throws IOException {
+		FolderUtility.generate(TEST_FOLDER, 
+			new TestFolder("F1",
+					new TestFile("a.txt", "hello world A"),
+					new TestFile("b.txt", "hello world B"),
+					new TestFile("c.txt", "hello world C")
+			),
+			new TestFolder("F2",
+					new TestFile("d.txt", "hello world D"),
+					new TestFile("e.txt", "hello world E"),
+					new TestFile("f.txt", "hello world F"),
+					new TestFolder("F3",
+							new TestFile("g.txt", "hello world G"),
+							new TestFile("h.txt", "hello world H"),
+							new TestFile("i.txt", "hello world I")
+					)
+			),
+			new TestFile("j.txt", "data")
+		);
 	}
 
 	private List<String> getListOfItemsInFolder(String testFolder)
