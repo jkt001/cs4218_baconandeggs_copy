@@ -227,6 +227,7 @@ public class ShellImplTest {
 		}
 	}
 
+	@Test
 	public void testPEFind() {
 		String readLine = "find -name *";
 		try {
