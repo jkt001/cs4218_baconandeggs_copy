@@ -17,6 +17,9 @@ import sg.edu.nus.comp.cs4218.exception.LsException;
 import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
 
 public class LsApplicationTest {
+	
+	private static final String SHOULD_THROW_EX = "Should throw exception";
+	
 	final static String TEMP_FOLDER_PATH = "testLsApplicationTempDir";
 	final static String TEMP_FILE_NAME = "a.txt";
 	final static String TEMP_FOLDER_PATH2 = "testLsApplicationTempDir2";
@@ -68,7 +71,7 @@ public class LsApplicationTest {
 		LsApplication myLs = new LsApplication();
 		try{
 			myLs.run(null,null,new ByteArrayOutputStream());
-			fail("Should throw exception");
+			fail(SHOULD_THROW_EX);
 		}catch(LsException le){
 			assertEquals("ls: Null arguments", le.getLocalizedMessage());
 		}
@@ -80,7 +83,7 @@ public class LsApplicationTest {
 		try{
 			String str[] = {TEMP_FOLDER_PATH};
 			myLs.run(str,null,null);
-			fail("Should throw exception");
+			fail(SHOULD_THROW_EX);
 		}catch(LsException le){
 			assertEquals("ls: OutputStream not provided", le.getLocalizedMessage());
 		}
@@ -99,7 +102,7 @@ public class LsApplicationTest {
 				}
 				String str[] = {TEMP_FOLDER_PATH};
 				myLs.run(str,null,new ByteArrayOutputStream());
-				fail("Should throw exception");
+				fail(SHOULD_THROW_EX);
 			}catch(LsException le){
 				File file = new File(TEMP_FOLDER_PATH);
 				if (isWindows()){
@@ -222,7 +225,7 @@ public class LsApplicationTest {
 
 		try{
 			myLs.run(str,null,myOutputStream);
-			fail("Should throw exception");
+			fail(SHOULD_THROW_EX);
 		}catch(LsException le){
 			assertEquals(le.getLocalizedMessage(), "ls: More than one path arguments");
 		}

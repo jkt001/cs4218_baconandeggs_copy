@@ -248,8 +248,8 @@ public class HeadApplicationTest {
 			IOException {
 
 		StringBuilder input = new StringBuilder();
-			input.append(1);
-			input.append(System.lineSeparator());
+			input.append(1)
+				.append(System.lineSeparator());
 		
 
 		ByteArrayInputStream inStream = new ByteArrayInputStream(
@@ -333,8 +333,8 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 		}
 
-		expected.append("abcd");
-		expected.append(System.lineSeparator());
+		expected.append("abcd")
+				.append(System.lineSeparator());
 		args = new String[] { tempFilePath };
 
 		try {
@@ -380,8 +380,8 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
-		expected.append("abcd");
-		expected.append(System.lineSeparator());
+		expected.append("abcd")
+				.append(System.lineSeparator());
 		
 		args = new String[] { "-n", "15", tempFilePath };
 
@@ -442,8 +442,8 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
-		expected.append("abcd");
-		expected.append(System.lineSeparator());
+		expected.append("abcd")
+				.append(System.lineSeparator());
 
 		// Verify that file is written correctly and CAT works
 		args = new String[] { tempFilePath };

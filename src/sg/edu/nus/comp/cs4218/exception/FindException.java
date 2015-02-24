@@ -1,7 +1,10 @@
 package sg.edu.nus.comp.cs4218.exception;
 
 public class FindException extends AbstractApplicationException {
-   public FindException(String message) {
-        super("find: " + message);
-   }
+
+	private static final long serialVersionUID = -4647741054058509116L;
+
+	public FindException(String message) {
+		super("find: " + message);
+	}
 }

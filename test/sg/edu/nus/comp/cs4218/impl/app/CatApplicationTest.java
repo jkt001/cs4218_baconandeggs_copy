@@ -143,9 +143,7 @@ public class CatApplicationTest {
 
 		args = new String[] { tempFilePath1 };
 		StringBuilder expected = new StringBuilder();
-		expected.append("aaa dddd ");
-		expected.append(System.lineSeparator());
-		expected.append("abcd e");
+		expected.append("aaa dddd ").append(System.lineSeparator()).append("abcd e");
 
 		try {
 			catApp.run(args, null, outStream);
@@ -161,13 +159,13 @@ public class CatApplicationTest {
 	public void testCatTwoFiles() throws CatException, IOException {
 
 		args = new String[] { tempFilePath1, tempFilePath2 };
-		StringBuilder expected = new StringBuilder();
-		expected.append("aaa dddd ");
-		expected.append(System.lineSeparator());
-		expected.append("abcd e");
-		expected.append("1");
-		expected.append(System.lineSeparator());
-		expected.append("2");
+		StringBuilder expected = new StringBuilder(20);
+		expected.append("aaa dddd ")
+				.append(System.lineSeparator())
+				.append("abcd e")
+				.append("1")
+				.append(System.lineSeparator())
+				.append("2");
 
 		try {
 			catApp.run(args, null, outStream);

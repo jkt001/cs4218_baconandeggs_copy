@@ -66,6 +66,23 @@ public class FolderUtilityTest {
 				TEST_FOLDER + File.separator + "j.txt"
 		};
 		
+		List<String> actualOutput = getListOfItemsInFolder(TEST_FOLDER);
+		
+		// Sort to make the array comparison position independent
+		Arrays.sort(expectedOutput);
+		Collections.sort(actualOutput);
+		
+		// Assert contents of generated folder matches
+		assertArrayEquals(expectedOutput, actualOutput.toArray());
+		
+		// Delete folder to clean up
+		FolderUtility.delete(TEST_FOLDER);
+		
+		// Assert that folder was deleted successfully
+		assertTrue(Files.notExists(Paths.get(TEST_FOLDER)));
+	}
+
+	private List<String> getListOfItemsInFolder(String testFolder) throws IOException {
 		// Walk through the test folder to get the generated file list
 		final List<String> actualOutput = new LinkedList<String>();
 		Files.walkFileTree(Paths.get(TEST_FOLDER), new SimpleFileVisitor<Path>(){
@@ -86,18 +103,7 @@ public class FolderUtilityTest {
 			
 		});
 		
-		// Sort to make the array comparison position independent
-		Arrays.sort(expectedOutput);
-		Collections.sort(actualOutput);
-		
-		// Assert contents of generated folder matches
-		assertArrayEquals(expectedOutput, actualOutput.toArray());
-		
-		// Delete folder to clean up
-		FolderUtility.delete(TEST_FOLDER);
-		
-		// Assert that folder was deleted successfully
-		assertTrue(Files.notExists(Paths.get(TEST_FOLDER)));
+		return actualOutput;
 	}
 	
 	
