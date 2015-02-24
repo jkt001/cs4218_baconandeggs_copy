@@ -357,7 +357,7 @@ public class ShellImplTest {
 		String readLine = "cat < " + TEST_FILE_NAME + " > " + TEST_FILE_NAME;
 		shell.parseAndEvaluate(readLine, outputStream);
 	}
-	
+
 	// Testing for opening of input & output redir streams
 	@Test
 	public void testOpenInputRedir() {

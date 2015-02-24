@@ -17,9 +17,9 @@ import sg.edu.nus.comp.cs4218.exception.LsException;
 import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
 
 public class LsApplicationTest {
-	
+
 	private static final String SHOULD_THROW_EX = "Should throw exception";
-	
+
 	final static String TEMP_FOLDER_PATH = "testLsApplicationTempDir";
 	final static String TEMP_FILE_NAME = "a.txt";
 	final static String TEMP_FOLDER_PATH2 = "testLsApplicationTempDir2";
@@ -30,87 +30,93 @@ public class LsApplicationTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		//testLsApplicationTempDir - a.txt, b.txt
-		//testLsApplicationTempDir - b.txt
-		//testLsApplicationTempDir3
+		// testLsApplicationTempDir - a.txt, b.txt
+		// testLsApplicationTempDir - b.txt
+		// testLsApplicationTempDir3
 		File theDir = new File(TEMP_FOLDER_PATH);
 		if (!theDir.exists()) {
-			try{
+			try {
 				theDir.mkdir();
-				File subFile = new File(TEMP_FOLDER_PATH+File.separator+ TEMP_FILE_NAME);
+				File subFile = new File(TEMP_FOLDER_PATH + File.separator
+						+ TEMP_FILE_NAME);
 				subFile.createNewFile();
-				subFile = new File(TEMP_FOLDER_PATH+File.separator+TEMP_FILE_NAME2);
+				subFile = new File(TEMP_FOLDER_PATH + File.separator
+						+ TEMP_FILE_NAME2);
 				subFile.createNewFile();
-			} catch(SecurityException se){
+			} catch (SecurityException se) {
 				se.printStackTrace();
-			}    
+			}
 		}
 
 		File theDir2 = new File(TEMP_FOLDER_PATH2);
 		if (!theDir2.exists()) {
-			try{
+			try {
 				theDir2.mkdir();
 				File subFile = new File(TEMP_FOLDER_PATH2, TEMP_FILE_NAME2);
 				subFile.createNewFile();
-			} catch(SecurityException se){
+			} catch (SecurityException se) {
 				se.printStackTrace();
-			}    
+			}
 		}
 		File theDir3 = new File(TEMP_FOLDER_PATH3);
 		if (!theDir3.exists()) {
-			try{
+			try {
 				theDir3.mkdir();
-			} catch(SecurityException se){
+			} catch (SecurityException se) {
 				se.printStackTrace();
-			}    
+			}
 		}
 	}
 
 	@Test
-	public void testNullArgument(){
+	public void testNullArgument() {
 		LsApplication myLs = new LsApplication();
-		try{
-			myLs.run(null,null,new ByteArrayOutputStream());
+		try {
+			myLs.run(null, null, new ByteArrayOutputStream());
 			fail(SHOULD_THROW_EX);
-		}catch(LsException le){
+		} catch (LsException le) {
 			assertEquals("ls: Null arguments", le.getLocalizedMessage());
 		}
 	}
 
 	@Test
-	public void testNullStdout(){
+	public void testNullStdout() {
 		LsApplication myLs = new LsApplication();
-		try{
-			String str[] = {TEMP_FOLDER_PATH};
-			myLs.run(str,null,null);
+		try {
+			String str[] = { TEMP_FOLDER_PATH };
+			myLs.run(str, null, null);
 			fail(SHOULD_THROW_EX);
-		}catch(LsException le){
-			assertEquals("ls: OutputStream not provided", le.getLocalizedMessage());
+		} catch (LsException le) {
+			assertEquals("ls: OutputStream not provided",
+					le.getLocalizedMessage());
 		}
 	}
 
 	@Test
-	public void testDirectoryWithoutReadPermission(){
+	public void testDirectoryWithoutReadPermission() {
 		LsApplication myLs = new LsApplication();
 		try {
-			try{
+			try {
 				File file = new File(TEMP_FOLDER_PATH);
-				if (isWindows()){
+				if (isWindows()) {
 					WindowsPermission.setReadable(file, false);
-				}else{
+				} else {
 					file.setReadable(false);
 				}
-				String str[] = {TEMP_FOLDER_PATH};
-				myLs.run(str,null,new ByteArrayOutputStream());
+				String str[] = { TEMP_FOLDER_PATH };
+				myLs.run(str, null, new ByteArrayOutputStream());
 				fail(SHOULD_THROW_EX);
-			}catch(LsException le){
+			} catch (LsException le) {
 				File file = new File(TEMP_FOLDER_PATH);
-				if (isWindows()){
+				if (isWindows()) {
 					WindowsPermission.setReadable(file, true);
-				}else{
+				} else {
 					file.setReadable(true);
 				}
-				assertTrue(le.getLocalizedMessage().equals("ls: Permission denied") || le.getLocalizedMessage().equals("ls: Cannot list files in the directory"));
+				assertTrue(le.getLocalizedMessage().equals(
+						"ls: Permission denied")
+						|| le.getLocalizedMessage().equals(
+								"ls: Cannot list files in the directory"));
 			}
 		} catch (IOException e) {
 			fail("IOException during test");
@@ -119,9 +125,9 @@ public class LsApplicationTest {
 	}
 
 	@Test
-	public void testFunctionWriteStringToOutputStream(){
+	public void testFunctionWriteStringToOutputStream() {
 		LsApplication myLs = new LsApplication();
-		String str[] = {"a.txt","b.pdf"};
+		String str[] = { "a.txt", "b.pdf" };
 		ByteArrayOutputStream myStream = new ByteArrayOutputStream();
 		try {
 			myLs.writeStringToOutputStream(str, myStream);
@@ -132,7 +138,7 @@ public class LsApplicationTest {
 	}
 
 	@Test
-	public void testFunctionGetListOfFileFromDirectoryWithValidDirectory(){
+	public void testFunctionGetListOfFileFromDirectoryWithValidDirectory() {
 		LsApplication myLs = new LsApplication();
 		try {
 			String str[] = myLs.getListOfFileFromDirectory(TEMP_FOLDER_PATH);
@@ -145,7 +151,7 @@ public class LsApplicationTest {
 	}
 
 	@Test
-	public void testFunctionGetListOfFileFromDirectoryWithInvalidDirectory(){
+	public void testFunctionGetListOfFileFromDirectoryWithInvalidDirectory() {
 		LsApplication myLs = new LsApplication();
 		try {
 			myLs.getListOfFileFromDirectory(NOT_EXISTS_PATH);
@@ -156,24 +162,24 @@ public class LsApplicationTest {
 	}
 
 	@Test
-	public void testDirectoryWithEmptyFile(){
+	public void testDirectoryWithEmptyFile() {
 		LsApplication myLs = new LsApplication();
-		String[] str = {TEMP_FOLDER_PATH3};
+		String[] str = { TEMP_FOLDER_PATH3 };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try {
 			myLs.run(str, null, myOutputStream);
-			assertEquals("",myOutputStream.toString());
+			assertEquals("", myOutputStream.toString());
 		} catch (LsException e) {
 			fail("Not supposed to have exception for folder that exists.");
 		}
 	}
 
 	@Test
-	public void testFileAsDirectory(){
+	public void testFileAsDirectory() {
 		LsApplication myLs = new LsApplication();
 		String temp = Environment.currentDirectory;
-		Environment.currentDirectory += File.separator + TEMP_FOLDER_PATH; 
-		String[] str = {TEMP_FILE_NAME};
+		Environment.currentDirectory += File.separator + TEMP_FOLDER_PATH;
+		String[] str = { TEMP_FILE_NAME };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try {
 			myLs.run(str, null, myOutputStream);
@@ -189,59 +195,63 @@ public class LsApplicationTest {
 		LsApplication myLs = new LsApplication();
 		String[] str = {};
 		String temp = Environment.currentDirectory;
-		Environment.currentDirectory += File.separator + TEMP_FOLDER_PATH; 
+		Environment.currentDirectory += File.separator + TEMP_FOLDER_PATH;
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
+		try {
 			myLs.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals(TEMP_FILE_NAME+"\t"+TEMP_FILE_NAME2+"\n",testStr);
-		}catch(LsException le){
+			assertEquals(TEMP_FILE_NAME + "\t" + TEMP_FILE_NAME2 + "\n",
+					testStr);
+		} catch (LsException le) {
 			fail("Not supposed to have exception for folder that exists.");
-		}		
-		//after test change back current directory
+		}
+		// after test change back current directory
 		Environment.currentDirectory = temp;
 	}
 
 	@Test
-	public void testWithPathArgument(){
+	public void testWithPathArgument() {
 		LsApplication myLs = new LsApplication();
-		String path = Environment.currentDirectory + File.separator + TEMP_FOLDER_PATH;
-		String[] str = {path};
+		String path = Environment.currentDirectory + File.separator
+				+ TEMP_FOLDER_PATH;
+		String[] str = { path };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
+		try {
 			myLs.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals(TEMP_FILE_NAME + "\t" + TEMP_FILE_NAME2 + "\n",testStr);
-		}catch(LsException le){
+			assertEquals(TEMP_FILE_NAME + "\t" + TEMP_FILE_NAME2 + "\n",
+					testStr);
+		} catch (LsException le) {
 			fail("Not supposed to have exception for folder that exists.");
 		}
 	}
 
 	@Test
-	public void testMoreThanOnePathArgument(){
+	public void testMoreThanOnePathArgument() {
 		LsApplication myLs = new LsApplication();
-		String str[] = {TEMP_FOLDER_PATH,TEMP_FOLDER_PATH2};
+		String str[] = { TEMP_FOLDER_PATH, TEMP_FOLDER_PATH2 };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
-		try{
-			myLs.run(str,null,myOutputStream);
+		try {
+			myLs.run(str, null, myOutputStream);
 			fail(SHOULD_THROW_EX);
-		}catch(LsException le){
-			assertEquals(le.getLocalizedMessage(), "ls: More than one path arguments");
+		} catch (LsException le) {
+			assertEquals(le.getLocalizedMessage(),
+					"ls: More than one path arguments");
 		}
 	}
 
 	@Test
-	public void testCurrentDirectoryNotExists(){
+	public void testCurrentDirectoryNotExists() {
 		LsApplication myLs = new LsApplication();
 
 		String temp = Environment.currentDirectory;
-		Environment.currentDirectory += File.separator + NOT_EXISTS_PATH; 
+		Environment.currentDirectory += File.separator + NOT_EXISTS_PATH;
 		String[] str = {};
-		try{
+		try {
 			myLs.run(str, null, new ByteArrayOutputStream());
 			fail("Should throw directory not exist exception");
-		}catch(LsException le){
+		} catch (LsException le) {
 			assertEquals(le.getLocalizedMessage(), DIR_NOT_EXIST_MSG);
 		}
 		Environment.currentDirectory = temp;
@@ -249,14 +259,15 @@ public class LsApplicationTest {
 	}
 
 	@Test
-	public void testWithPathArgumentDirectoryNotExists(){
+	public void testWithPathArgumentDirectoryNotExists() {
 		LsApplication myLs = new LsApplication();
-		String path = Environment.currentDirectory + File.separator + NOT_EXISTS_PATH;
-		String[] str = {path};
-		try{
+		String path = Environment.currentDirectory + File.separator
+				+ NOT_EXISTS_PATH;
+		String[] str = { path };
+		try {
 			myLs.run(str, null, new ByteArrayOutputStream());
 			fail("Should throw directory not exist exception");
-		}catch(LsException le){
+		} catch (LsException le) {
 			assertEquals(le.getLocalizedMessage(), DIR_NOT_EXIST_MSG);
 		}
 	}
@@ -264,23 +275,23 @@ public class LsApplicationTest {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		File theDir = new File(TEMP_FOLDER_PATH);
-		if(theDir.exists()){
-			File subFile = new File(TEMP_FOLDER_PATH,TEMP_FILE_NAME);
+		if (theDir.exists()) {
+			File subFile = new File(TEMP_FOLDER_PATH, TEMP_FILE_NAME);
 			subFile.delete();
-			subFile = new File(TEMP_FOLDER_PATH,TEMP_FILE_NAME2);
+			subFile = new File(TEMP_FOLDER_PATH, TEMP_FILE_NAME2);
 			subFile.delete();
 			theDir.delete();
 		}
 
 		File theDir2 = new File(TEMP_FOLDER_PATH2);
-		if(theDir2.exists()){
-			File subFile = new File(TEMP_FOLDER_PATH2,TEMP_FILE_NAME2);
+		if (theDir2.exists()) {
+			File subFile = new File(TEMP_FOLDER_PATH2, TEMP_FILE_NAME2);
 			subFile.delete();
 			theDir2.delete();
 		}
 
 		File theDir3 = new File(TEMP_FOLDER_PATH3);
-		if(theDir3.exists()){
+		if (theDir3.exists()) {
 			theDir3.delete();
 		}
 	}

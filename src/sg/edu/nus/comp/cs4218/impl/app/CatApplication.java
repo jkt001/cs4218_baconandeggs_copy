@@ -96,12 +96,12 @@ public class CatApplication implements Application {
 
 	/**
 	 * Checks if a file is readable.
+	 * 
 	 * @param filePath
-	 * 		The path to the file
-	 * @return
-	 * 		True if the file is readable.
+	 *            The path to the file
+	 * @return True if the file is readable.
 	 * @throws CatException
-	 * 		If the file is not readable
+	 *             If the file is not readable
 	 */
 	boolean checkIfFileIsReadable(Path filePath) throws CatException {
 		if (Files.notExists(filePath)) {

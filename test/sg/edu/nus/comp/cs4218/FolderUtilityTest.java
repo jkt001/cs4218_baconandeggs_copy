@@ -67,45 +67,45 @@ public class FolderUtilityTest {
 		};
 		
 		List<String> actualOutput = getListOfItemsInFolder(TEST_FOLDER);
-		
+
 		// Sort to make the array comparison position independent
 		Arrays.sort(expectedOutput);
 		Collections.sort(actualOutput);
-		
+
 		// Assert contents of generated folder matches
 		assertArrayEquals(expectedOutput, actualOutput.toArray());
-		
+
 		// Delete folder to clean up
 		FolderUtility.delete(TEST_FOLDER);
-		
+
 		// Assert that folder was deleted successfully
 		assertTrue(Files.notExists(Paths.get(TEST_FOLDER)));
 	}
 
-	private List<String> getListOfItemsInFolder(String testFolder) throws IOException {
+	private List<String> getListOfItemsInFolder(String testFolder)
+			throws IOException {
 		// Walk through the test folder to get the generated file list
 		final List<String> actualOutput = new LinkedList<String>();
-		Files.walkFileTree(Paths.get(TEST_FOLDER), new SimpleFileVisitor<Path>(){
+		Files.walkFileTree(Paths.get(TEST_FOLDER),
+				new SimpleFileVisitor<Path>() {
 
-			@Override
-			public FileVisitResult visitFile(Path file,
-					BasicFileAttributes attrs) throws IOException {
-				actualOutput.add(file.toString());
-				return FileVisitResult.CONTINUE;
-			}
+					@Override
+					public FileVisitResult visitFile(Path file,
+							BasicFileAttributes attrs) throws IOException {
+						actualOutput.add(file.toString());
+						return FileVisitResult.CONTINUE;
+					}
 
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc)
-					throws IOException {
-				actualOutput.add(dir.toString());
-				return FileVisitResult.CONTINUE;
-			}
-			
-		});
-		
+					@Override
+					public FileVisitResult postVisitDirectory(Path dir,
+							IOException exc) throws IOException {
+						actualOutput.add(dir.toString());
+						return FileVisitResult.CONTINUE;
+					}
+
+				});
+
 		return actualOutput;
 	}
-	
-	
 
 }

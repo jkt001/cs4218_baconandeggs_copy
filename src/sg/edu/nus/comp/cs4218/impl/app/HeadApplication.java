@@ -134,7 +134,7 @@ public class HeadApplication implements Application {
 			try {
 				String inputString = buffReader.readLine();
 				stdout.write(inputString.getBytes("UTF-8"));
-				if(numLinesToRead == numRead){
+				if (numLinesToRead == numRead) {
 					break;
 				}
 				stdout.write(System.lineSeparator().getBytes("UTF-8"));
@@ -150,8 +150,7 @@ public class HeadApplication implements Application {
 	 * 
 	 * @param numLinesString
 	 *            The number of lines received in String
-	 * @return numLines 
-	 * 		The number of lines received in int
+	 * @return numLines The number of lines received in int
 	 * @throws HeadException
 	 *             If the numLinesString in not an Integer or a negative number.
 	 */
@@ -181,8 +180,8 @@ public class HeadApplication implements Application {
 	 * @param filePath
 	 *            A Path. Read file from the file path given
 	 * @throws HeadException
-	 *             If stdout is null. Other exceptions caught when
-	 *             reading and writing from input and output streams.
+	 *             If stdout is null. Other exceptions caught when reading and
+	 *             writing from input and output streams.
 	 */
 	void readFromFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws HeadException {
@@ -192,15 +191,17 @@ public class HeadApplication implements Application {
 		if (stdout == null) {
 			throw new HeadException("Stdout is null");
 		}
-		
+
 		try {
-			FileInputStream fileInStream = new FileInputStream(filePath.toString());
-			BufferedReader buffReader = new BufferedReader(new InputStreamReader(fileInStream));
-			
+			FileInputStream fileInStream = new FileInputStream(
+					filePath.toString());
+			BufferedReader buffReader = new BufferedReader(
+					new InputStreamReader(fileInStream));
+
 			int numLinesWrote = 0;
-			String input= "";
-			while((input = buffReader.readLine())!= null){
-				if(numLinesWrote == numLinesRequired){
+			String input = "";
+			while ((input = buffReader.readLine()) != null) {
+				if (numLinesWrote == numLinesRequired) {
 					break;
 				}
 				stdout.write(input.getBytes(encoding));
@@ -208,21 +209,21 @@ public class HeadApplication implements Application {
 				numLinesWrote++;
 			}
 			buffReader.close();
-			
+
 		} catch (IOException e) {
 			throw new HeadException("IOException");
 		}
 
 	}
-	
+
 	/**
 	 * Checks if a file is readable.
+	 * 
 	 * @param filePath
-	 * 		The path to the file
-	 * @return
-	 * 		True if the file is readable.
+	 *            The path to the file
+	 * @return True if the file is readable.
 	 * @throws HeadException
-	 * 		If the file is not readable
+	 *             If the file is not readable
 	 */
 	boolean checkIfFileIsReadable(Path filePath) throws HeadException {
 		if (Files.notExists(filePath)) {

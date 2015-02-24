@@ -26,7 +26,7 @@ public class HeadApplicationTest {
 	private String[] args;
 	private File file;
 	private ByteArrayOutputStream outStream;
-	
+
 	public static String tempFilePath = "testHead.txt";
 	public static final String APP_EXCEPTION = "head: ";
 	public static final String SHOULDNOT_FAIL = "Should not throw exception";
@@ -83,7 +83,7 @@ public class HeadApplicationTest {
 
 	@Test
 	public void testInsufficentArgumentsException() {
-		
+
 		args = new String[] { "-n" };
 
 		try {
@@ -142,7 +142,7 @@ public class HeadApplicationTest {
 	public void testFileNotExistException() {
 
 		boolean flag = false;
-		
+
 		try {
 			flag = headApp.checkIfFileIsReadable(Paths.get("fileNotExist"));
 			assertFalse(flag);
@@ -225,15 +225,15 @@ public class HeadApplicationTest {
 	@Test
 	public void testReadFromStdinWithNullArgs() throws HeadException,
 			IOException {
-		
+
 		StringBuilder input = new StringBuilder();
-		for(int i=1; i<=10; i++){
+		for (int i = 1; i <= 10; i++) {
 			input.append(i);
 			input.append(System.lineSeparator());
 		}
 
-		ByteArrayInputStream inStream = new ByteArrayInputStream(
-				input.toString().getBytes("UTF-8"));
+		ByteArrayInputStream inStream = new ByteArrayInputStream(input
+				.toString().getBytes("UTF-8"));
 
 		try {
 			headApp.run(args, inStream, outStream);
@@ -248,16 +248,13 @@ public class HeadApplicationTest {
 			IOException {
 
 		StringBuilder input = new StringBuilder();
-			input.append(1)
-				.append(System.lineSeparator());
-		
+		input.append(1).append(System.lineSeparator());
 
-		ByteArrayInputStream inStream = new ByteArrayInputStream(
-				input.toString().getBytes("UTF-8"));
+		ByteArrayInputStream inStream = new ByteArrayInputStream(input
+				.toString().getBytes("UTF-8"));
 
 		try {
-			headApp.readFromStdinAndWriteToStdout(outStream, 1,
-					inStream);
+			headApp.readFromStdinAndWriteToStdout(outStream, 1, inStream);
 			assertEquals(input.toString(), outStream.toString());
 		} catch (HeadException e) {
 			fail(SHOULDNOT_FAIL);
@@ -268,7 +265,7 @@ public class HeadApplicationTest {
 	public void testReadFromStdinWithFlag() throws HeadException, IOException {
 
 		StringBuilder expected = new StringBuilder();
-		for(int i=1; i<=4; i++){
+		for (int i = 1; i <= 4; i++) {
 			expected.append(i);
 			expected.append(System.lineSeparator());
 		}
@@ -298,7 +295,8 @@ public class HeadApplicationTest {
 		args = new String[] { "-n", "10", "HeadEmptyFileTest.txt" };
 
 		try {
-			headApp.readFromFileAndWriteToStdout(outStream, 10, emptyFile.toPath());
+			headApp.readFromFileAndWriteToStdout(outStream, 10,
+					emptyFile.toPath());
 			assertEquals("", outStream.toString());
 		} catch (HeadException e) {
 			fail(SHOULDNOT_FAIL);
@@ -312,8 +310,9 @@ public class HeadApplicationTest {
 		args = new String[] { "-n", "0", tempFilePath };
 
 		try {
-			
-			headApp.readFromFileAndWriteToStdout(outStream, 0, Paths.get(tempFilePath));
+
+			headApp.readFromFileAndWriteToStdout(outStream, 0,
+					Paths.get(tempFilePath));
 			assertEquals("", outStream.toString());
 		} catch (HeadException e) {
 			fail(SHOULDNOT_FAIL);
@@ -333,8 +332,7 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 		}
 
-		expected.append("abcd")
-				.append(System.lineSeparator());
+		expected.append("abcd").append(System.lineSeparator());
 		args = new String[] { tempFilePath };
 
 		try {
@@ -380,9 +378,8 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
-		expected.append("abcd")
-				.append(System.lineSeparator());
-		
+		expected.append("abcd").append(System.lineSeparator());
+
 		args = new String[] { "-n", "15", tempFilePath };
 
 		try {
@@ -424,7 +421,9 @@ public class HeadApplicationTest {
 			IOException {
 		args = new String[] { tempFilePath };
 		try {
-			headApp.readFromFileAndWriteToStdout(null, 10, Paths.get(tempFilePath));;
+			headApp.readFromFileAndWriteToStdout(null, 10,
+					Paths.get(tempFilePath));
+			;
 		} catch (HeadException e) {
 			String expected = APP_EXCEPTION + "Stdout is null";
 			assertEquals(expected, e.getMessage());
@@ -442,8 +441,7 @@ public class HeadApplicationTest {
 			expected.append(System.lineSeparator());
 			expected.append(System.lineSeparator());
 		}
-		expected.append("abcd")
-				.append(System.lineSeparator());
+		expected.append("abcd").append(System.lineSeparator());
 
 		// Verify that file is written correctly and CAT works
 		args = new String[] { tempFilePath };
@@ -462,7 +460,8 @@ public class HeadApplicationTest {
 		try {
 			headApp.run(args, null, outStream);
 		} catch (HeadException e) {
-			assertEquals(APP_EXCEPTION +"Could not read file", e.getLocalizedMessage());
+			assertEquals(APP_EXCEPTION + "Could not read file",
+					e.getLocalizedMessage());
 		}
 	}
 
