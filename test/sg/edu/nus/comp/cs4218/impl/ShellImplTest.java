@@ -25,6 +25,7 @@ public class ShellImplTest {
 	private static OutputStream outputStream;
 	final static String TEST_STR = "Testing Stream";
 	final static String TEST_FILE_NAME = "testShell.txt";
+	final static String TEST_FILE_NAME2 = "testShell2.txt";
 	final static String TEST_FOLDER_NAME = "testShellFolder";
 	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception for valid command.";
 	final static String VALID_FILE_NO_EXP = "Not supposed to have exception for valid file.";
@@ -54,7 +55,6 @@ public class ShellImplTest {
 		File file = new File(fileName);
 		file.setWritable(true);
 		file.delete();
-		System.out.println("remove file");
 	}
 
 	public static void createTestFolder(String folderName) throws IOException {
@@ -336,12 +336,33 @@ public class ShellImplTest {
 
 	}
 
+	@Test(expected = ShellException.class)
+	public void testExtraInputDir() throws IOException,
+			AbstractApplicationException, ShellException {
+		String readLine = "cat < " + TEST_FILE_NAME + " < " + TEST_FILE_NAME2;
+		shell.parseAndEvaluate(readLine, outputStream);
+	}
+
+	@Test(expected = ShellException.class)
+	public void testExtraOutputDir() throws IOException,
+			AbstractApplicationException, ShellException {
+		String readLine = "cat > " + TEST_FILE_NAME + " > " + TEST_FILE_NAME2;
+		shell.parseAndEvaluate(readLine, outputStream);
+	}
+
+	@Test(expected = ShellException.class)
+	public void testSameInputOutputDir() throws IOException,
+			AbstractApplicationException, ShellException {
+		String readLine = "cat < " + TEST_FILE_NAME + " > " + TEST_FILE_NAME;
+		shell.parseAndEvaluate(readLine, outputStream);
+	}
+	
 	// Testing for opening of input & output redir streams
 	@Test
 	public void testOpenInputRedir() {
 		InputStream myInputStream;
 		try {
-			myInputStream = shell.openInputRedir(TEST_FILE_NAME);
+			myInputStream = ShellImpl.openInputRedir(TEST_FILE_NAME);
 			Scanner scanner = new Scanner(myInputStream,
 					StandardCharsets.UTF_8.name());
 			String intputSreamStr = scanner.useDelimiter("\\A").next();
@@ -357,7 +378,7 @@ public class ShellImplTest {
 		// createTestFile(testFileName);
 		InputStream myInputStream;
 
-		myInputStream = shell.openInputRedir("invalid" + TEST_FILE_NAME);
+		myInputStream = ShellImpl.openInputRedir("invalid" + TEST_FILE_NAME);
 		Scanner scanner = new Scanner(myInputStream,
 				StandardCharsets.UTF_8.name());
 		String intputSreamStr = scanner.useDelimiter("\\A").next();
@@ -369,7 +390,7 @@ public class ShellImplTest {
 	public void testOpenOutputRedir() {
 		OutputStream myOutputStream;
 		try {
-			myOutputStream = shell.openOutputRedir(TEST_FILE_NAME);
+			myOutputStream = ShellImpl.openOutputRedir(TEST_FILE_NAME);
 			writeToStream(myOutputStream);
 			myOutputStream.close();
 		} catch (IOException | ShellException le) {
@@ -391,7 +412,7 @@ public class ShellImplTest {
 		OutputStream myoutputStream;
 		String errorMsg = "";
 		try {
-			myoutputStream = shell.openOutputRedir(TEST_FILE_NAME);
+			myoutputStream = ShellImpl.openOutputRedir(TEST_FILE_NAME);
 			myoutputStream.write(TEST_STR.getBytes());
 			myoutputStream.flush();
 			myoutputStream.close();
@@ -415,7 +436,7 @@ public class ShellImplTest {
 	public void testProcessBQ() {
 		String[] argsArray = { "echo", "this is space `echo \"nbsp\"`", "", "" };
 		try {
-			argsArray = shell.processBQ(argsArray);
+			argsArray = ShellImpl.processBQ(argsArray);
 		} catch (Exception e) {
 			fail(VALID_CMD_NO_EXP);
 		}
@@ -429,6 +450,6 @@ public class ShellImplTest {
 			ShellException {
 		String[] argsArray = { "echo",
 				"this is wrong because `echo \"missing2ndDoubleQuote`", "", "" };
-		argsArray = shell.processBQ(argsArray);
+		argsArray = ShellImpl.processBQ(argsArray);
 	}
 }

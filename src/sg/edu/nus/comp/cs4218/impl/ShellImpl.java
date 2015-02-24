@@ -1,7 +1,6 @@
 package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.*;
-import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,9 +18,18 @@ import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
 import sg.edu.nus.comp.cs4218.impl.app.PwdApplication;
 import sg.edu.nus.comp.cs4218.impl.app.TailApplication;
 import sg.edu.nus.comp.cs4218.impl.app.WcApplication;
-import sg.edu.nus.comp.cs4218.impl.cmd.CallCommand;
-import sg.edu.nus.comp.cs4218.impl.cmd.PipeCommand;
-import sg.edu.nus.comp.cs4218.impl.cmd.SeqCommand;
+import sg.edu.nus.comp.cs4218.impl.cmd.SequenceCommand;
+
+/**
+ * A Shell is a command interpreter and forms the backbone of the entire
+ * program. Its responsibility is to interpret commands that the user type and
+ * to run programs that the user specify in her command lines.
+ * 
+ * <p>
+ * <b>Command format:</b>
+ * <code>&lt;Pipe&gt; | &lt;Sequence&gt; | &lt;Call&gt;</code>
+ * </p>
+ */
 
 public class ShellImpl implements Shell {
 
@@ -32,91 +40,55 @@ public class ShellImpl implements Shell {
 	public static final String EXP_STDOUT = "Error writing to stdout.";
 	public static final String EXP_NOT_SUPPORTED = " not supported yet";
 
+	/**
+	 * Creates a Sequence Command object to process the incoming command line
+	 * into an AST and then proceed to run the command(s) using the AST
+	 * generated.
+	 * 
+	 * @param cmdline
+	 *            String of command line read in by stdin in main method of
+	 *            Shell.
+	 * @param stdout
+	 *            An OutputStream. Results of evaluating and running the
+	 *            application(s) will be output to stdout, usually System.out.
+	 * 
+	 * @throws AbstractApplicationException
+	 *             If an exception happens while running any of the
+	 *             application(s).
+	 * @throws ShellException
+	 *             If an exception happens while parsing the command line.
+	 */
 	@Override
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-
-		SeqCommand seqCmd = new SeqCommand(cmdline);
+		SequenceCommand seqCmd = new SequenceCommand(cmdline);
+		seqCmd.parse();
 		seqCmd.evaluate(System.in, stdout);
-		runCmdline(seqCmd, stdout);
 	}
 
-	void runCmdline(SeqCommand seqCommand, OutputStream stdout)
-			throws AbstractApplicationException, ShellException {
-		InputStream inputStream = System.in, currInputStream = inputStream;
-		OutputStream outputStream = stdout, currOutputStream = outputStream;
-		Vector<PipeCommand> pipeCommandList = seqCommand.getPipeCommandList();
-		for (int i = 0; i < pipeCommandList.size(); i++) {
-			PipeCommand pipeCommand = pipeCommandList.get(i);
-			Vector<CallCommand> callCommandList = pipeCommand
-					.getCallCommandList();
-			for (int j = 0; j < callCommandList.size(); j++) {
-				CallCommand callCommand = callCommandList.get(j);
-				if (callCommand.isError()) {
-					throw new ShellException(callCommand.getErrorMsg());
-				}
-				String app = callCommand.getApp();
-				String inputStreamS = callCommand.getInputStreamS();
-				String outputStreamS = callCommand.getOutputStreamS();
-				String[] argsArray = processBQ(callCommand.getArgs());
-				if (("").equals(inputStreamS)) {// empty
-					currInputStream = inputStream;
-				} else { // not empty
-					currInputStream = openInputRedir(inputStreamS);
-				}
-				if (("").equals(outputStreamS)) { // empty
-					if (j == callCommandList.size() - 1) { // last
-						currOutputStream = new ByteArrayOutputStream();
-					} else { // not last, write to stdout
-						currOutputStream = outputStream;
-					}
-				} else {
-					currOutputStream = openOutputRedir(outputStreamS);
-				}
-				runApp(app, argsArray, currInputStream, currOutputStream);
-				closeInputStream(currInputStream);
-				if (j != callCommandList.size() - 1) { // not last->close
-														// outputstream
-					closeOutputStream(currOutputStream);
-				}
-			}
-			if (i == pipeCommandList.size() - 1) { // last
-				closeOutputStream(currOutputStream);
-			} else {// not last: pipe outputStream to inputStream
-				inputStream = outputStreamToInputStream(currOutputStream);
-				currOutputStream = new ByteArrayOutputStream();
-			}
-		}
-		writeToStdout(currOutputStream, stdout);
-	}
-
-	// Open fileinputStream for redirection
-	InputStream openInputRedir(String inputStreamS) throws ShellException {
-		File inputFile = new File(inputStreamS);
-		FileInputStream fInputStream = null;
-		try {
-			fInputStream = new FileInputStream(inputFile);
-		} catch (FileNotFoundException e) {
-			throw new ShellException(e.getMessage());
-		}
-		return fInputStream;
-	}
-
-	// Open fileoutputstream for redirection
-	OutputStream openOutputRedir(String outputStreamS) throws ShellException {
-		File outputFile = new File(outputStreamS);
-		FileOutputStream fOutputStream = null;
-		try {
-			fOutputStream = new FileOutputStream(outputFile);
-		} catch (FileNotFoundException e) {
-			throw new ShellException(e.getMessage());
-		}
-		return fOutputStream;
-	}
-
-	String[] processBQ(String... argsArray)
+	/**
+	 * Searches for and processes the commands enclosed by back quotes for
+	 * command substitution.If no back quotes are found, the argsArray from the
+	 * input is returned unchanged. If back quotes are found, the back quotes
+	 * and its enclosed commands substituted with the output from processing the
+	 * commands enclosed in the back quotes.
+	 * 
+	 * @param argsArray
+	 *            String array of the individual commands.
+	 * 
+	 * @return String array with the back quotes command processed.
+	 * 
+	 * @throws AbstractApplicationException
+	 *             If an exception happens while processing the content in the
+	 *             back quotes.
+	 * @throws ShellException
+	 *             If an exception happens while processing the content in the
+	 *             back quotes.
+	 */
+	public static String[] processBQ(String... argsArray)
 			throws AbstractApplicationException, ShellException {
 		// echo "this is space `echo "nbsp"`"
+		// echo "this is space `echo "nbsp"` and `echo "2nd space"`"
 		// Back quoted: any char except \n,`
 		String[] resultArr = new String[argsArray.length];
 		System.arraycopy(argsArray, 0, resultArr, 0, argsArray.length);
@@ -129,9 +101,10 @@ public class ShellImpl implements Shell {
 				String bqStr = matcherBQ.group(1);
 				// cmdVector.add(bqStr.trim());
 				// process back quote
-				//System.out.println("backquote" + bqStr);
+				// System.out.println("backquote" + bqStr);
 				OutputStream bqOutputStream = new ByteArrayOutputStream();
-				parseAndEvaluate(bqStr, bqOutputStream);
+				ShellImpl shell = new ShellImpl();
+				shell.parseAndEvaluate(bqStr, bqOutputStream);
 
 				ByteArrayOutputStream outByte = (ByteArrayOutputStream) bqOutputStream;
 				byte[] byteArray = outByte.toByteArray();
@@ -147,7 +120,29 @@ public class ShellImpl implements Shell {
 		return resultArr;
 	}
 
-	private void runApp(String app, String[] argsArray,
+	/**
+	 * Static method to run the application as specified by the application
+	 * command keyword and arguments.
+	 * 
+	 * @param app
+	 *            String containing the keyword that specifies what application
+	 *            to run.
+	 * @param args
+	 *            String array containing the arguments to pass to the
+	 *            applications for running.
+	 * @param inputStream
+	 *            InputputStream for the application to get arguments from, if
+	 *            needed.
+	 * @param outputStream
+	 *            OutputStream for the application to print its output to.
+	 * 
+	 * @throws AbstractApplicationException
+	 *             If an exception happens while running any of the
+	 *             application(s).
+	 * @throws ShellException
+	 *             If an unsupported or invalid application command is detected.
+	 */
+	public static void runApp(String app, String[] argsArray,
 			InputStream inputStream, OutputStream outputStream)
 			throws AbstractApplicationException, ShellException {
 		Application absApp = null;
@@ -181,9 +176,64 @@ public class ShellImpl implements Shell {
 		absApp.run(argsArray, inputStream, outputStream);
 	}
 
-	// Helper methods for converting streams
-	// Closes streams from redirection
-	private void closeInputStream(InputStream inputStream)
+	/**
+	 * Static method to creates an inputStream based on the file name or file
+	 * path.
+	 * 
+	 * @param inputStreamS
+	 *            String of file name or file path
+	 * 
+	 * @return InputStream of file opened
+	 * 
+	 * @throws ShellException
+	 *             If file is not found.
+	 */
+	public static InputStream openInputRedir(String inputStreamS)
+			throws ShellException {
+		File inputFile = new File(inputStreamS);
+		FileInputStream fInputStream = null;
+		try {
+			fInputStream = new FileInputStream(inputFile);
+		} catch (FileNotFoundException e) {
+			throw new ShellException(e.getMessage());
+		}
+		return fInputStream;
+	}
+
+	/**
+	 * Static method to creates an outputStream based on the file name or file
+	 * path.
+	 * 
+	 * @param onputStreamS
+	 *            String of file name or file path.
+	 * 
+	 * @return OutputStream of file opened.
+	 * 
+	 * @throws ShellException
+	 *             If file destination cannot be opened or inaccessible.
+	 */
+	public static OutputStream openOutputRedir(String outputStreamS)
+			throws ShellException {
+		File outputFile = new File(outputStreamS);
+		FileOutputStream fOutputStream = null;
+		try {
+			fOutputStream = new FileOutputStream(outputFile);
+		} catch (FileNotFoundException e) {
+			throw new ShellException(e.getMessage());
+		}
+		return fOutputStream;
+	}
+
+	/**
+	 * Static method to close an inputStream.
+	 * 
+	 * @param inputStream
+	 *            InputStream to be closed.
+	 * 
+	 * @throws ShellException
+	 *             If inputStream cannot be closed successfully.
+	 */
+	public static void closeInputStream(InputStream inputStream)
 			throws ShellException {
 		if (inputStream != System.in) {
 			try {
@@ -194,7 +244,17 @@ public class ShellImpl implements Shell {
 		}
 	}
 
-	private void closeOutputStream(OutputStream outputStream)
+	/**
+	 * Static method to close an outputStream. If outputStream provided is
+	 * System.out, it will be ignored.
+	 * 
+	 * @param outputStream
+	 *            OutputStream to be closed.
+	 * 
+	 * @throws ShellException
+	 *             If outputStream cannot be closed successfully.
+	 */
+	public static void closeOutputStream(OutputStream outputStream)
 			throws ShellException {
 		if (outputStream != System.out) {
 			try {
@@ -205,8 +265,43 @@ public class ShellImpl implements Shell {
 		}
 	}
 
-	private InputStream outputStreamToInputStream(OutputStream outputStream)
-			throws ShellException {
+	/**
+	 * Static method to write output of an outputStream to another outputStream,
+	 * usually System.out.
+	 * 
+	 * @param outputStream
+	 *            Source outputStream to get stream from.
+	 * @param stdout
+	 *            Destination outputStream to write stream to.
+	 * @throws ShellException
+	 *             If exception is thrown during writing.
+	 */
+	public static void writeToStdout(OutputStream outputStream,
+			OutputStream stdout) throws ShellException {
+		if (outputStream instanceof FileOutputStream) {
+			return;
+		}
+		try {
+			stdout.write(((ByteArrayOutputStream) outputStream).toByteArray());
+		} catch (IOException e) {
+			throw new ShellException(EXP_STDOUT);
+		}
+	}
+
+	/**
+	 * Static method to pipe data from an outputStream to an inputStream, for
+	 * the evaluation of the Pipe Commands.
+	 * 
+	 * @param outputStream
+	 *            Source outputStream to get stream from.
+	 * 
+	 * @return InputStream with data piped from the outputStream.
+	 * 
+	 * @throws ShellException
+	 *             If exception is thrown during piping.
+	 */
+	public static InputStream outputStreamToInputStream(
+			OutputStream outputStream) throws ShellException {
 		if (outputStream instanceof FileOutputStream) {
 			throw new ShellException(EXP_REDIR_PIPE);
 		}
@@ -214,17 +309,12 @@ public class ShellImpl implements Shell {
 				((ByteArrayOutputStream) outputStream).toByteArray());
 	}
 
-	private void writeToStdout(OutputStream outputStream, OutputStream stdout)
-			throws ShellException {
-		if (outputStream instanceof FileOutputStream) {
-			return;
-		}
-		try {// pipe last outputStream to stdout
-			stdout.write(((ByteArrayOutputStream) outputStream).toByteArray());
-		} catch (IOException e) {
-			throw new ShellException(EXP_STDOUT);
-		}
-	}
+	/**
+	 * Main method for the Shell Interpreter program.
+	 * 
+	 * @param args
+	 *            List of strings arguments, unused.
+	 */
 
 	public static void main(String... args) {
 		ShellImpl shell = new ShellImpl();
