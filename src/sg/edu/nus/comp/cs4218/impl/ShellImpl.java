@@ -148,27 +148,27 @@ public class ShellImpl implements Shell {
 		Application absApp = null;
 		if (("pwd".equals(app))) {
 			absApp = new PwdApplication();
-		} else if (("cd").equals(app)) {// cd PATH
+		} else if (("cd").equals(app)) {// cd PATH
 			absApp = new CdApplication();
 		} else if (("ls").equals(app)) {// ls
 			absApp = new LsApplication();
-		} else if (("cat").equals(app)) {// cat [FILE]...
+		} else if (("cat").equals(app)) {// cat [FILE]...
 			absApp = new CatApplication();
 		} else if (("echo").equals(app)) {// echo [args]...
 			absApp = new EchoApplication();
-		} else if (("head").equals(app)) {// head [OPTIONS] [FILE]
+		} else if (("head").equals(app)) {// head [OPTIONS] [FILE]
 			absApp = new HeadApplication();
-		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
+		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
 			absApp = new TailApplication();
-		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
+		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
 			throw new ShellException(app + EXP_NOT_SUPPORTED);
 			// absApp = new GrepApplication();
-		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
+		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
 			throw new ShellException(app + EXP_NOT_SUPPORTED);
 			// absApp = new SedApplication();
-		} else if (("find").equals(app)) {// find [PATH] ­name PATTERN
+		} else if (("find").equals(app)) {// find [PATH] -name PATTERN
 			absApp = new FindApplication();
-		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
+		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
 			absApp = new WcApplication();
 		} else { // invalid command
 			throw new ShellException(app + ": " + EXP_INVALID_APP);
