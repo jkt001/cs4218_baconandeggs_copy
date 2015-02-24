@@ -13,8 +13,8 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
 import sg.edu.nus.comp.cs4218.impl.ShellImpl;
 
 /**
- * A Call Command is a sub-command consisting of at least non-keyword and quoted
- * (if any).
+ * A Call Command is a sub-command consisting of at least one non-keyword and
+ * quoted (if any).
  * 
  * <p>
  * <b>Command format:</b> <code>(&lt;non-Keyword&gt; | &lt;quoted&gt;)*</code>
@@ -156,8 +156,8 @@ public class CallCommand implements Command {
 	 * (if any), based on rules: Unquoted: any char except for whitespace
 	 * characters, quotes, newlines, semicolons “;”, “|”, “<” and “>”. Double
 	 * quoted: any char except \n, ", ` Single quoted: any char except \n, '
-	 * Back quotes in Double Quote for command substitution: DQ rules `anything
-	 * but \n` BQ.
+	 * Back quotes in Double Quote for command substitution: DQ rules for
+	 * outside BQ + `anything but \n` in BQ.
 	 * 
 	 * @param str
 	 *            String of command to split.
