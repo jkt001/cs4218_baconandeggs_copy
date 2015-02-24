@@ -12,9 +12,47 @@ import java.io.OutputStream;
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.exception.WcException;
 
+/**
+ * The wc command prints the number of bytes, words, and lines in given files (followed by a
+newline).
+ * 
+ * <p>
+ * <b>Command format:</b> <code>wc [OPTIONS] [FILE]...</code>
+ * <dl>
+ * <dt>OPTIONS</dt>
+ * <dd>
+ * -m : Print only the character counts<br>
+ * -w : Print only the word counts<br>
+ * -l : Print only the newline counts
+ * </dd>
+ * <dt>FILE</dt>
+ * <dd>the file(s), when no file is present, use stdin.</dd>
+ * </dl>
+ * </p>
+ */
 public class WcApplication implements Application {
 	boolean printChar = false, printWord = false, printLine = false;
 
+	/**
+	 * Runs the wc application with the specified arguments.
+	 * 
+	 * @param args
+	 *            Array of arguments for the application. The element in
+	 *            the array can be &quot;-m&quot; (character counts),
+	 *            &quot;-w&quot; (word counts) or &quot;-l&quot; (line counts).
+	 *            The array can also contain the string to the file(s). If no file is
+	 *            specified, input will be read from stdin.
+	 * @param stdin
+	 *            An InputStream. Input is read from this InputStream if no file
+	 *            is specified.
+	 * @param stdout
+	 *            An OutputStream. The output of the command is written to this
+	 *            OutputStream.
+	 * 
+	 * @throws WcException
+	 *             If file specified does not exist or no permissions to read
+	 *             the file.
+	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws WcException {
 		if (args == null){
@@ -58,6 +96,17 @@ public class WcApplication implements Application {
 		}
 	}
 
+	/**
+	 * Write an array of integer separated by tab and end with new line character to output stream
+	 * 
+	 * @param counts
+	 *            An array of integer to be written to output stream .
+	 * @param stdout
+	 *            The destination output stream to be written.
+	 * 
+	 * @throws WcException
+	 *             If there is IOException thrown when writing to the output stream, it will throw as WcException.
+	 */
 	void writeWordCountsToOutputStream(int counts[], OutputStream stdout) throws WcException{
 		String outputStr = "";
 		if(printChar){
@@ -83,7 +132,18 @@ public class WcApplication implements Application {
 		}
 	}
 
-	//return array of filePath string
+	/**
+	 * Parse the array of arguments given to differentiate the option(s) and file(s) paths.
+	 * Then set the class variable base on the options.
+	 * 
+	 * @param args
+	 *            An array of string arguments to be parsed.
+	 * @return
+	 *            An array of string contains the file(s) path.
+	 * 
+	 * @throws WcException
+	 *             When the flag is invalid(not one of w, m, l)
+	 */
 	String[] parseArgument(String... args) throws WcException{
 		String filePath[] = new String[args.length];
 		int pathCount = 0;
@@ -127,6 +187,20 @@ public class WcApplication implements Application {
 		return temp;
 	}
 
+	/**
+	 * Count the number of bytes, word and lines for the given input stream
+	 * 
+	 * @param stdin
+	 *            An input stream to be counted
+	 * @return
+	 *            An integer array of word counts details.
+	 *            First element is number of bytes counted.
+	 *            Second element is number of words counted.
+	 *            Third element is number of lines counted.
+	 * 
+	 * @throws WcException
+	 *             If there is IOException thrown when reading from the input stream, it will throw as WcException.
+	 */
 	int[] wordCount(InputStream stdin) throws WcException{
 		String fileLine;
 		int charCount = 0, wordCount = 0, lineCount = 0;

@@ -14,8 +14,42 @@ import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.HeadException;
 
+/**
+ * Print first N lines of the file (or input stream). If there are less than N
+ * lines, print existing lines without rising an exception.
+ * 
+ * <p>
+ * <b>Command format:</b> <code>head [OPTIONS] [FILE]</code>
+ * <dl>
+ * <dt>OPTIONS</dt>
+ * <dd>&quot;-n 15&quot; means printing 15 lines. Print first 10 lines if not
+ * specified.</dd>
+ * <dt>FILE</dt>
+ * <dd>name of the file. If not specified, use stdin.</dd>
+ * </dl>
+ * </p>
+ */
 public class HeadApplication implements Application {
 
+	/**
+	 * Runs the head application with the specified arguments.
+	 * 
+	 * @param args
+	 *            Array of arguments for the application. If a file is to be
+	 *            specified, the array should be of size 1 and the element is
+	 *            the path to the file. If no files are specified, the array
+	 *            should be empty and input is read from stdin.
+	 * @param stdin
+	 *            An InputStream. The input for the command is read from this
+	 *            InputStream if no files are specified.
+	 * @param stdout
+	 *            An OutputStream. The output of the command is written to this
+	 *            OutputStream.
+	 * 
+	 * @throws HeadException
+	 *             If the file(s) specified do not exist, are unreadable, or an
+	 *             I/O exception occurs.
+	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws HeadException {

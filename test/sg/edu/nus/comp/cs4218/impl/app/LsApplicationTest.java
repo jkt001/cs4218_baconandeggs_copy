@@ -6,24 +6,12 @@ import static sg.edu.nus.comp.cs4218.OSCheck.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclEntryPermission;
-import java.nio.file.attribute.AclEntryType;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.UserPrincipal;
-import java.nio.file.attribute.UserPrincipalLookupService;
-import java.util.Collections;
-import java.util.EnumSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.Environment;
-import sg.edu.nus.comp.cs4218.OSCheck;
 import sg.edu.nus.comp.cs4218.WindowsPermission;
 import sg.edu.nus.comp.cs4218.exception.LsException;
 import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
@@ -234,14 +222,9 @@ public class LsApplicationTest {
 
 		try{
 			myLs.run(str,null,myOutputStream);
-			String expectedResult = TEMP_FOLDER_PATH + File.separator +":\n" 
-					+ TEMP_FILE_NAME + "\t" + TEMP_FILE_NAME2 + "\n" 
-					+ "\n"
-					+ TEMP_FOLDER_PATH2 + File.separator + ":\n"
-					+ TEMP_FILE_NAME2 + "\n" ;
-			assertEquals(expectedResult,myOutputStream.toString());
+			fail("Should throw exception");
 		}catch(LsException le){
-			fail("Should not throw exception");
+			assertEquals(le.getLocalizedMessage(), "ls: More than one path arguments");
 		}
 	}
 

@@ -9,12 +9,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import sg.edu.nus.comp.cs4218.OSCheck;
+import sg.edu.nus.comp.cs4218.WindowsPermission;
 import sg.edu.nus.comp.cs4218.exception.CatException;
 import sg.edu.nus.comp.cs4218.impl.app.CatApplication;
 
@@ -22,6 +25,7 @@ public class CatApplicationTest {
 	private CatApplication catApp;
 	private String[] args;
 	static String tempFilePath = "testCat.txt";
+	static String tempFilePath2 = "testCat2.txt";
 	private File file;
 
 	@BeforeClass
@@ -181,37 +185,53 @@ public class CatApplicationTest {
 		}
 
 	}
-
-	// not working currently due to the set readable
+	
 	@Test
 	public void testFileNotReadable() throws CatException, IOException {
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				"test".getBytes());
+		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
+		
+		String testFileData = "aaa dddd " + System.lineSeparator() + "abcd e";
+		
 		try {
 
-			File file = new File("tempCat.txt");
+			// Create temporary test file
+			File file = new File(tempFilePath2);
 			if (file.createNewFile()) {
 				System.out.println("File is created!");
 			} else {
 				System.out.println("File already exists.");
 			}
-			if (file.exists()) {
-				System.out.println("Is Execute allow : " + file.canExecute());
-				System.out.println("Is Write allow : " + file.canWrite());
-				System.out.println("Is Read allow : " + file.canRead());
+			
+			// Write test data to file
+			FileOutputStream myFileOutputStream = new FileOutputStream(file);
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+					myFileOutputStream));
+			bw.write(testFileData);
+			bw.close();
+			
+			// Verify that file is written correctly and CAT works
+			args = new String[] {tempFilePath2};
+			catApp.run(args, myInputStream, myOutputStream);
+			
+			assertEquals(testFileData, myOutputStream.toString());
+
+			// Make file not readable
+			file.setReadable(false); // Unix
+			if (OSCheck.isWindows()){
+				WindowsPermission.setReadable(file, false); // Windows
 			}
-
-			file.setExecutable(false);
-			file.setReadable(false);
-			file.setWritable(false);
-
-			System.out.println("Is Execute allow : " + file.canExecute());
-			System.out.println("Is Write allow : " + file.canWrite());
-			System.out.println("Is Read allow : " + file.canRead());
-
-			if (file.createNewFile()) {
-				System.out.println("File is created!");
-			} else {
-				System.out.println("File already exists.");
+			
+			// Try to CAT file again			
+			args = new String[] {tempFilePath2};
+			try {
+				catApp.run(args, myInputStream, myOutputStream);
+			} catch (CatException e) {
+				assertEquals("cat: Could not read file", e.getLocalizedMessage());
 			}
+			
+			file.delete();
 
 		} catch (IOException e) {
 			e.printStackTrace();
