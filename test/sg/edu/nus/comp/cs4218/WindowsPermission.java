@@ -25,10 +25,26 @@ import java.util.Set;
  */
 public final class WindowsPermission {
 	
+	/**
+	 * Private constructor for this utility class
+	 */
 	private WindowsPermission(){
 		// Don't need to have constructor for this utility class
 	}
 	
+	/**
+	 * Sets or removes the specified permission on the file or directory provided.
+	 * 
+	 * @param path
+	 * 			The path to the file or directory.
+	 * @param aclPermission
+	 * 			The permission to add or remove
+	 * @param setAttr
+	 * 			True to add the permission, false to remove
+	 * @throws IOException
+	 * 			If I/O exception occurs, e.g. if path does not exist or not
+	 *          enough permissions to set/remove the permission.
+	 */
 	public static void setPermission(Path path, AclEntryPermission aclPermission, boolean setAttr) throws IOException {
 		// Inspired by http://stackoverflow.com/questions/664432/how-do-i-programmatically-change-file-permissions
 		
@@ -43,8 +59,10 @@ public final class WindowsPermission {
 	    	}else{
 	    		modifiedPerms.remove(aclPermission);
 	    	}
-	    	modifiedAclEntry.setPermissions(modifiedPerms);
-	    	newAclAttr.add(modifiedAclEntry.build());
+	    	if (!modifiedPerms.isEmpty()){ // Not sure why, but sometimes the permissions set is empty
+	    		modifiedAclEntry.setPermissions(modifiedPerms);
+	    	}
+    		newAclAttr.add(modifiedAclEntry.build());
 	    }
 	    
 	    aclAttr.setAcl(newAclAttr);
