@@ -254,8 +254,6 @@ public class FindApplication implements Application {
 	boolean matchString(String inputString, String expression) {
 		String[] expressionParts = expression.split(Pattern.quote("*"), -1); // negative number to keep empty substrings
 		
-		// System.out.println(Arrays.toString(expressionParts));
-		
 		StringBuffer stringBuf = new StringBuffer();
 		for(int i = 0; i<expressionParts.length; i++) {
 			if (i > 0) {
@@ -263,8 +261,6 @@ public class FindApplication implements Application {
 			}
 			stringBuf.append(Pattern.quote(expressionParts[i]));
 		}
-		
-		// System.out.println(stringBuf);
 		
 		Pattern pattern = Pattern.compile(stringBuf.toString());		
 		Matcher matcher = pattern.matcher(inputString);
