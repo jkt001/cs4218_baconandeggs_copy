@@ -9,11 +9,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Paths;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.OSCheck;
@@ -24,17 +23,14 @@ import sg.edu.nus.comp.cs4218.impl.app.CatApplication;
 public class CatApplicationTest {
 	private CatApplication catApp;
 	private String[] args;
-	static String tempFilePath = "testCat.txt";
+	static String tempFilePath1 = "testCat.txt";
 	static String tempFilePath2 = "testCat2.txt";
-	private File file;
+	private File tempFile1;
+	private File tempFile2;
+	private ByteArrayOutputStream outStream;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+	public static final String APP_EXCEPTION = "cat: ";
+	public static final String FAIL_MSG = "Should not throw exception";
 
 	@Before
 	public void setUp() throws Exception {
@@ -42,58 +38,84 @@ public class CatApplicationTest {
 		args = null;
 
 		try {
-			file = new File(tempFilePath);
-			file.createNewFile();
+			tempFile1 = new File(tempFilePath1);
+			tempFile1.createNewFile();
+			tempFile2 = new File(tempFilePath2);
+			tempFile2.createNewFile();
 		} catch (SecurityException se) {
 			fail("Cannot create temporary file to test");
 		}
 
+		outStream = new ByteArrayOutputStream();
+
+		// write to temp file to test cat reading of one file
+		try {
+			FileOutputStream fos = new FileOutputStream(new File(tempFilePath1));
+			BufferedWriter buffWriter = new BufferedWriter(
+					new OutputStreamWriter(fos));
+			buffWriter.write("aaa dddd ");
+			buffWriter.newLine();
+			buffWriter.write("abcd e");
+			buffWriter.close();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		// write to temp file to test cat reading of two files
+		try {
+			FileOutputStream fos = new FileOutputStream(new File(tempFilePath2));
+			BufferedWriter buffWriter = new BufferedWriter(
+					new OutputStreamWriter(fos));
+			buffWriter.write("1");
+			buffWriter.newLine();
+			buffWriter.write("2");
+			buffWriter.close();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		catApp = null;
 		args = null;
-		file.delete();
+		tempFile1.delete();
+		tempFile2.delete();
 	}
 
 	@Test
 	public void testNullInputStreamException() {
 		try {
 			catApp.run(args, null, System.out);
-			fail("Should have thrown SomeException but did not!");
+			fail(FAIL_MSG);
 		} catch (Exception e) {
-			String exceptionMsg = "cat: " + "Null Pointer Exception";
+			String exceptionMsg = APP_EXCEPTION + "Null Pointer Exception";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
 
 	@Test
 	public void testFileNotExistException() {
-		args = new String[1];
-		args[0] = "fileNotExist";
+
 		try {
-			catApp.run(args, System.in, System.out);
-			fail("Should have thrown SomeException but did not!");
+			catApp.checkIfFileIsReadable(Paths.get("fileNotExist"));
+			fail(FAIL_MSG);
 		} catch (CatException e) {
-			String exceptionMsg = "cat: " + "No such file exists";
+			String exceptionMsg = APP_EXCEPTION + "No such file exists";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
 
 	@Test
 	public void testFileIsDirException() {
-		args = new String[1];
-		args[0] = "tempCatDir";
-
 		File fileDir = new File("tempCatDir");
 		fileDir.mkdir();
 
 		try {
-			catApp.run(args, System.in, System.out);
-			fail("Should have thrown SomeException but did not!");
+			catApp.checkIfFileIsReadable(Paths.get("tempCatDir"));
+			fail(FAIL_MSG);
 		} catch (CatException e) {
-			String exceptionMsg = "cat: " + "This is a directory";
+			String exceptionMsg = APP_EXCEPTION + "This is a directory";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 
@@ -103,50 +125,33 @@ public class CatApplicationTest {
 	@Test
 	public void testReadFromStdin() throws CatException, IOException {
 
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(
 				"test".getBytes());
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
 		try {
-			catApp.run(args, myInputStream, myOutputStream);
+			catApp.run(args, inputStream, outStream);
 			String expected = "test";
-			assertEquals(expected, myOutputStream.toString());
+			assertEquals(expected, outStream.toString());
 		} catch (CatException e) {
-			fail("Should not throw exception");
+			fail(FAIL_MSG);
 		}
 	}
 
 	@Test
 	public void testReadFromFileAndWriteToStdOut() throws CatException,
 			IOException {
-		FileOutputStream myFileOutputStream;
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
-		// write to temp file to test cat reading of file
-		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-			bw.write("aaa dddd ");
-			bw.newLine();
-			bw.write("abcd e");
-			bw.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-
-		args = new String[] { tempFilePath };
+		args = new String[] { tempFilePath1 };
 		StringBuilder expected = new StringBuilder();
 		expected.append("aaa dddd ");
 		expected.append(System.lineSeparator());
 		expected.append("abcd e");
 
 		try {
-			catApp.run(args, null, myOutputStream);
-			String testStr = myOutputStream.toString();
-			assertEquals(expected.toString(), testStr);
+			catApp.run(args, null, outStream);
+			assertEquals(expected.toString(), outStream.toString());
 		} catch (CatException e) {
-			fail("Should not throw exception");
+			fail(FAIL_MSG);
 		}
 
 	}
@@ -154,89 +159,48 @@ public class CatApplicationTest {
 	// yet to create two files and concatenate them
 	@Test
 	public void testCatTwoFiles() throws CatException, IOException {
-		FileOutputStream myFileOutputStream;
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 
-		// write to temp file to test cat reading of file
-		try {
-			myFileOutputStream = new FileOutputStream(new File(tempFilePath));
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-			bw.write("aaa dddd ");
-			bw.newLine();
-			bw.write("abcd e");
-			bw.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-
-		args = new String[] { tempFilePath };
+		args = new String[] { tempFilePath1, tempFilePath2 };
 		StringBuilder expected = new StringBuilder();
 		expected.append("aaa dddd ");
 		expected.append(System.lineSeparator());
 		expected.append("abcd e");
+		expected.append("1");
+		expected.append(System.lineSeparator());
+		expected.append("2");
 
 		try {
-			catApp.run(args, null, myOutputStream);
-			String testStr = myOutputStream.toString();
-			assertEquals(expected.toString(), testStr);
+			catApp.run(args, null, outStream);
+			assertEquals(expected.toString(), outStream.toString());
 		} catch (CatException e) {
 			fail("Should not throw exception");
 		}
 
 	}
-	
+
 	@Test
 	public void testFileNotReadable() throws CatException, IOException {
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
-				"test".getBytes());
-		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		
-		String testFileData = "aaa dddd " + System.lineSeparator() + "abcd e";
-		
-		try {
 
-			// Create temporary test file
-			File file = new File(tempFilePath2);
-			if (file.createNewFile()) {
-				System.out.println("File is created!");
-			} else {
-				System.out.println("File already exists.");
-			}
-			
-			// Write test data to file
-			FileOutputStream myFileOutputStream = new FileOutputStream(file);
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-					myFileOutputStream));
-			bw.write(testFileData);
-			bw.close();
-			
-			// Verify that file is written correctly and CAT works
-			args = new String[] {tempFilePath2};
-			catApp.run(args, myInputStream, myOutputStream);
-			
-			assertEquals(testFileData, myOutputStream.toString());
+		String testFileData = "1" + System.lineSeparator() + "2";
 
-			// Make file not readable
-			file.setReadable(false); // Unix
-			if (OSCheck.isWindows()){
-				WindowsPermission.setReadable(file, false); // Windows
-			}
-			
-			// Try to CAT file again			
-			args = new String[] {tempFilePath2};
-			try {
-				catApp.run(args, myInputStream, myOutputStream);
-			} catch (CatException e) {
-				assertEquals("cat: Could not read file", e.getLocalizedMessage());
-			}
-			
-			file.delete();
+		// Verify that file is written correctly and CAT works
+		args = new String[] { tempFilePath2 };
+		catApp.run(args, null, outStream);
 
-		} catch (IOException e) {
-			e.printStackTrace();
+		assertEquals(testFileData, outStream.toString());
+
+		// Make file not readable
+		tempFile2.setReadable(false); // Unix
+		if (OSCheck.isWindows()) {
+			WindowsPermission.setReadable(tempFile2, false); // Windows
 		}
 
+		// Try to CAT file again
+		args = new String[] { tempFilePath2 };
+		try {
+			catApp.run(args, null, outStream);
+		} catch (CatException e) {
+			assertEquals("cat: Could not read file", e.getLocalizedMessage());
+		}
 	}
-
 }

@@ -103,7 +103,7 @@ public class CatApplication implements Application {
 	 * @throws CatException
 	 * 		If the file is not readable
 	 */
-	private boolean checkIfFileIsReadable(Path filePath) throws CatException {
+	boolean checkIfFileIsReadable(Path filePath) throws CatException {
 		if (Files.notExists(filePath)) {
 			throw new CatException("No such file exists");
 		}
