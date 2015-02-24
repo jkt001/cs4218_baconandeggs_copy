@@ -234,7 +234,7 @@ public class CdApplicationTest {
 
 		String tempFolderName = "testCdApplicationTempDir";
 		Path tempFolderPath = FileSystems.getDefault().getPath(
-				PROPERTY_USER_DIR, tempFolderName);
+				USER_DIR, tempFolderName);
 
 		if (isWindows()) {
 			// Create directory with no permissions to CD into.
@@ -271,20 +271,21 @@ public class CdApplicationTest {
 	public void testDirectoryWithNoPermissionsToListContentsOf()
 			throws IOException {
 		
+		String tempFolderName = "testCdApplicationTempDir";
+		Path tempFolderPath = FileSystems.getDefault().getPath(
+				USER_DIR, tempFolderName);
+		Files.deleteIfExists(tempFolderPath);
+		
 		if (isWindows()) {
 			// Create directory with no permissions to list contents of.
 			// In Windows, this is equivalent to removing the read permission
 			// on the Windows ACL.
 
-			String tempFolderName = "testCdApplicationTempDir";
-			Path tempFolderPath = FileSystems.getDefault().getPath(
-					USER_DIR, tempFolderName);
-
 			Files.createDirectory(tempFolderPath);
 			WindowsPermission.setReadable(tempFolderPath, false);
 
-			testCdExpectFailure(UNIX_ROOT, tempFolderPath.normalize()
-					.toString());
+			testCdExpectSuccess(WIN_DRIVE_ROOT, tempFolderPath.normalize()
+					.toString(), tempFolderPath.normalize().toString());
 
 			WindowsPermission.setReadable(tempFolderPath, true);
 			Files.deleteIfExists(tempFolderPath);
@@ -292,10 +293,6 @@ public class CdApplicationTest {
 			// Create directory with no permissions to list contents of.
 			// In POSIX operating systems this is denoted by the lack of
 			// read bit on that directory
-
-			String tempFolderName = "testCdApplicationTempDir";
-			Path tempFolderPath = FileSystems.getDefault().getPath(
-					USER_DIR, tempFolderName);
 
 			Set<PosixFilePermission> perms = PosixFilePermissions
 					.fromString("-wx-wx---");
@@ -338,7 +335,7 @@ public class CdApplicationTest {
 		try {
 			app.run(params, System.in, System.out);
 		} catch (CdException e) {
-			fail("Not supposed to have exception for folder.");
+			fail("Not supposed to have exception for folder." + e);
 		}
 		
 		assertEquals(expectedDirectory, Environment.currentDirectory);

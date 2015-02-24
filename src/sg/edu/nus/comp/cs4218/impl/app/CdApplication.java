@@ -65,7 +65,7 @@ public class CdApplication implements Application {
 		Path resolvedPath = basePath.resolve(specifiedPath);
 		Path newAbsolutePath = resolvedPath.normalize();
 		
-		if (!Files.exists(newAbsolutePath)){
+		if (Files.notExists(newAbsolutePath)){
 			throw new CdException("Path specified is not a valid folder");
 		}
 		
