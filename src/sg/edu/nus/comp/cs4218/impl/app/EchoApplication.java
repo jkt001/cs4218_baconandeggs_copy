@@ -23,7 +23,7 @@ public class EchoApplication implements Application{
 	 * @param	args
 	 * 			Array of arguments for the application.
 	 * @param	stdin
-	 * 			An InputStream. Unused but must be provided.
+	 * 			An InputStream, not used.
 	 * @param	stdout
 	 * 			An OutputStream. Elements of args will be output to stdout,
 	 * 			separated by a space character.

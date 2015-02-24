@@ -222,14 +222,9 @@ public class LsApplicationTest {
 
 		try{
 			myLs.run(str,null,myOutputStream);
-			String expectedResult = TEMP_FOLDER_PATH + File.separator +":\n" 
-					+ TEMP_FILE_NAME + "\t" + TEMP_FILE_NAME2 + "\n" 
-					+ "\n"
-					+ TEMP_FOLDER_PATH2 + File.separator + ":\n"
-					+ TEMP_FILE_NAME2 + "\n" ;
-			assertEquals(expectedResult,myOutputStream.toString());
+			fail("Should throw exception");
 		}catch(LsException le){
-			fail("Should not throw exception");
+			assertEquals(le.getLocalizedMessage(), "ls: More than one path arguments");
 		}
 	}
 
