@@ -24,7 +24,8 @@ import sg.edu.nus.comp.cs4218.impl.ShellImpl;
 public class SequenceCommand implements Command {
 
 	public static final String EXP_STDOUT = "Error writing to stdout.";
-	public static final String EXP_REDIR_PIPE = "File output redirection and pipe operator cannot be used side by side.";
+	public static final String EXP_REDIR_PIPE = "File output redirection and pipe "
+			+ "operator cannot be used side by side.";
 
 	Vector<PipeCommand> pipeCommandList;
 	String cmdline;

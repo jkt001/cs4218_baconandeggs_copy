@@ -16,7 +16,8 @@ public class PipeCommandTest {
 	private PipeCommand pipeCmd;
 	private static InputStream stdin;
 	private static OutputStream stdout;
-	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception for valid command.";
+	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception "
+			+ "for valid command.";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {

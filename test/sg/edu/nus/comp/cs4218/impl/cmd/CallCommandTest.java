@@ -28,9 +28,12 @@ public class CallCommandTest {
 	final static String TEST_FILE_NAME = "testShell.txt";
 	final static String TEST_FILE_NAME2 = "testShell2.txt";
 	final static String TEST_FOLDER_NAME = "testShellFolder";
-	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception for valid command.";
-	static final String ERROR_REDIR_IN = "Error opening input stream for redirection.";
-	static final String ERROR_REDIR_OUT = "Error opening output stream for redirection.";
+	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception "
+			+ "for valid command.";
+	static final String ERROR_REDIR_IN = "Error opening input stream for "
+			+ "redirection.";
+	static final String ERROR_REDIR_OUT = "Error opening output stream for "
+			+ "redirection.";
 	static String originalFilePath;
 
 	@Before
