@@ -226,47 +226,6 @@ public class CdApplicationTest {
 		}
 	}
 	
-	// Test disabled because it seems impossible in Java to check the 
-	// effective permission for whether one can CD into a directory
-	/*
-	@Test
-	public void testRunCdDirWithNoPermissionsToCdTo() throws IOException {
-
-		String tempFolderName = "testCdApplicationTempDir";
-		Path tempFolderPath = FileSystems.getDefault().getPath(
-				USER_DIR, tempFolderName);
-
-		if (isWindows()) {
-			// Create directory with no permissions to CD into.
-			// In Windows, this is equivalent to removing the
-			// execute permission on the Windows ACL.
-			Files.createDirectory(tempFolderPath);
-			WindowsPermission.setExecutable(tempFolderPath, false);
-
-			testCdExpectFailure(UNIX_ROOT, tempFolderPath.normalize()
-					.toString());
-
-			WindowsPermission.setExecutable(tempFolderPath, true);
-			Files.deleteIfExists(tempFolderPath);
-		} else {
-			// Create directory with no permissions to CD into.
-			// In POSIX operating systems this is denoted by the
-			// lack of execute bit on that directory
-			Set<PosixFilePermission> perms = PosixFilePermissions
-					.fromString("rw-rw----");
-			FileAttribute<Set<PosixFilePermission>> attributes = PosixFilePermissions
-					.asFileAttribute(perms);
-
-			Files.createDirectory(tempFolderPath, attributes);
-
-			testCdExpectFailure(UNIX_ROOT, tempFolderPath.normalize()
-					.toString());
-
-			Files.deleteIfExists(tempFolderPath);
-
-		}
-	}*/
-	
 	@Test
 	public void testDirectoryWithNoPermissionsToListContentsOf()
 			throws IOException {

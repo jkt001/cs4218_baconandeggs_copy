@@ -69,16 +69,6 @@ public class CdApplication implements Application {
 			throw new CdException("Path specified is not a valid folder");
 		}
 		
-		// Check if there is valid permissions to cd into the directory
-		// (replicating Windows command prompt and UNIX shell behavior)
-		//
-		// Disabled since this check doesn't work on Windows
-		/*
-		if (!newAbsolutePath.toFile().canExecute()){
-			throw new CdException("Access is denied");
-		}
-		*/
-		
 		Environment.currentDirectory = newAbsolutePath.toString();
 
 	}
