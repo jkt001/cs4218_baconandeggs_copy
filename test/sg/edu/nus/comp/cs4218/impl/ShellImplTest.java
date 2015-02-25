@@ -33,8 +33,8 @@ public class ShellImplTest {
 	final static String TEST_FOLDER_NAME = "testShellFolder";
 	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception for valid command.";
 	final static String VALID_FILE_NO_EXP = "Not supposed to have exception for valid file.";
-	final static String READONLY_EXP = "Supposed to have exception opening outputstream to read-only file.";
 	final static String VALID_STRM_NO_EXP = "Not supposed to have exception for valid streams.";
+	final static String READONLY_EXP = "Supposed to have exception opening outputstream to read-only file.";
 	final static String VALID_EXP = "Valid Exception thrown";
 	final static String MISSING_EXP = "Should have exception thrown";
 	static String originalFilePath;
