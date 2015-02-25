@@ -210,9 +210,8 @@ public class TailApplicationTest {
 
 	@Test
 	public void testFileNotExistException() {
-		boolean flag;
 		try {
-			flag = tailApp.checkIfFileIsReadable(Paths.get("fileNotExist"));
+			tailApp.checkIfFileIsReadable(Paths.get("fileNotExist"));
 			fail(FAIL_MSG);
 		} catch (TailException e) {
 			String exceptionMsg = APP_EXCEPTION + "No such file exists";

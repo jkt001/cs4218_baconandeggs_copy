@@ -39,8 +39,7 @@ public class CatApplication implements Application {
 	 *            OutputStream.
 	 * 
 	 * @throws CatException
-	 *             If the file(s) specified do not exist, are unreadable, or an
-	 *             I/O exception occurs.
+	 *             If the file(s) specified do not exist or are unreadable.
 	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
