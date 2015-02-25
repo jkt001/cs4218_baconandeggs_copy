@@ -2,15 +2,18 @@ package sg.edu.nus.comp.cs4218.impl;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -23,6 +26,7 @@ import sg.edu.nus.comp.cs4218.impl.ShellImpl;
 public class ShellImplTest {
 	private static ShellImpl shell;
 	private static OutputStream outputStream;
+	private static Scanner scanner;
 	final static String TEST_STR = "Testing Stream";
 	final static String TEST_FILE_NAME = "testShell.txt";
 	final static String TEST_FILE_NAME2 = "testShell2.txt";
@@ -30,6 +34,9 @@ public class ShellImplTest {
 	final static String VALID_CMD_NO_EXP = "Not supposed to throw exception for valid command.";
 	final static String VALID_FILE_NO_EXP = "Not supposed to have exception for valid file.";
 	final static String READONLY_EXP = "Supposed to have exception opening outputstream to read-only file.";
+	final static String VALID_STRM_NO_EXP = "Not supposed to have exception for valid streams.";
+	final static String VALID_EXP = "Valid Exception thrown";
+	final static String MISSING_EXP = "Should have exception thrown";
 	static String originalFilePath;
 
 	@BeforeClass
@@ -82,7 +89,7 @@ public class ShellImplTest {
 	}
 
 	public String fileToString(String fileName) throws FileNotFoundException {
-		Scanner scanner = new Scanner(new File(fileName));
+		scanner = new Scanner(new File(fileName));
 		String fileStr = scanner.useDelimiter("\\Z").next();
 		scanner.close();
 
@@ -363,13 +370,17 @@ public class ShellImplTest {
 	public void testOpenInputRedir() {
 		InputStream myInputStream;
 		try {
+			OutputStream myOutputStream = ShellImpl
+					.openOutputRedir(TEST_FILE_NAME);
+			writeToStream(myOutputStream);
+			myOutputStream.close();
+
 			myInputStream = ShellImpl.openInputRedir(TEST_FILE_NAME);
-			Scanner scanner = new Scanner(myInputStream,
-					StandardCharsets.UTF_8.name());
+			scanner = new Scanner(myInputStream, StandardCharsets.UTF_8.name());
 			String intputSreamStr = scanner.useDelimiter("\\A").next();
 			scanner.close();
 			assertEquals(intputSreamStr, TEST_STR);
-		} catch (ShellException e) {
+		} catch (ShellException | IOException e) {
 			fail(VALID_FILE_NO_EXP);
 		}
 	}
@@ -380,8 +391,7 @@ public class ShellImplTest {
 		InputStream myInputStream;
 
 		myInputStream = ShellImpl.openInputRedir("invalid" + TEST_FILE_NAME);
-		Scanner scanner = new Scanner(myInputStream,
-				StandardCharsets.UTF_8.name());
+		scanner = new Scanner(myInputStream, StandardCharsets.UTF_8.name());
 		String intputSreamStr = scanner.useDelimiter("\\A").next();
 		scanner.close();
 		assertEquals(intputSreamStr, TEST_STR);
@@ -452,5 +462,128 @@ public class ShellImplTest {
 		String[] argsArray = { "echo",
 				"this is wrong because `echo \"missing2ndDoubleQuote`", "", "" };
 		argsArray = ShellImpl.processBQ(argsArray);
+	}
+
+	@Test
+	public void testRunValidApp() {
+		InputStream stdin = System.in;
+		OutputStream stdout = System.out;
+		String appName = "ls";
+		String[] argsArray = new String[0];
+		try {
+			ShellImpl.runApp(appName, argsArray, stdin, stdout);
+		} catch (AbstractApplicationException | ShellException e) {
+			fail(VALID_CMD_NO_EXP);
+		}
+	}
+
+	@Test(expected = ShellException.class)
+	public void testRunInvalidApp() throws ShellException,
+			AbstractApplicationException {
+		InputStream stdin = System.in;
+		OutputStream stdout = System.out;
+		String appName = "notAnApp";
+		String[] argsArray = new String[0];
+		ShellImpl.runApp(appName, argsArray, stdin, stdout);
+	}
+
+	@Test(expected = AbstractApplicationException.class)
+	public void testRunInvalidArgs() throws ShellException,
+			AbstractApplicationException {
+		InputStream stdin = System.in;
+		OutputStream stdout = System.out;
+		String appName = "cd";
+		String[] argsArray = { "invalidDir" };
+		ShellImpl.runApp(appName, argsArray, stdin, stdout);
+	}
+
+	@Test
+	public void testWriteToStdout() {
+		OutputStream myOutputStream = new ByteArrayOutputStream();
+		OutputStream stdout = new ByteArrayOutputStream();
+		try {
+			myOutputStream.write(TEST_STR.getBytes(Charset.forName("UTF-8")));
+			ShellImpl.writeToStdout(myOutputStream, stdout);
+		} catch (IOException | ShellException e) {
+			fail(VALID_STRM_NO_EXP);
+		}
+
+		String stdoutString = new String(
+				((ByteArrayOutputStream) stdout).toByteArray(),
+				Charset.forName("UTF-8"));
+		assertEquals(stdoutString, TEST_STR);
+
+		try {
+			ShellImpl.closeOutputStream(outputStream);
+			stdout.close();
+		} catch (IOException | ShellException e) {
+			fail(VALID_STRM_NO_EXP);
+		}
+	}
+
+	@Test
+	public void testOutputStreamToInputStream() {
+		OutputStream myOutputStream = new ByteArrayOutputStream();
+		InputStream stdin;
+		try {
+			myOutputStream.write(TEST_STR.getBytes(Charset.forName("UTF-8")));
+			stdin = ShellImpl.outputStreamToInputStream(myOutputStream);
+			scanner = new Scanner(stdin, StandardCharsets.UTF_8.name());
+			String stdinString = scanner.useDelimiter("\\A").next();
+			assertEquals(stdinString, TEST_STR);
+			scanner.close();
+		} catch (IOException | ShellException e) {
+			fail(VALID_STRM_NO_EXP);
+		}
+	}
+
+	@Test(expected = ShellException.class)
+	public void testInvalidFileOutputStreamToInputStream()
+			throws ShellException {
+		OutputStream myOutputStream = null;
+		Boolean expThrown = false;
+		try {
+			myOutputStream = ShellImpl.openOutputRedir(TEST_FILE_NAME);
+		} catch (ShellException e) {
+			fail(VALID_STRM_NO_EXP);
+		}
+		try {
+			ShellImpl.outputStreamToInputStream(myOutputStream);
+		} catch (ShellException e) {
+			expThrown = true;
+		}
+		try {
+			ShellImpl.closeOutputStream(myOutputStream);
+		} catch (ShellException e) {
+			fail(VALID_STRM_NO_EXP);
+		}
+		if (expThrown) {
+			throw new ShellException(VALID_EXP);
+		} else {
+			fail(MISSING_EXP);
+		}
+	}
+
+	@Test
+	public void testCloseInputstream() {
+		InputStream myInputStream = null;
+		try {
+			myInputStream = ShellImpl.openInputRedir(TEST_FILE_NAME);
+			ShellImpl.closeInputStream(myInputStream);
+		} catch (ShellException e) {
+			fail(VALID_FILE_NO_EXP);
+		}
+	}
+
+	@Test
+	public void testCloseOutputstream() {
+		OutputStream myOutputStream;
+		try {
+			myOutputStream = ShellImpl.openOutputRedir(TEST_FILE_NAME);
+			// writeToStream(myOutputStream);
+			ShellImpl.closeOutputStream(myOutputStream);
+		} catch (ShellException e) {
+			fail(VALID_FILE_NO_EXP);
+		}
 	}
 }

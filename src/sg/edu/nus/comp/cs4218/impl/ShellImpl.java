@@ -258,7 +258,7 @@ public class ShellImpl implements Shell {
 	 */
 	public static void closeOutputStream(OutputStream outputStream)
 			throws ShellException {
-		if (outputStream != System.out) {
+		if (outputStream != System.out || outputStream != null) {
 			try {
 				outputStream.close();
 			} catch (IOException e) {
