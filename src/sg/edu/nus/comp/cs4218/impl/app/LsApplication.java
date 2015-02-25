@@ -23,7 +23,7 @@ import sg.edu.nus.comp.cs4218.exception.LsException;
  * </dl>
  * </p>
  */
-public class LsApplication implements Application{
+public class LsApplication implements Application {
 
 	/**
 	 * Runs the ls application with the specified arguments.
@@ -46,20 +46,20 @@ public class LsApplication implements Application{
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout)
 			throws LsException {
-		if (args == null){
+		if (args == null) {
 			throw new LsException("Null arguments");
 		}
 		if (stdout == null) {
 			throw new LsException("OutputStream not provided");
 		}
 
-		if(args.length == 0){
+		if (args.length == 0) {
 			String str[] = getListOfFileFromDirectory(Environment.currentDirectory);
 			writeStringToOutputStream(str, stdout);
-		}else if(args.length == 1){
+		} else if (args.length == 1) {
 			String str[] = getListOfFileFromDirectory(args[0]);
 			writeStringToOutputStream(str, stdout);
-		}else{
+		} else {
 			throw new LsException("More than one path arguments");
 		}
 	}
@@ -69,37 +69,37 @@ public class LsApplication implements Application{
 	 * 
 	 * @param directory
 	 *            The directory path to be listed.
-	 * @return 
-	 *            An array of String that contain the files and folders name in the given directory
-	 *            Array is sorted alphabetically
+	 * @return An array of String that contain the files and folders name in the
+	 *         given directory Array is sorted alphabetically
 	 * 
 	 * @throws LsException
-	 *             When the given directory is not valid;
-	 *             When do not have the permission to read the directory;
-	 *             When there is exception reading the directory.
+	 *             When the given directory is not valid; When do not have the
+	 *             permission to read the directory; When there is exception
+	 *             reading the directory.
 	 */
-	String[] getListOfFileFromDirectory(String directory) throws LsException{
+	String[] getListOfFileFromDirectory(String directory) throws LsException {
 		File theDir = new File(directory);
-		
-		if(!theDir.isDirectory()){
+
+		if (!theDir.isDirectory()) {
 			throw new LsException("Directory does not exist");
 		}
-		if(!theDir.canRead()){
+		if (!theDir.canRead()) {
 			throw new LsException("Permission denied");
 		}
-		if (theDir.list() == null){
+		if (theDir.list() == null) {
 			throw new LsException("Cannot list files in the directory");
 		}
-		
+
 		String[] list = theDir.list();
 		Arrays.sort(list);
-		
+
 		return list;
 	}
 
 	/**
-	 * Write given string array separated by tab and end with new line character to given output stream. 
-	 * Only write files and folders that does not start with "."
+	 * Write given string array separated by tab and end with new line character
+	 * to given output stream. Only write files and folders that does not start
+	 * with "."
 	 * 
 	 * @param str
 	 *            An array of string to be write to the output stream.
@@ -107,20 +107,22 @@ public class LsApplication implements Application{
 	 *            The destination output stream to be written.
 	 * 
 	 * @throws LsException
-	 *             If there is IOException thrown when writing to the output stream, it will throw as LsException.
+	 *             If there is IOException thrown when writing to the output
+	 *             stream, it will throw as LsException.
 	 */
-	void writeStringToOutputStream(String[] str, OutputStream stdout) throws LsException{
+	void writeStringToOutputStream(String[] str, OutputStream stdout)
+			throws LsException {
 		try {
-			if(str.length==0){
+			if (str.length == 0) {
 				stdout.write("".getBytes());
-			}else{
-				for(int i=0;i<str.length-1;i++){
-					if(!str[i].startsWith(".")){
+			} else {
+				for (int i = 0; i < str.length - 1; i++) {
+					if (!str[i].startsWith(".")) {
 						stdout.write(str[i].getBytes());
 						stdout.write("\t".getBytes());
-					}			
+					}
 				}
-				stdout.write(str[str.length-1].getBytes());
+				stdout.write(str[str.length - 1].getBytes());
 				stdout.write("\n".getBytes());
 			}
 		} catch (IOException e) {

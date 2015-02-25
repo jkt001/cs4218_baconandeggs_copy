@@ -43,7 +43,7 @@ public class PwdApplication implements Application {
 		if (args != null && args.length > 0) {
 			throw new PwdException("Too many parameters");
 		}
-		
+
 		try {
 			stdout.write(Environment.currentDirectory.getBytes());
 			stdout.write(System.getProperty("line.separator").getBytes());

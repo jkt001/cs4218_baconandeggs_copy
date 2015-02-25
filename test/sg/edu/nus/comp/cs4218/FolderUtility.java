@@ -54,13 +54,13 @@ import java.nio.file.attribute.BasicFileAttributes;
  * </pre>
  */
 public final class FolderUtility {
-	
-	private FolderUtility(){
+
+	private FolderUtility() {
 		// Don't need to have constructor for this utility class
 	}
-	
+
 	public interface TestEntry {
-		public String getName(); 
+		public String getName();
 	};
 
 	/**
@@ -69,9 +69,9 @@ public final class FolderUtility {
 	public static class TestFolder implements TestEntry {
 		String name;
 		TestEntry[] contents;
-		
+
 		/**
-		 *  Creates a new TestFolder.
+		 * Creates a new TestFolder.
 		 * 
 		 * @param name
 		 *            The name of the folder.
@@ -84,7 +84,7 @@ public final class FolderUtility {
 			this.name = name;
 			this.contents = contents;
 		}
-		
+
 		@Override
 		public String getName() {
 			return name;
@@ -93,17 +93,17 @@ public final class FolderUtility {
 		public TestEntry[] getContents() {
 			return contents;
 		}
-		
+
 	}
-	
+
 	/**
 	 * The TestFile class represents a folder for the generation method.
 	 */
 	public static class TestFile implements TestEntry {
-		
+
 		String name;
 		String data;
-		
+
 		/**
 		 * Creates a new TestFile.
 		 * 
@@ -122,54 +122,59 @@ public final class FolderUtility {
 		public String getName() {
 			return name;
 		}
-		
+
 		public String getData() {
 			return data;
 		}
-		
+
 	}
-	
+
 	/**
 	 * Generates a folder structure based on the contents provided.
 	 * 
-	 * @param	path
-	 * 			A path whereby the folder structure will be generated in.
-	 * @param	contents
-	 * 			One or more TestFile(s) or TestFolder(s) that will be generated.
+	 * @param path
+	 *            A path whereby the folder structure will be generated in.
+	 * @param contents
+	 *            One or more TestFile(s) or TestFolder(s) that will be
+	 *            generated.
 	 * 
-	 * @throws	IOException
-	 * 			If an I/O exception occurs when generating the folder structure.
+	 * @throws IOException
+	 *             If an I/O exception occurs when generating the folder
+	 *             structure.
 	 */
-	public static void generate(String path, TestEntry... contents) throws IOException{
+	public static void generate(String path, TestEntry... contents)
+			throws IOException {
 		for (int i = 0; i < contents.length; i++) {
 			TestEntry entry = contents[i];
-			if (entry instanceof TestFolder){
+			if (entry instanceof TestFolder) {
 				TestFolder folder = (TestFolder) entry;
-				Path newFolderPath = Paths.get(path, folder.getName()).toAbsolutePath();
+				Path newFolderPath = Paths.get(path, folder.getName())
+						.toAbsolutePath();
 				Files.createDirectories(newFolderPath);
 				// System.out.println(newFolderPath.toString());
-				generate(newFolderPath.toString(), folder.getContents());				
-			}else if (entry instanceof TestFile){
+				generate(newFolderPath.toString(), folder.getContents());
+			} else if (entry instanceof TestFile) {
 				TestFile file = (TestFile) entry;
-				Path newFilePath = Paths.get(path, file.getName()).toAbsolutePath();
+				Path newFilePath = Paths.get(path, file.getName())
+						.toAbsolutePath();
 				// System.out.println(newFilePath.toString());
 				Files.write(newFilePath, file.getData().getBytes());
 			}
 		}
 	}
-	
+
 	/**
 	 * Deletes a folder and all its contents.
 	 * 
-	 * @param	path
-	 * 			The path to the folder to delete.
-	 * @throws	IOException
-	 * 			If an I/O exception occurs when deleting the folder.
+	 * @param path
+	 *            The path to the folder to delete.
+	 * @throws IOException
+	 *             If an I/O exception occurs when deleting the folder.
 	 */
-	public static void delete(String path) throws IOException{
+	public static void delete(String path) throws IOException {
 		Path pathToDelete = Paths.get(path);
 		Files.walkFileTree(pathToDelete, new SimpleFileVisitor<Path>() {
-			
+
 			@Override
 			public FileVisitResult visitFile(Path file,
 					BasicFileAttributes attrs) throws IOException {
@@ -186,29 +191,5 @@ public final class FolderUtility {
 
 		});
 	}
-	
-	/*
-	public static void main(String args[]) throws IOException{
-		
-		FolderUtility.generate("testFolder", 
-			new TestFolder("F1",
-					new TestFile("a.txt", "hello world A"),
-					new TestFile("b.txt", "hello world B"),
-					new TestFile("c.txt", "hello world C")
-			),
-			new TestFolder("F2",
-					new TestFile("d.txt", "hello world D"),
-					new TestFile("e.txt", "hello world E"),
-					new TestFile("f.txt", "hello world F"),
-					new TestFolder("F3",
-							new TestFile("g.txt", "hello world G"),
-							new TestFile("h.txt", "hello world H"),
-							new TestFile("i.txt", "hello world I")
-					)
-			),
-			new TestFile("Data.txt", "data")
-		);
-	}
-	*/
 
 }

@@ -32,6 +32,8 @@ import sg.edu.nus.comp.cs4218.exception.TailException;
  */
 public class TailApplication implements Application {
 
+	private static final String CHARSET_UTF_8 = "UTF-8";
+
 	/**
 	 * Runs the tail application with the specified arguments.
 	 * 
@@ -162,7 +164,7 @@ public class TailApplication implements Application {
 
 		try {
 			if (numLinesRequired == 0) {
-				stdout.write("".getBytes("UTF-8"));
+				stdout.write("".getBytes(CHARSET_UTF_8));
 			} else {
 				while ((input = buffReader.readLine()) != null) {
 					if (intCount == numLinesRequired) {
@@ -181,12 +183,12 @@ public class TailApplication implements Application {
 			try {
 				if (inputArray.peek().equals("")) {
 					inputArray.poll();
-					stdout.write(System.lineSeparator().getBytes("UTF-8"));
+					stdout.write(System.lineSeparator().getBytes(CHARSET_UTF_8));
 				} else if (inputArray.size() == 1) {
-					stdout.write(inputArray.poll().getBytes("UTF-8"));
+					stdout.write(inputArray.poll().getBytes(CHARSET_UTF_8));
 				} else {
-					stdout.write(inputArray.poll().getBytes("UTF-8"));
-					stdout.write(System.lineSeparator().getBytes("UTF-8"));
+					stdout.write(inputArray.poll().getBytes(CHARSET_UTF_8));
+					stdout.write(System.lineSeparator().getBytes(CHARSET_UTF_8));
 				}
 
 			} catch (Exception e) {
@@ -212,7 +214,7 @@ public class TailApplication implements Application {
 	void readFromFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws TailException {
 
-		String encoding = "UTF-8";
+		String encoding = CHARSET_UTF_8;
 
 		if (stdout == null) {
 			throw new TailException("Stdout is null");

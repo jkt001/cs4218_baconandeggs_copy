@@ -29,8 +29,7 @@ public class WcApplicationTest {
 	 * * two word, one line - stdin
 	 * * with double spacing, with triple spacing
 	 * * with double line
-	 * * end with empty space, end with empty line
-	 * symbols
+	 * * end with empty space, end with empty line symbols
 	 * * m, w, l, mw, wl, ml, mwl, null
 	 * * null args, null stdout
 	 * File
@@ -38,438 +37,462 @@ public class WcApplicationTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		try{
+		try {
 			File file = new File(TEMP_FILE_PATH);
 			file.createNewFile();
-		} catch(SecurityException se){
+		} catch (SecurityException se) {
 			fail("Cannot create temporary file to test");
 		}
 	}
 
 	@Test
-	public void testNullArgument(){
+	public void testNullArgument() {
 		WcApplication myWc = new WcApplication();
-		try{
-			myWc.run(null,null,new ByteArrayOutputStream());
+		try {
+			myWc.run(null, null, new ByteArrayOutputStream());
 			fail("Should throw exception.");
-		}catch(WcException we){
+		} catch (WcException we) {
 			assertEquals("wc: Null arguments", we.getLocalizedMessage());
 		}
 	}
 
 	@Test
-	public void testNullStdout(){
+	public void testNullStdout() {
 		WcApplication myWc = new WcApplication();
-		try{
-			String str[] = {TEMP_FILE_PATH};
-			myWc.run(str,null,null);
+		try {
+			String str[] = { TEMP_FILE_PATH };
+			myWc.run(str, null, null);
 			fail("Should throw exception.");
-		}catch(WcException we){
-			assertEquals("wc: OutputStream not provided", we.getLocalizedMessage());
+		} catch (WcException we) {
+			assertEquals("wc: OutputStream not provided",
+					we.getLocalizedMessage());
 		}
 	}
 
 	@Test
-	public void testExpectedStdinIsNull(){
+	public void testExpectedStdinIsNull() {
 		WcApplication myWc = new WcApplication();
-		try{
+		try {
 			String str[] = {};
-			myWc.run(str,null,new ByteArrayOutputStream());
+			myWc.run(str, null, new ByteArrayOutputStream());
 			fail("Should throw exception");
-		}catch(WcException we){
+		} catch (WcException we) {
 			assertEquals("wc: Expected stdin input", we.getLocalizedMessage());
 		}
 	}
 
 	@Test
-	public void testInvalidArgument(){
+	public void testInvalidArgument() {
 		WcApplication myWc = new WcApplication();
-		try{
-			String str[] = {"a",TEMP_FILE_PATH};
-			myWc.run(str,null,new ByteArrayOutputStream());
+		try {
+			String str[] = { "a", TEMP_FILE_PATH };
+			myWc.run(str, null, new ByteArrayOutputStream());
 			fail("Should throw exception");
-		}catch(WcException we){
+		} catch (WcException we) {
 			assertEquals("wc: File Not Found.", we.getLocalizedMessage());
 		}
 	}
 
 	@Test
-	public void testFileWithoutReadPermission(){
-		if(isMac()){
+	public void testFileWithoutReadPermission() {
+		if (isMac()) {
 			WcApplication myWc = new WcApplication();
-			try{
-				String str[] = {TEMP_FILE_PATH};
+			try {
+				String str[] = { TEMP_FILE_PATH };
 				File file = new File(TEMP_FILE_PATH);
 				file.setReadable(false);
-				myWc.run(str,null,new ByteArrayOutputStream());
+				myWc.run(str, null, new ByteArrayOutputStream());
 				fail("Should throw exception");
-			}catch(WcException we){
+			} catch (WcException we) {
 				File file = new File(TEMP_FILE_PATH);
 				file.setReadable(true);
-				assertEquals(we.getLocalizedMessage(), "wc: Don't have read permission");
+				assertEquals(we.getLocalizedMessage(),
+						"wc: Don't have read permission");
 			}
 		}
 	}
 
 	@Test
-	public void testOneCharacterFileInput(){
+	public void testOneCharacterFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBufferedWriter = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBufferedWriter = new BufferedWriter(
+					new OutputStreamWriter(myFOS));
 			myBufferedWriter.write("a");
 			myBufferedWriter.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {TEMP_FILE_PATH};
+		String[] str = { TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("2	1	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception.");
 		}
 	}
 
 	@Test
-	public void testOneCharacterMFileInput(){
+	public void testOneCharacterMFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(
+					myFOS));
 			myBW.write("a");
 			myBW.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"-m",TEMP_FILE_PATH};
+		String[] str = { "-m", TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2\n",testStr);
-		}catch(WcException we){
+			assertEquals("2\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception.");
 		}
 	}
 
 	@Test
-	public void testOneCharacterWFileInput(){
+	public void testOneCharacterWFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(
+					myFOS));
 			myBW.write("a");
 			myBW.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"-w",TEMP_FILE_PATH};
+		String[] str = { "-w", TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("1\n",testStr);
-		}catch(WcException we){
+			assertEquals("1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception.");
 		}
 	}
 
 	@Test
-	public void testOneCharacterLFileInput(){
+	public void testOneCharacterLFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(
+					myFOS));
 			myBW.write("a");
 			myBW.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"-l",TEMP_FILE_PATH};
+		String[] str = { "-l", TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("1\n",testStr);
-		}catch(WcException we){
+			assertEquals("1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception ");
 		}
 	}
 
 	@Test
-	public void testOneCharacterMWFileInput(){
+	public void testOneCharacterMWFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(
+					myFOS));
 			myBW.write("a");
 			myBW.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"-m","-w",TEMP_FILE_PATH};
+		String[] str = { "-m", "-w", TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("2	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception ");
 		}
 	}
 
 	@Test
-	public void testOneCharacterWLFileInput(){
+	public void testOneCharacterWLFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(
+					myFOS));
 			myBW.write("a");
 			myBW.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"-wl",TEMP_FILE_PATH};
+		String[] str = { "-wl", TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("1	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("1	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception ");
 		}
 	}
 
 	@Test
-	public void testOneCharacterMLFileInput(){
+	public void testOneCharacterMLFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(
+					myFOS));
 			myBW.write("a");
 			myBW.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"-m","-l",TEMP_FILE_PATH};
+		String[] str = { "-m", "-l", TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("2	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throws exception");
 		}
 	}
 
 	@Test
-	public void testOneCharacterMWLFileInput(){
+	public void testOneCharacterMWLFileInput() {
 		WcApplication myWc = new WcApplication();
 		FileOutputStream myFOS;
 		try {
 			myFOS = new FileOutputStream(new File(TEMP_FILE_PATH));
-			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(myFOS));
+			BufferedWriter myBW = new BufferedWriter(new OutputStreamWriter(
+					myFOS));
 			myBW.write("a");
 			myBW.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		String[] str = {"-mwl",TEMP_FILE_PATH};
+		String[] str = { "-mwl", TEMP_FILE_PATH };
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,null,myOutputStream);
+		try {
+			myWc.run(str, null, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("2	1	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throws exception");
 		}
 	}
 
 	@Test
-	public void testOneCharacterStdinInput(){
-		WcApplication myWc = new WcApplication();		
+	public void testOneCharacterStdinInput() {
+		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream("a".getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				"a".getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("2	1	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("2	1	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw any exception");
 		}
 	}
 
 	@Test
-	public void testTwoCharacterStdinInput(){
+	public void testTwoCharacterStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream("ab".getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				"ab".getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("3	1	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("3	1	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throws exception");
 		}
 	}
 
 	@Test
-	public void testTwoWordStdinInput(){
+	public void testTwoWordStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream("ab bc".getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				"ab bc".getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("6	2	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("6	2	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw any exception");
 		}
 	}
 
 	@Test
-	public void testTwoWordDoubleSpacingStdinInput(){
+	public void testTwoWordDoubleSpacingStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream("ab  bc".getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				"ab  bc".getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("7	2	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("7	2	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw wc exception");
 		}
 	}
 
 	@Test
-	public void testTwoWordTripleSpacingStdinInput(){
+	public void testTwoWordTripleSpacingStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream("ab   bc".getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				"ab   bc".getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("8	2	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("8	2	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw wc exception");
 		}
 	}
 
 	@Test
-	public void testTwoLineStdinInput(){
+	public void testTwoLineStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
 		String inputStr = "as" + System.getProperty(LINE_SEPARATOR) + "df";
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				inputStr.getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("6	2	2\n",testStr);
-		}catch(WcException we){
+			assertEquals("6	2	2\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw wc exception");
 		}
 	}
 
 	@Test
-	public void testContentLineEmptyStdinInput(){
+	public void testContentLineEmptyStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		String inputStr = "ab"+System.getProperty(LINE_SEPARATOR)+System.getProperty(LINE_SEPARATOR)+"bc";
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
+		String inputStr = "ab" + System.getProperty(LINE_SEPARATOR)
+				+ System.getProperty(LINE_SEPARATOR) + "bc";
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				inputStr.getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("7	2	3\n",testStr);
-		}catch(WcException we){
+			assertEquals("7	2	3\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw wcexception");
 		}
 	}
 
 	@Test
-	public void testEndWithEmptyLineStdinInput(){
+	public void testEndWithEmptyLineStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
-		String inputStr = "ab"+System.getProperty(LINE_SEPARATOR)+System.getProperty(LINE_SEPARATOR);//new line and carriage return
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
+		String inputStr = "ab" + System.getProperty(LINE_SEPARATOR)
+				+ System.getProperty(LINE_SEPARATOR);// new line and carriage
+														// return
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				inputStr.getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("4	1	2\n",testStr);
-		}catch(WcException we){
+			assertEquals("4	1	2\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception");
 		}
 	}
 
 	@Test
-	public void testEndWithEmptySpaceStdinInput(){
+	public void testEndWithEmptySpaceStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
 		String inputStr = "ab ";
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				inputStr.getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("4	1	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("4	1	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception");
 		}
 	}
 
 	@Test
-	public void testWithSymbolStdinInput(){
+	public void testWithSymbolStdinInput() {
 		WcApplication myWc = new WcApplication();
 		String[] str = {};
 		String inputStr = "ab , bc";
-		ByteArrayInputStream myInputStream = new ByteArrayInputStream(inputStr.getBytes());
+		ByteArrayInputStream myInputStream = new ByteArrayInputStream(
+				inputStr.getBytes());
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-		try{
-			myWc.run(str,myInputStream,myOutputStream);
+		try {
+			myWc.run(str, myInputStream, myOutputStream);
 			String testStr = myOutputStream.toString();
-			assertEquals("8	3	1\n",testStr);
-		}catch(WcException we){
+			assertEquals("8	3	1\n", testStr);
+		} catch (WcException we) {
 			fail("Should not throw exception");
 		}
 	}
 
 	@Test
-	public void testFuncWordCount(){
+	public void testFuncWordCount() {
 		WcApplication myWc = new WcApplication();
-		InputStream myInputStream = new ByteArrayInputStream("abc \n".getBytes());
+		InputStream myInputStream = new ByteArrayInputStream(
+				"abc \n".getBytes());
 
 		try {
-			int[] count= myWc.wordCount(myInputStream);
+			int[] count = myWc.wordCount(myInputStream);
 			assertEquals(5, count[0]);
 			assertEquals(1, count[1]);
 			assertEquals(1, count[2]);
 
 		} catch (WcException e) {
 			fail("Should not throw exception!");
-		}	
+		}
 	}
 
 	@Test
-	public void testFuncParseArgument(){
+	public void testFuncParseArgument() {
 		WcApplication myWc = new WcApplication();
-		String[] args = {"-w","-m", TEMP_FILE_PATH};
+		String[] args = { "-w", "-m", TEMP_FILE_PATH };
 		String[] filePath;
 		try {
 			filePath = myWc.parseArgument(args);
@@ -484,14 +507,15 @@ public class WcApplicationTest {
 	}
 
 	@Test
-	public void testFuncWriteWordCountsToOutputStream(){
+	public void testFuncWriteWordCountsToOutputStream() {
 		WcApplication myWc = new WcApplication();
 		myWc.printChar = true;
 		myWc.printLine = true;
 		ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
 		try {
-			myWc.writeWordCountsToOutputStream(new int[]{1,2,3}, myOutputStream);
-			assertEquals("1	3\n",myOutputStream.toString());
+			myWc.writeWordCountsToOutputStream(new int[] { 1, 2, 3 },
+					myOutputStream);
+			assertEquals("1	3\n", myOutputStream.toString());
 		} catch (WcException e) {
 			fail("Should not throw exception!");
 		}

@@ -12,63 +12,64 @@ import sg.edu.nus.comp.cs4218.impl.app.EchoApplication;
 
 public class EchoApplicationTest {
 	@Test
-	public void testNullArgument(){
+	public void testNullArgument() {
 		EchoApplication myEcho = new EchoApplication();
-		try{
-			myEcho.run(null,null,new ByteArrayOutputStream());
+		try {
+			myEcho.run(null, null, new ByteArrayOutputStream());
 			fail("Should throw exception");
-		}catch(EchoException ee){
+		} catch (EchoException ee) {
 			assertEquals(ee.getLocalizedMessage(), "echo: Null arguments");
 		}
 	}
-	
+
 	@Test
-	public void testNullStdout(){
+	public void testNullStdout() {
 		EchoApplication myEcho = new EchoApplication();
-		try{
+		try {
 			String str[] = {};
-			myEcho.run(str,null,null);
+			myEcho.run(str, null, null);
 			fail("Should throw exception");
-		}catch(EchoException ee){
-			assertEquals(ee.getLocalizedMessage(), "echo: OutputStream not provided");
+		} catch (EchoException ee) {
+			assertEquals(ee.getLocalizedMessage(),
+					"echo: OutputStream not provided");
 		}
 	}
-	
+
 	@Test
-	public void testEmptyArgument(){
+	public void testEmptyArgument() {
 		EchoApplication myEcho = new EchoApplication();
-		try{
+		try {
 			String str[] = {};
 			ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-			myEcho.run(str,null,myOutputStream);
-			assertEquals("\n",myOutputStream.toString());
-		}catch(EchoException ee){
+			myEcho.run(str, null, myOutputStream);
+			assertEquals("\n", myOutputStream.toString());
+		} catch (EchoException ee) {
 			fail("Should not throw echo exception.");
 		}
 	}
-	
+
 	@Test
-	public void testOneArgument(){
+	public void testOneArgument() {
 		EchoApplication myEcho = new EchoApplication();
-		try{
-			String str[] = {"hello"};
+		try {
+			String str[] = { "hello" };
 			ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-			myEcho.run(str,null,myOutputStream);
-			assertEquals("hello\n",myOutputStream.toString());
-		}catch(EchoException ee){
+			myEcho.run(str, null, myOutputStream);
+			assertEquals("hello\n", myOutputStream.toString());
+		} catch (EchoException ee) {
 			fail("Should not throw echo exception.");
 		}
 	}
-	
+
 	@Test
-	public void testTwoArgument(){
+	public void testTwoArgument() {
 		EchoApplication myEcho = new EchoApplication();
-		try{
-			String str[] = {"hello","world"};
+		try {
+			String str[] = { "hello", "world" };
 			ByteArrayOutputStream myOutputStream = new ByteArrayOutputStream();
-			myEcho.run(str,null,myOutputStream);
-			assertEquals("hello world\n",myOutputStream.toString());
-		}catch(EchoException ee){
+			myEcho.run(str, null, myOutputStream);
+			assertEquals("hello world\n", myOutputStream.toString());
+		} catch (EchoException ee) {
 			fail("Should not throw echo exception.");
 		}
 	}

@@ -17,15 +17,15 @@ import sg.edu.nus.comp.cs4218.FolderUtility.*;
 import sg.edu.nus.comp.cs4218.exception.FindException;
 
 public class FindApplicationTest {
-	
+
 	private static final String TEST_FOLDER = "testFindApplicationFolder";
-	
+
 	FindApplication app;
 
 	private ByteArrayInputStream inputStream;
 
 	private ByteArrayOutputStream outputStream;
-	
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		// Create test folder to "find" stuff in
@@ -63,11 +63,11 @@ public class FindApplicationTest {
 	@Before
 	public void setUp() throws Exception {
 		app = new FindApplication();
-		
+
 		inputStream = new ByteArrayInputStream("test".getBytes());
 		outputStream = new ByteArrayOutputStream();
 	}
-	
+
 	// Test null parameters
 	@Test(expected = FindException.class)
 	public void testNullParams() throws FindException {
@@ -109,28 +109,29 @@ public class FindApplicationTest {
 		String[] params = { null, "B" };
 		app.run(params, inputStream, outputStream);
 	}
-	
+
 	// Test two parameters, but invalid
 	@Test(expected = FindException.class)
-	public void testTwoNullParamsWithInvalidSecondParameter() throws FindException {
+	public void testTwoNullParamsWithInvalidSecondParameter()
+			throws FindException {
 		String[] params = { "src", "-name" };
 		app.run(params, inputStream, outputStream);
 	}
 
 	// Test three null parameters
 	@Test(expected = FindException.class)
-	public void testThreeNullParams() throws FindException {		
-		String[] params = {null, null, null};
-		app.run(params,  inputStream, outputStream);
+	public void testThreeNullParams() throws FindException {
+		String[] params = { null, null, null };
+		app.run(params, inputStream, outputStream);
 	}
-	
+
 	// Test four null parameters
 	@Test(expected = FindException.class)
-	public void testFourNullParams() throws FindException {		
-		String[] params = {null, null, null, null};
-		app.run(params,  inputStream, outputStream);
+	public void testFourNullParams() throws FindException {
+		String[] params = { null, null, null, null };
+		app.run(params, inputStream, outputStream);
 	}
-	
+
 	/*
 	 * Test matcher code
 	 */
@@ -139,85 +140,80 @@ public class FindApplicationTest {
 	public void testMatchStringWithNoAsterisk() {
 		assertTrue(app.matchString("hello1", "hello1"));
 	}
-	
+
 	@Test
 	public void testMatchStringWithAsteriskAtStart() {
 		assertTrue(app.matchString("hello2", "*llo2"));
 	}
-	
+
 	@Test
 	public void testMatchStringWithAsteriskAtEnd() {
 		assertTrue(app.matchString("hello3", "hel*"));
 	}
-	
+
 	@Test
 	public void testMatchStringWithAsteriskAtMiddle() {
 		assertTrue(app.matchString("hello4", "h*o4"));
 	}
-	
+
 	@Test
 	public void testMatchStringWithAsteriskOnly() {
 		assertTrue(app.matchString("hello5", "*"));
 	}
-	
+
 	/*
 	 * Test find in a valid directory
 	 */
-	
+
 	// Match folder name
 	@Test
 	public void testFindMatchFolderName() throws FindException {
-		String[] params = {TEST_FOLDER, "-name", "Folder*"};
+		String[] params = { TEST_FOLDER, "-name", "Folder*" };
 		app.run(params, inputStream, outputStream);
-		
+
 		String[] expectedOutput = {
 				TEST_FOLDER + File.separator + "Folder",
 				TEST_FOLDER + File.separator + "Folder2",
-				TEST_FOLDER + File.separator + "Folder2" + File.separator + "Folder2a",
-				TEST_FOLDER + File.separator + "Folder 3"
-		};
-		
+				TEST_FOLDER + File.separator + "Folder2" + File.separator + "Folder2a", TEST_FOLDER + File.separator + "Folder 3" };
+
 		checkOutput(expectedOutput, outputStream);
 	}
-	
+
 	@Test
 	public void testFindMatchFolderNameWithSpace() throws FindException {
-		
-		String[] params = {TEST_FOLDER, "-name", "Folder *"};
+
+		String[] params = { TEST_FOLDER, "-name", "Folder *" };
 		app.run(params, inputStream, outputStream);
-		
-		String[] expectedOutput = {
-				TEST_FOLDER + File.separator + "Folder 3"
-		};
-		
+
+		String[] expectedOutput = { TEST_FOLDER + File.separator + "Folder 3" };
+
 		checkOutput(expectedOutput, outputStream);
 	}
-	
+
 	// Match file name
 	@Test
 	public void testFindMatchFileName() throws FindException {
-		String[] params = {TEST_FOLDER, "-name", "*stuff*"};
+		String[] params = { TEST_FOLDER, "-name", "*stuff*" };
 		app.run(params, inputStream, outputStream);
-		
+
 		String[] expectedOutput = {
 				TEST_FOLDER + File.separator + "Folder" + File.separator + "b stuff.txt",
 				TEST_FOLDER + File.separator + "Folder2" + File.separator + "e stuff.txt",
-				TEST_FOLDER + File.separator + "Folder2" + File.separator + "Folder2a" + File.separator + "k stuff.txt"
-		};
-		
+				TEST_FOLDER + File.separator + "Folder2" + File.separator + "Folder2a" + File.separator + "k stuff.txt" };
+
 		checkOutput(expectedOutput, outputStream);
 	}
-	
+
 	// Match file extension
 	@Test
 	public void testFindMatchFileExtension() throws FindException {
-		String[] params = {TEST_FOLDER, "-name", "*.txt"};
+		String[] params = { TEST_FOLDER, "-name", "*.txt" };
 		app.run(params, inputStream, outputStream);
-		
+
 		String[] expectedOutput = {
-				TEST_FOLDER + File.separator + "Folder"	+ File.separator + "a.txt",
-				TEST_FOLDER + File.separator + "Folder"	+ File.separator + "b stuff.txt",
-				TEST_FOLDER + File.separator + "Folder"	+ File.separator + "c.txt",
+				TEST_FOLDER + File.separator + "Folder" + File.separator + "a.txt",
+				TEST_FOLDER + File.separator + "Folder" + File.separator + "b stuff.txt",
+				TEST_FOLDER + File.separator + "Folder" + File.separator + "c.txt",
 				TEST_FOLDER + File.separator + "Folder2" + File.separator + "d.txt",
 				TEST_FOLDER + File.separator + "Folder2" + File.separator + "e stuff.txt",
 				TEST_FOLDER + File.separator + "Folder2" + File.separator + "f.txt",
@@ -226,48 +222,49 @@ public class FindApplicationTest {
 				TEST_FOLDER + File.separator + "Folder2" + File.separator + "Folder2a" + File.separator + "l.txt",
 				TEST_FOLDER + File.separator + "Folder 3" + File.separator + "g.txt",
 				TEST_FOLDER + File.separator + "Folder 3" + File.separator + "h.txt",
-				TEST_FOLDER + File.separator + "Folder 3" + File.separator + "i.txt",
-		};
-		
+				TEST_FOLDER + File.separator + "Folder 3" + File.separator + "i.txt", };
+
 		checkOutput(expectedOutput, outputStream);
 	}
-	
+
 	// Match both
 	@Test
 	public void testFindMatchFileAndFolderName() throws FindException {
-		String[] params = {TEST_FOLDER, "-name", "*a*"};
+		String[] params = { TEST_FOLDER, "-name", "*a*" };
 		app.run(params, inputStream, outputStream);
-		
+
 		String[] expectedOutput = {
-				TEST_FOLDER + File.separator + "Folder"	+ File.separator + "a.txt",
-				TEST_FOLDER + File.separator + "Folder2" + File.separator + "Folder2a"
-		};
-		if (TEST_FOLDER.contains("a")){
-			expectedOutput = Arrays.copyOf(expectedOutput, expectedOutput.length + 1);
+				TEST_FOLDER + File.separator + "Folder" + File.separator + "a.txt",
+				TEST_FOLDER + File.separator + "Folder2" + File.separator + "Folder2a" };
+		if (TEST_FOLDER.contains("a")) {
+			expectedOutput = Arrays.copyOf(expectedOutput,
+					expectedOutput.length + 1);
 			expectedOutput[expectedOutput.length - 1] = TEST_FOLDER;
 		}
-		
+
 		checkOutput(expectedOutput, outputStream);
 	}
-	
+
 	/*
 	 * Test find in an invalid directory
 	 */
-	
+
 	@Test(expected = FindException.class)
 	public void testFindInInvalidDir() throws FindException {
-		String[] params = {"someNonExistentFolder", "-name", "*"};
+		String[] params = { "someNonExistentFolder", "-name", "*" };
 		app.run(params, inputStream, outputStream);
 	}
-	
+
 	/*
 	 * Utility methods for the above tests
 	 */
-	
-	private void checkOutput(String[] expectedOutput, ByteArrayOutputStream outputStream) {
+
+	private void checkOutput(String[] expectedOutput,
+			ByteArrayOutputStream outputStream) {
 		String[] actualOutput = outputStream.toString().split("\\r?\\n");
-		
-		// We sort the actual and expected, so that we only check the contents are the same
+
+		// We sort the actual and expected, so that we only check the contents
+		// are the same
 		// The ordering of the find application is not important
 		Arrays.sort(actualOutput);
 		Arrays.sort(expectedOutput);

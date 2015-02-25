@@ -15,38 +15,39 @@ import sg.edu.nus.comp.cs4218.exception.EchoException;
  * <b>Command format:</b> <code>echo [ARG]...</code>
  * </p>
  */
-public class EchoApplication implements Application{
+public class EchoApplication implements Application {
 
 	/**
 	 * Runs the echo application with the specified arguments.
 	 * 
-	 * @param	args
-	 * 			Array of arguments for the application.
-	 * @param	stdin
-	 * 			An InputStream, not used.
-	 * @param	stdout
-	 * 			An OutputStream. Elements of args will be output to stdout,
-	 * 			separated by a space character.
+	 * @param args
+	 *            Array of arguments for the application.
+	 * @param stdin
+	 *            An InputStream, not used.
+	 * @param stdout
+	 *            An OutputStream. Elements of args will be output to stdout,
+	 *            separated by a space character.
 	 * 
-	 * @throws	EchoException
-	 * 			If an I/O exception occurs.
+	 * @throws EchoException
+	 *             If an I/O exception occurs.
 	 */
-	public void run(String[] args, InputStream stdin, OutputStream stdout) throws EchoException{
-		if(args == null){
+	public void run(String[] args, InputStream stdin, OutputStream stdout)
+			throws EchoException {
+		if (args == null) {
 			throw new EchoException("Null arguments");
 		}
-		if(stdout == null){
+		if (stdout == null) {
 			throw new EchoException("OutputStream not provided");
 		}
 		try {
-			if(args.length==0){
+			if (args.length == 0) {
 				stdout.write("\n".getBytes());
-			}else{
-				for(int i=0 ; i<args.length-1 ; i++){
+			} else {
+				for (int i = 0; i < args.length - 1; i++) {
 					stdout.write(args[i].getBytes());
 					stdout.write(" ".getBytes());
 				}
-				stdout.write(args[args.length-1].getBytes());
+				stdout.write(args[args.length - 1].getBytes());
 				stdout.write("\n".getBytes());
 			}
 		} catch (IOException e) {

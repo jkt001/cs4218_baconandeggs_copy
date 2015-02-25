@@ -27,7 +27,7 @@ public class TailApplicationTest {
 	private File file;
 	private ByteArrayOutputStream outStream;
 	static String tempFilePath = "testTail.txt";
-	private StringBuilder input;
+	private String input;
 	public static final String APP_EXCEPTION = "tail: ";
 	public static final String FAIL_MSG = "Should not throw exception";
 	public static final String ENCODING = "UTF-8";
@@ -62,12 +62,14 @@ public class TailApplicationTest {
 			e1.printStackTrace();
 		}
 
-		input = new StringBuilder();
+		StringBuilder inputBuilder = new StringBuilder();
 		for (int i = 1; i <= 9; i++) {
-			input.append(i);
-			input.append(System.lineSeparator());
+			inputBuilder.append(i);
+			inputBuilder.append(System.lineSeparator());
 		}
-		input.append(System.lineSeparator());
+		inputBuilder.append(System.lineSeparator());
+
+		input = inputBuilder.toString();
 	}
 
 	@After
@@ -108,16 +110,16 @@ public class TailApplicationTest {
 	public void testValidCommandRead10LinesFromStdinWithNullArgs()
 			throws TailException, IOException {
 
-		ByteArrayInputStream inStream = new ByteArrayInputStream(input
-				.toString().getBytes(ENCODING));
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
+				input.getBytes(ENCODING));
 		StringBuilder expected = new StringBuilder();
 		for (int i = 1; i <= 9; i++) {
 			expected.append(i);
 			expected.append(System.lineSeparator());
 		}
-		
+
 		expected.append(System.lineSeparator());
-		
+
 		try {
 			tailApp.run(args, inStream, outStream);
 			assertEquals(expected.toString(), outStream.toString());
@@ -130,8 +132,8 @@ public class TailApplicationTest {
 	public void testValidCommandReadFromStdinWithFlag() throws TailException,
 			IOException {
 
-		ByteArrayInputStream inStream = new ByteArrayInputStream(input
-				.toString().getBytes(ENCODING));
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
+				input.getBytes(ENCODING));
 		args = new String[] { "-n", "5" };
 
 		StringBuilder expected = new StringBuilder();
@@ -153,8 +155,8 @@ public class TailApplicationTest {
 	public void testValidCommandReadFromStdinWithFlagLessThanInput()
 			throws TailException, IOException {
 
-		ByteArrayInputStream inStream = new ByteArrayInputStream(input
-				.toString().getBytes(ENCODING));
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
+				input.getBytes(ENCODING));
 
 		StringBuilder expected = new StringBuilder();
 		for (int i = 2; i <= 9; i++) {
@@ -175,8 +177,8 @@ public class TailApplicationTest {
 	public void testValidCommandReadFromStdinWithFlag0Lines()
 			throws TailException, IOException {
 
-		ByteArrayInputStream inStream = new ByteArrayInputStream(input
-				.toString().getBytes(ENCODING));
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
+				input.getBytes(ENCODING));
 
 		try {
 			tailApp.readFromStdinAndWriteToStdout(outStream, 0, inStream);
@@ -190,8 +192,8 @@ public class TailApplicationTest {
 	public void testValidCommandReadFromStdinWithFlagMoreThanInput()
 			throws TailException, IOException {
 
-		ByteArrayInputStream inStream = new ByteArrayInputStream(input
-				.toString().getBytes(ENCODING));
+		ByteArrayInputStream inStream = new ByteArrayInputStream(
+				input.getBytes(ENCODING));
 
 		StringBuilder expected = new StringBuilder();
 		for (int i = 1; i <= 9; i++) {
@@ -308,26 +310,24 @@ public class TailApplicationTest {
 			tailApp.run(args, null, outStream);
 			fail(FAIL_MSG);
 		} catch (TailException e) {
-			String exceptionMsg = APP_EXCEPTION
-					+ "Invalid Tail Command";
+			String exceptionMsg = APP_EXCEPTION + "Invalid Tail Command";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testIncorrectFlagUsedReadingFromFileException() {
-		args = new String[] { "3", "2", tempFilePath};
+		args = new String[] { "3", "2", tempFilePath };
 
 		try {
 			tailApp.run(args, null, outStream);
 			fail(FAIL_MSG);
 		} catch (TailException e) {
-			String exceptionMsg = APP_EXCEPTION
-					+ "Incorrect flag used";
+			String exceptionMsg = APP_EXCEPTION + "Incorrect flag used";
 			assertEquals(exceptionMsg, e.getMessage());
 		}
 	}
-	
+
 	@Test
 	public void testZeroLines() throws TailException, IOException {
 
@@ -430,7 +430,7 @@ public class TailApplicationTest {
 			fail(FAIL_MSG);
 		}
 	}
-	
+
 	@Test
 	public void testFileNotReadable() throws TailException, IOException {
 
@@ -460,7 +460,8 @@ public class TailApplicationTest {
 		try {
 			tailApp.run(args, null, outStream);
 		} catch (TailException e) {
-			assertEquals(APP_EXCEPTION +"Could not read file", e.getLocalizedMessage());
+			assertEquals(APP_EXCEPTION + "Could not read file",
+					e.getLocalizedMessage());
 		}
 	}
 }
