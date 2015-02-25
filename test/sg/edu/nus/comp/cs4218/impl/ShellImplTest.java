@@ -564,8 +564,8 @@ public class ShellImplTest {
 		}
 	}
 
-	@Test
-	public void testCloseInputstream() {
+	@Test(expected = ShellException.class)
+	public void testCloseInputstream() throws ShellException {
 		InputStream myInputStream = null;
 		try {
 			myInputStream = ShellImpl.openInputRedir(TEST_FILE_NAME);
@@ -573,17 +573,30 @@ public class ShellImplTest {
 		} catch (ShellException e) {
 			fail(VALID_FILE_NO_EXP);
 		}
+		byte[] byteArray = new byte[1024];
+		try {
+			myInputStream.read(byteArray);
+		} catch (IOException e) {
+			throw new ShellException(VALID_EXP);
+		}
+	
 	}
 
-	@Test
-	public void testCloseOutputstream() {
-		OutputStream myOutputStream;
+	@Test(expected = ShellException.class)
+	public void testCloseOutputstream() throws ShellException {
+		OutputStream myOutputStream = null;
 		try {
 			myOutputStream = ShellImpl.openOutputRedir(TEST_FILE_NAME);
-			// writeToStream(myOutputStream);
 			ShellImpl.closeOutputStream(myOutputStream);
 		} catch (ShellException e) {
 			fail(VALID_FILE_NO_EXP);
 		}
+
+		try {
+			myOutputStream.write(TEST_STR.getBytes());
+		} catch (IOException e) {
+			throw new ShellException(VALID_EXP);
+		}
+	
 	}
 }
