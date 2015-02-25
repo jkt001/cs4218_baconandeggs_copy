@@ -123,6 +123,17 @@ public class CatApplicationTest {
 	}
 
 	@Test
+	public void testFileIsVaild() {
+
+		boolean flag = false;
+		try {
+			flag = catApp.checkIfFileIsReadable(Paths.get(tempFilePath2));
+			assertTrue(flag);
+		} catch (CatException e) {
+		}
+	}
+
+	@Test
 	public void testReadFromStdin() throws CatException, IOException {
 
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(
