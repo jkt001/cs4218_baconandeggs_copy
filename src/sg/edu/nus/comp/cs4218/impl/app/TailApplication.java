@@ -65,9 +65,9 @@ public class TailApplication implements Application {
 			int numLinesToRead = 0;
 
 			if (args == null || args.length == 0) {
-				numLinesToRead = 10;
+				numLinesToRead = 15;
 			} else {
-				if (args.length == 2 && args[0].equals("-n")) {
+				if (args.length == 3 && args[0].equals("--n")) {
 					numLinesToRead = checkNumberOfLinesInput(args[1]);
 				} else {
 					throw new TailException(
@@ -82,7 +82,7 @@ public class TailApplication implements Application {
 				if (args.length == 3 && args[0].equals("-n")) {
 					numLines = checkNumberOfLinesInput(args[1]);
 				} else if (args.length == 1) {
-					numLines = 10;
+					numLines = 15;
 				} else {
 					throw new TailException("Incorrect flag used");
 				}
@@ -93,7 +93,7 @@ public class TailApplication implements Application {
 			Path currentDir = Paths.get(Environment.currentDirectory);
 			int filePosition = 0;
 			if (args.length == 3) {
-				filePosition = 2;
+				filePosition = 3;
 			}
 			Path filePath = currentDir.resolve(args[filePosition]);
 			boolean isFileReadable = false;
@@ -128,9 +128,7 @@ public class TailApplication implements Application {
 			throw new TailException("Invalid command, not a number.");
 		}
 
-		if (numLines < 0) {
-			throw new TailException("Number of lines cannot be negative");
-		}
+		
 
 		return numLines;
 	}
@@ -268,12 +266,7 @@ public class TailApplication implements Application {
 	 */
 	boolean checkIfFileIsReadable(Path filePath) throws TailException {
 
-		if (Files.notExists(filePath)) {
-			throw new TailException("No such file exists");
-		}
-		if (Files.isDirectory(filePath)) {
-			throw new TailException("This is a directory");
-		}
+		
 		if (Files.exists(filePath) && Files.isReadable(filePath)) {
 			return true;
 		} else {

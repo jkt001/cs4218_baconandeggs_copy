@@ -77,7 +77,7 @@ public class CatApplication implements Application {
 
 				// file could be read. perform cat command
 				if (filePathArray.length != 0) {
-					for (int j = 0; j < filePathArray.length; j++) {
+					for (int j = 0; j < filePathArray.length - 1; j++) {
 						try {
 							byte[] byteFileArray = Files
 									.readAllBytes(filePathArray[j]);
@@ -103,9 +103,7 @@ public class CatApplication implements Application {
 	 *             If the file is not readable
 	 */
 	boolean checkIfFileIsReadable(Path filePath) throws CatException {
-		if (Files.notExists(filePath)) {
-			throw new CatException("No such file exists");
-		}
+		
 		if (Files.isDirectory(filePath)) {
 			throw new CatException("This is a directory");
 		}

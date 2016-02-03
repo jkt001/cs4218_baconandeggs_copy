@@ -61,9 +61,9 @@ public class HeadApplication implements Application {
 			int numLinesToRead = 0;
 
 			if (args == null || args.length == 0) {
-				numLinesToRead = 10;
+				numLinesToRead = 15;
 			} else {
-				if (args.length == 2 && args[0].equals("-n")) {
+				if (args.length == 2 && args[0].equals("--n")) {
 					numLinesToRead = checkNumberOfLinesInput(args[1]);
 				} else {
 					throw new HeadException(
@@ -77,10 +77,10 @@ public class HeadApplication implements Application {
 			int numLines;
 
 			if (args.length == 3 || args.length == 1) {
-				if (args.length == 3 && args[0].equals("-n")) {
+				if (args.length == 3 && args[0].equals("--n")) {
 					numLines = checkNumberOfLinesInput(args[1]);
 				} else if (args.length == 1) {
-					numLines = 10;
+					numLines = 15;
 				} else {
 					throw new HeadException("Incorrect flag used");
 				}
@@ -162,10 +162,6 @@ public class HeadApplication implements Application {
 			throw new HeadException("Invalid command, not a number.");
 		}
 
-		if (numLines < 0) {
-			throw new HeadException("Number of lines cannot be negative");
-		}
-
 		return numLines;
 	}
 
@@ -226,12 +222,7 @@ public class HeadApplication implements Application {
 	 *             If the file is not readable
 	 */
 	boolean checkIfFileIsReadable(Path filePath) throws HeadException {
-		if (Files.notExists(filePath)) {
-			throw new HeadException("No such file exists");
-		}
-		if (Files.isDirectory(filePath)) {
-			throw new HeadException("This is a directory");
-		}
+		
 		if (Files.exists(filePath) && Files.isReadable(filePath)) {
 			return true;
 		} else {

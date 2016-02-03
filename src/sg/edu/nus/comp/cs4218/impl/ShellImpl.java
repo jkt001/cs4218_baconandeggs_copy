@@ -10,15 +10,9 @@ import sg.edu.nus.comp.cs4218.Shell;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
 import sg.edu.nus.comp.cs4218.impl.app.CatApplication;
-import sg.edu.nus.comp.cs4218.impl.app.CdApplication;
 import sg.edu.nus.comp.cs4218.impl.app.EchoApplication;
-import sg.edu.nus.comp.cs4218.impl.app.FindApplication;
 import sg.edu.nus.comp.cs4218.impl.app.HeadApplication;
-import sg.edu.nus.comp.cs4218.impl.app.LsApplication;
-import sg.edu.nus.comp.cs4218.impl.app.PwdApplication;
 import sg.edu.nus.comp.cs4218.impl.app.TailApplication;
-import sg.edu.nus.comp.cs4218.impl.app.WcApplication;
-import sg.edu.nus.comp.cs4218.impl.cmd.SequenceCommand;
 
 /**
  * A Shell is a command interpreter and forms the backbone of the entire
@@ -41,32 +35,6 @@ public class ShellImpl implements Shell {
 			+ "as output redirection file.";
 	public static final String EXP_STDOUT = "Error writing to stdout.";
 	public static final String EXP_NOT_SUPPORTED = " not supported yet";
-
-	/**
-	 * Creates a Sequence Command object to process the incoming command line
-	 * into an AST and then proceed to run the command(s) using the AST
-	 * generated.
-	 * 
-	 * @param cmdline
-	 *            String of command line read in by stdin in main method of
-	 *            Shell.
-	 * @param stdout
-	 *            An OutputStream. Results of evaluating and running the
-	 *            application(s) will be output to stdout, usually System.out.
-	 * 
-	 * @throws AbstractApplicationException
-	 *             If an exception happens while running any of the
-	 *             application(s).
-	 * @throws ShellException
-	 *             If an exception happens while parsing the command line.
-	 */
-	@Override
-	public void parseAndEvaluate(String cmdline, OutputStream stdout)
-			throws AbstractApplicationException, ShellException {
-		SequenceCommand seqCmd = new SequenceCommand(cmdline);
-		seqCmd.parse();
-		seqCmd.evaluate(System.in, stdout);
-	}
 
 	/**
 	 * Searches for and processes the commands enclosed by back quotes for
@@ -106,7 +74,7 @@ public class ShellImpl implements Shell {
 				// System.out.println("backquote" + bqStr);
 				OutputStream bqOutputStream = new ByteArrayOutputStream();
 				ShellImpl shell = new ShellImpl();
-				shell.parseAndEvaluate(bqStr, bqOutputStream);
+				//shell.parseAndEvaluate(bqStr, bqOutputStream);
 
 				ByteArrayOutputStream outByte = (ByteArrayOutputStream) bqOutputStream;
 				byte[] byteArray = outByte.toByteArray();
@@ -148,13 +116,7 @@ public class ShellImpl implements Shell {
 			InputStream inputStream, OutputStream outputStream)
 			throws AbstractApplicationException, ShellException {
 		Application absApp = null;
-		if (("pwd".equals(app))) {
-			absApp = new PwdApplication();
-		} else if (("cd").equals(app)) {// cd PATH
-			absApp = new CdApplication();
-		} else if (("ls").equals(app)) {// ls
-			absApp = new LsApplication();
-		} else if (("cat").equals(app)) {// cat [FILE]...
+		if (("cat").equals(app)) {// cat [FILE]...
 			absApp = new CatApplication();
 		} else if (("echo").equals(app)) {// echo [args]...
 			absApp = new EchoApplication();
@@ -162,16 +124,6 @@ public class ShellImpl implements Shell {
 			absApp = new HeadApplication();
 		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
 			absApp = new TailApplication();
-		} else if (("grep").equals(app)) {// grep PATTERN [FILE]...
-			throw new ShellException(app + EXP_NOT_SUPPORTED);
-			// absApp = new GrepApplication();
-		} else if (("sed").equals(app)) {// sed REPLACEMENT [FILE]
-			throw new ShellException(app + EXP_NOT_SUPPORTED);
-			// absApp = new SedApplication();
-		} else if (("find").equals(app)) {// find [PATH] -name PATTERN
-			absApp = new FindApplication();
-		} else if (("wc").equals(app)) {// wc [OPTIONS] [FILE]...
-			absApp = new WcApplication();
 		} else { // invalid command
 			throw new ShellException(app + ": " + EXP_INVALID_APP);
 		}
@@ -304,9 +256,6 @@ public class ShellImpl implements Shell {
 	 */
 	public static InputStream outputStreamToInputStream(
 			OutputStream outputStream) throws ShellException {
-		if (outputStream instanceof FileOutputStream) {
-			throw new ShellException(EXP_REDIR_PIPE);
-		}
 		return new ByteArrayInputStream(
 				((ByteArrayOutputStream) outputStream).toByteArray());
 	}
@@ -337,7 +286,7 @@ public class ShellImpl implements Shell {
 				if (("").equals(readLine)) {
 					continue;
 				}
-				shell.parseAndEvaluate(readLine, System.out);
+				//shell.parseAndEvaluate(readLine, System.out);
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
