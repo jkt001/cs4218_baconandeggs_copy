@@ -292,4 +292,53 @@ public class ShellImpl implements Shell {
 			}
 		}
 	}
+
+	@Override
+	public void parseAndEvaluate(String cmdline, OutputStream stdout)
+			throws AbstractApplicationException, ShellException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String pipeTwoCommands(String[] args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String pipeMultipleCommands(String[] args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String pipeWithException(String[] args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String globNoPaths(String[] args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String globOneFile(String[] args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String globFilesDirectories(String[] args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String globMultiLevel(String[] args) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
