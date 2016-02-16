@@ -1,6 +1,7 @@
 package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -286,17 +287,43 @@ public class ShellImpl implements Shell {
 				if (("").equals(readLine)) {
 					continue;
 				}
-				//shell.parseAndEvaluate(readLine, System.out);
+				shell.parseAndEvaluate(readLine, System.out);
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 		}
 	}
 
-	@Override
+	/**
+	 * Tries to evaluate based on split by whitespace. (note that it should also handle "" but not yet implemented)
+	 * 
+	 *  @param
+	 *  
+	 *  @return
+	 *  
+	 *  @throws
+	 */
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-		// TODO Auto-generated method stub
+		String[] args = cmdline.split("\\s+");
+		switch(args[0]) {
+		case "cat":
+			CatApplication cat = new CatApplication();
+			//cat.run(Arrays.copyOfRange(args, 1, args.length));
+			break;
+		case "echo":
+			break;
+		case "head":
+			break;
+		case "tail":
+			break;
+		case "fmt":
+			break;
+		case "date":
+			break;
+		default:
+			throw new ShellException("Invalid app error");
+		}
 		
 	}
 
