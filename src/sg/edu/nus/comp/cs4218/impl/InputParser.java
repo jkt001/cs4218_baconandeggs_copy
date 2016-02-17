@@ -24,44 +24,92 @@ public class InputParser {
 		outs = new ArrayList<OutputStream>();
 	}
 	
-	public void parse(String cmdline, OutputStream out) throws ShellException{
-		ArrayList<String> comdArgs = new ArrayList<String>();
-		StringBuilder cmd = new StringBuilder();
-		StringBuilder thisArg = new StringBuilder();
-		boolean foundCmd = false;
-		boolean disableSpecial = false;
-		boolean disableBackQuotes = false;										//Unimplemented at this point
+//	public void parse(String cmdline, OutputStream out) throws ShellException{
+//		ArrayList<String> comdArgs = new ArrayList<String>();
+//		StringBuilder cmd = new StringBuilder();
+//		StringBuilder thisArg = new StringBuilder();
+//		boolean foundCmd = false;
+//		boolean disableSpecial = false;
+//		boolean disableBackQuotes = false;										//Unimplemented at this point
+//		for (int i = 0; i<cmdline.length(); i++) {
+//			char thisChar = cmdline.charAt(i);
+//			if (!disableSpecial) {
+//				if (thisChar == ';') {
+//					String[] arguments = new String[comdArgs.size()];
+//					arguments = comdArgs.toArray(arguments);
+//					args.add(arguments);
+//					ins.add(System.in); 										//Unfinalized at this point
+//					outs.add(out);
+//					//Reinitialized variables
+//					cmd = new StringBuilder();
+//					comdArgs = new ArrayList<String>();
+//				} else {
+//					if (!foundCmd) {
+//						if (thisChar == ' ') {
+//							comds.add(cmd.toString());
+//							foundCmd = true;
+//						} else {
+//							cmd.append(thisChar);
+//						}
+//					} else {
+//						if (thisChar == ' ') {
+//							comdArgs.add(thisArg.toString());
+//							thisArg = new StringBuilder();
+//						} else {
+//							thisArg.append(thisChar);
+//						}
+//					}
+//				}
+//			} else {
+//				//if need to close disabledbackquotes
+//			}
+//		}
+//	}
+	
+	public void parse(String cmdline, OutputStream out) throws ShellException {
+		StringBuilder currentWord = new StringBuilder();
+		ArrayList<String> currentArgs = new ArrayList<String>();
+		boolean isWithinQuotes = false;
+		char openQuotation = ' ';
+		boolean isFirstArg = false;
+		
 		for (int i = 0; i<cmdline.length(); i++) {
 			char thisChar = cmdline.charAt(i);
-			if (!disableSpecial) {
-				if (thisChar == ';') {
-					String[] arguments = new String[comdArgs.size()];
-					arguments = comdArgs.toArray(arguments);
-					args.add(arguments);
-					ins.add(System.in); 										//Unfinalized at this point
-					outs.add(out);
-					//Reinitialized variables
-					cmd = new StringBuilder();
-					comdArgs = new ArrayList<String>();
-				} else {
-					if (!foundCmd) {
-						if (thisChar == ' ') {
-							comds.add(cmd.toString());
-							foundCmd = true;
+			if (thisChar == '"' || thisChar == '\'' || thisChar == '`') {
+				if (isWithinQuotes) {
+					if (thisChar == openQuotation) {
+						if (thisChar =='`') {
+							//parse the current word since it is a command
+							//using the output stream, convert it to a string and add to current args
 						} else {
-							cmd.append(thisChar);
+							if (isFirstArg) {
+								isFirstArg = !isFirstArg;
+								comds.add(currentWord.toString());
+							} else {
+								currentArgs.add(currentWord.toString());
+							}
+							currentWord = new StringBuilder();
 						}
+					} else if (thisChar == '`' && openQuotation == '"') {
+						
 					} else {
-						if (thisChar == ' ') {
-							comdArgs.add(thisArg.toString());
-							thisArg = new StringBuilder();
-						} else {
-							thisArg.append(thisChar);
-						}
+						
+					}
+				} else {
+					//start of quotation (any kind)
+					openQuotation = thisChar;
+				}
+				isWithinQuotes = !isWithinQuotes;
+			} else {
+				if (isWithinQuotes) {
+					currentWord.append(thisChar);
+				} else {
+					if (thisChar == ';') {
+						//new command
+					} else {
+						currentWord.append(thisChar);
 					}
 				}
-			} else {
-				//if need to close disabledbackquotes
 			}
 		}
 	}
