@@ -296,37 +296,157 @@ public class ShellImpl implements Shell {
 	}
 
 	/**
+	 * Class method for parsing and evaluating a string by input
 	 * 
+	 * @param cmdline
+	 * 				String input from user
+	 *  
+	 * @param stdout
+	 * 				Output stream to write to 
+	 *  
+	 * @throws AbstractApplicationException
+	 *				If application throws one
 	 * 
-	 *  @param
-	 *  
-	 *  @return
-	 *  
-	 *  @throws
+	 * @throws ShellException
+	 * 				If no such command is found
 	 */
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-//		ArrayList<String> matchList = new ArrayList<String>();
-//		//see: http://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double
-//		Pattern regex = Pattern.compile("[^\\s\"'`]+|\"([^\"]*)\"|'([^']*)'|`([^`]*)`"); 
-//		Matcher regexMatcher = regex.matcher(cmdline);
-//		while (regexMatcher.find()) {
-//		    if (regexMatcher.group(1) != null) {
-//		        matchList.add(regexMatcher.group(1));
-//		    } else if (regexMatcher.group(2) != null) {
-//		        matchList.add(regexMatcher.group(2));
-//		    } else if (regexMatcher.group(3) != null) {
-//		        matchList.add(regexMatcher.group(3));
-//		    } else {
-//		        matchList.add(regexMatcher.group());
-//		    }
-//		}
-//		for (String i: matchList) {
-//			System.out.println(i);
-//		}
-		InputParser ip = new InputParser();
-		ip.parse(cmdline, stdout);
+
+		ArrayList<String> comds = new ArrayList<String>();
+		ArrayList<String[]> args = new ArrayList<String[]>();
+		ArrayList<InputStream> ins = new ArrayList<InputStream>();
+		ArrayList<OutputStream> outs = new ArrayList<OutputStream>();
 		
+		//Parsing
+		StringBuilder currentWord = new StringBuilder();
+		ArrayList<String> currentArgs = new ArrayList<String>();
+		boolean isWithinQuotes = false;
+		char openQuotation = ' ';
+		boolean isFirstArg = true;
+		boolean isWrapped = false;
+		System.out.println("enter parse");
+		if (!cmdline.endsWith(";")) {
+			cmdline = cmdline + ";";
+			System.out.println(cmdline);
+		}
+		
+		for (int i = 0; i<cmdline.length(); i++) {
+			char thisChar = cmdline.charAt(i);
+			if (thisChar == '"' || thisChar == '\'' || thisChar == '`') {
+				if (isWithinQuotes) {
+					if (thisChar == openQuotation) {
+						if (thisChar =='`') {
+							ByteArrayOutputStream bo = new ByteArrayOutputStream();
+							parseAndEvaluate(currentWord.toString(), bo);
+							try {
+								currentArgs.add(bo.toString("UTF-8"));
+							} catch (UnsupportedEncodingException e) {
+								e.printStackTrace();
+							}
+							if (isWrapped) {										//Sets the condition to pre-backquote which is double quote
+								openQuotation = '"';
+								isWrapped = false;
+								isWithinQuotes = true;
+							} else {
+								isWithinQuotes = false;
+							}
+						} else {
+							if (isFirstArg) {
+								isFirstArg = !isFirstArg;
+								comds.add(currentWord.toString());
+							} else {
+								currentArgs.add(currentWord.toString());
+							}
+							currentWord = new StringBuilder();
+							isWithinQuotes = false;
+						}
+					} else if (thisChar == '`' && openQuotation == '"') {			//Only need to handle this case as ' ignores special chars
+						openQuotation = '`';
+						isWrapped = true;
+						isWithinQuotes = true;
+					} else {
+						currentWord.append(thisChar);
+						isWithinQuotes = true;
+					}
+				} else {
+					openQuotation = thisChar;
+					isWithinQuotes = true;
+				}
+			} else {
+				if (isWithinQuotes) {
+					currentWord.append(thisChar);
+				} else {
+					if (thisChar == ';') {
+						if (isFirstArg) {
+							comds.add(currentWord.toString());
+						} else {
+							currentArgs.add(currentWord.toString());
+						}
+						String[] arguments = new String[currentArgs.size()];
+						arguments = currentArgs.toArray(arguments);
+						args.add(arguments);
+						outs.add(stdout);
+						ins.add(System.in);
+						currentArgs = new ArrayList<String>();
+						currentWord = new StringBuilder();
+					} else if (thisChar == ' ') {
+						if (isFirstArg) {
+							isFirstArg = !isFirstArg;
+							comds.add(currentWord.toString());
+						} else {
+							currentArgs.add(currentWord.toString());	
+						}
+						currentWord = new StringBuilder();
+					} else {
+						currentWord.append(thisChar);
+					}
+				}
+			}
+		}
+		
+		//Evaluate (may be unsafe because did not ensure size is the same (but should be))
+		for(int i = 0; i<comds.size(); i++) {
+			runApplication(comds.get(i), args.get(i), ins.get(i), outs.get(i));
+		}
+		
+		//Test print
+//		System.out.println(comds.size());
+//		System.out.println(args.size());
+//		System.out.println(ins.size());
+//		System.out.println(outs.size());
+//		
+//		for(int i = 0; i<comds.size(); i++) {
+//			System.out.println(comds.get(i));
+//			System.out.print("args = ");
+//			System.out.println(args.get(i).length);
+//			for(int j = 0; j<args.get(i).length; j++) {
+//				System.out.println(args.get(i)[j]);
+//			}
+//		}
+	}
+	
+	private void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
+		Application result = null;
+		switch(cmd){
+		case "cat":
+			result= new CatApplication();
+			break;
+		case "echo":
+			result = new EchoApplication();
+			break;
+		case "head":
+			result = new HeadApplication();
+			break;
+		case "tail":
+			result = new TailApplication();
+			break;
+		case "fmt":
+		case "date":
+		default:
+			throw new ShellException("Unrecognized command");
+		}
+		result.run(args, in, out);
 	}
 
 	@Override
