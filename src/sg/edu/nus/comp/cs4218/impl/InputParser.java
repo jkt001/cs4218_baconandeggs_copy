@@ -71,7 +71,12 @@ public class InputParser {
 		ArrayList<String> currentArgs = new ArrayList<String>();
 		boolean isWithinQuotes = false;
 		char openQuotation = ' ';
-		boolean isFirstArg = false;
+		boolean isFirstArg = true;
+		boolean isWrapped = false;
+		System.out.println("enter parse");
+		if (!cmdline.endsWith(";")) {
+			cmdline = cmdline + ";";
+		}
 		
 		for (int i = 0; i<cmdline.length(); i++) {
 			char thisChar = cmdline.charAt(i);
@@ -80,7 +85,15 @@ public class InputParser {
 					if (thisChar == openQuotation) {
 						if (thisChar =='`') {
 							//parse the current word since it is a command
+							//may wanna use bytearrayoutputstream
 							//using the output stream, convert it to a string and add to current args
+							if (isWrapped) {										//Sets the condition to pre-backquote which is double quote
+								openQuotation = '"';
+								isWrapped = false;
+								isWithinQuotes = true;
+							} else {
+								isWithinQuotes = false;
+							}
 						} else {
 							if (isFirstArg) {
 								isFirstArg = !isFirstArg;
@@ -89,28 +102,60 @@ public class InputParser {
 								currentArgs.add(currentWord.toString());
 							}
 							currentWord = new StringBuilder();
+							isWithinQuotes = false;
 						}
-					} else if (thisChar == '`' && openQuotation == '"') {
-						
+					} else if (thisChar == '`' && openQuotation == '"') {			//Only need to handle this case as ' ignores special chars
+						openQuotation = '`';
+						isWrapped = true;
+						isWithinQuotes = true;
 					} else {
-						
+						currentWord.append(thisChar);
+						isWithinQuotes = true;
 					}
 				} else {
-					//start of quotation (any kind)
 					openQuotation = thisChar;
+					isWithinQuotes = true;
 				}
-				isWithinQuotes = !isWithinQuotes;
 			} else {
 				if (isWithinQuotes) {
 					currentWord.append(thisChar);
 				} else {
 					if (thisChar == ';') {
-						//new command
+						currentArgs.add(currentWord.toString());
+						String[] arguments = new String[currentArgs.size()];
+						arguments = currentArgs.toArray(arguments);
+						args.add(arguments);
+						outs.add(out);
+						ins.add(System.in);
+						currentArgs = new ArrayList<String>();
+						currentWord = new StringBuilder();
+					} else if (thisChar == ' ') {
+						if (isFirstArg) {
+							isFirstArg = !isFirstArg;
+							comds.add(currentWord.toString());
+						} else {
+							currentArgs.add(currentWord.toString());	
+						}
+						currentWord = new StringBuilder();
 					} else {
 						currentWord.append(thisChar);
 					}
 				}
 			}
+		}
+		
+		System.out.println(comds.size());
+		System.out.println(args.size());
+		System.out.println(ins.size());
+		System.out.println(outs.size());
+		
+		for(int i = 0; i<comds.size(); i++) {
+			System.out.println(comds.get(i));
+			System.out.print("args = ");
+			for(int j = 0; j<args.get(i).length; j++) {
+				System.out.println(args.get(i)[j]);
+			}
+			
 		}
 	}
 	

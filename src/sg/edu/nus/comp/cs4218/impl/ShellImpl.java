@@ -306,45 +306,26 @@ public class ShellImpl implements Shell {
 	 */
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-		ArrayList<String> matchList = new ArrayList<String>();
-		//see: http://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double
-		Pattern regex = Pattern.compile("[^\\s\"'`]+|\"([^\"]*)\"|'([^']*)'|`([^`]*)`"); 
-		Matcher regexMatcher = regex.matcher(cmdline);
-		while (regexMatcher.find()) {
-		    if (regexMatcher.group(1) != null) {
-		        matchList.add(regexMatcher.group(1));
-		    } else if (regexMatcher.group(2) != null) {
-		        matchList.add(regexMatcher.group(2));
-		    } else if (regexMatcher.group(3) != null) {
-		        matchList.add(regexMatcher.group(3));
-		    } else {
-		        matchList.add(regexMatcher.group());
-		    }
-		}
-		for (String i: matchList) {
-			System.out.println(i);
-		}
-//		String[] args = cmdline.split("\\s+");
-//		switch(args[0]) {
-//		case "cat":
-//			CatApplication cat = new CatApplication();
-//			cat.run(Arrays.copyOfRange(args, 1, args.length), System.in, stdout);
-//			break;
-//		case "echo":
-//			EchoApplication ech = new EchoApplication();
-//			ech.run(Arrays.copyOfRange(args, 1, args.length), null, stdout);
-//			break;
-//		case "head":
-//			break;
-//		case "tail":
-//			break;
-//		case "fmt":
-//			break;
-//		case "date":
-//			break;
-//		default:
-//			throw new ShellException("Invalid app error");
+//		ArrayList<String> matchList = new ArrayList<String>();
+//		//see: http://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double
+//		Pattern regex = Pattern.compile("[^\\s\"'`]+|\"([^\"]*)\"|'([^']*)'|`([^`]*)`"); 
+//		Matcher regexMatcher = regex.matcher(cmdline);
+//		while (regexMatcher.find()) {
+//		    if (regexMatcher.group(1) != null) {
+//		        matchList.add(regexMatcher.group(1));
+//		    } else if (regexMatcher.group(2) != null) {
+//		        matchList.add(regexMatcher.group(2));
+//		    } else if (regexMatcher.group(3) != null) {
+//		        matchList.add(regexMatcher.group(3));
+//		    } else {
+//		        matchList.add(regexMatcher.group());
+//		    }
 //		}
+//		for (String i: matchList) {
+//			System.out.println(i);
+//		}
+		InputParser ip = new InputParser();
+		ip.parse(cmdline, stdout);
 		
 	}
 
