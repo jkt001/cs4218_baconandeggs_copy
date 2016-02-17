@@ -1,6 +1,7 @@
 package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -295,7 +296,7 @@ public class ShellImpl implements Shell {
 	}
 
 	/**
-	 * Tries to evaluate based on split by whitespace. (note that it should also handle "" but not yet implemented)
+	 * 
 	 * 
 	 *  @param
 	 *  
@@ -305,25 +306,45 @@ public class ShellImpl implements Shell {
 	 */
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-		String[] args = cmdline.split("\\s+");
-		switch(args[0]) {
-		case "cat":
-			CatApplication cat = new CatApplication();
-			//cat.run(Arrays.copyOfRange(args, 1, args.length));
-			break;
-		case "echo":
-			break;
-		case "head":
-			break;
-		case "tail":
-			break;
-		case "fmt":
-			break;
-		case "date":
-			break;
-		default:
-			throw new ShellException("Invalid app error");
+		ArrayList<String> matchList = new ArrayList<String>();
+		//see: http://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double
+		Pattern regex = Pattern.compile("[^\\s\"'`]+|\"([^\"]*)\"|'([^']*)'|`([^`]*)`"); 
+		Matcher regexMatcher = regex.matcher(cmdline);
+		while (regexMatcher.find()) {
+		    if (regexMatcher.group(1) != null) {
+		        matchList.add(regexMatcher.group(1));
+		    } else if (regexMatcher.group(2) != null) {
+		        matchList.add(regexMatcher.group(2));
+		    } else if (regexMatcher.group(3) != null) {
+		        matchList.add(regexMatcher.group(3));
+		    } else {
+		        matchList.add(regexMatcher.group());
+		    }
 		}
+		for (String i: matchList) {
+			System.out.println(i);
+		}
+//		String[] args = cmdline.split("\\s+");
+//		switch(args[0]) {
+//		case "cat":
+//			CatApplication cat = new CatApplication();
+//			cat.run(Arrays.copyOfRange(args, 1, args.length), System.in, stdout);
+//			break;
+//		case "echo":
+//			EchoApplication ech = new EchoApplication();
+//			ech.run(Arrays.copyOfRange(args, 1, args.length), null, stdout);
+//			break;
+//		case "head":
+//			break;
+//		case "tail":
+//			break;
+//		case "fmt":
+//			break;
+//		case "date":
+//			break;
+//		default:
+//			throw new ShellException("Invalid app error");
+//		}
 		
 	}
 

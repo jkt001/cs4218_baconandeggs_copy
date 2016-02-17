@@ -12,49 +12,67 @@ import sg.edu.nus.comp.cs4218.impl.app.*;
 
 public class InputParser {
 
-	ArrayList<Application> toRun;
+	ArrayList<String> comds;
 	ArrayList<String[]> args;
 	ArrayList<InputStream> ins;
 	ArrayList<OutputStream> outs;
 	
 	public InputParser() {
-		toRun = new ArrayList<Application>();
+		comds = new ArrayList<String>();
 		args = new ArrayList<String[]>();
 		ins = new ArrayList<InputStream>();
 		outs = new ArrayList<OutputStream>();
 	}
 	
 	public void parse(String cmdline, OutputStream out) throws ShellException{
-		ArrayList<String> args = null;
+		ArrayList<String> comdArgs = new ArrayList<String>();
 		StringBuilder cmd = new StringBuilder();
+		StringBuilder thisArg = new StringBuilder();
 		boolean foundCmd = false;
-		boolean openQuotes = false;
+		boolean disableSpecial = false;
+		boolean disableBackQuotes = false;										//Unimplemented at this point
 		for (int i = 0; i<cmdline.length(); i++) {
 			char thisChar = cmdline.charAt(i);
-			if (!openQuotes) {
+			if (!disableSpecial) {
 				if (thisChar == ';') {
-					
-				}
-			if (!foundCmd) {
-				if (thisChar == ' ') {
-					foundCmd = true;
+					String[] arguments = new String[comdArgs.size()];
+					arguments = comdArgs.toArray(arguments);
+					args.add(arguments);
+					ins.add(System.in); 										//Unfinalized at this point
+					outs.add(out);
+					//Reinitialized variables
+					cmd = new StringBuilder();
+					comdArgs = new ArrayList<String>();
 				} else {
-					cmd.append(thisChar);
+					if (!foundCmd) {
+						if (thisChar == ' ') {
+							comds.add(cmd.toString());
+							foundCmd = true;
+						} else {
+							cmd.append(thisChar);
+						}
+					} else {
+						if (thisChar == ' ') {
+							comdArgs.add(thisArg.toString());
+							thisArg = new StringBuilder();
+						} else {
+							thisArg.append(thisChar);
+						}
+					}
 				}
 			} else {
-				
-			}
+				//if need to close disabledbackquotes
 			}
 		}
 	}
 	
 	public void evaluate() throws AbstractApplicationException {
-		for (int i = 0; i<toRun.size(); i++) {
-			toRun.get(i).run(args.get(i), ins.get(i), outs.get(i));
-		}
+//		for (int i = 0; i<toRun.size(); i++) {
+//			toRun.get(i).run(args.get(i), ins.get(i), outs.get(i));
+//		}
 	}
 	
-	private Application getApplication(String cmd) throws ShellException {
+	private Application runApplication(String cmd) throws ShellException {
 		Application result = null;
 		switch(cmd){
 		case "cat":
