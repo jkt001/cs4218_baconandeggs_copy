@@ -77,7 +77,7 @@ public class CatApplication implements Application {
 
 				// file could be read. perform cat command
 				if (filePathArray.length != 0) {
-					for (int j = 0; j < filePathArray.length - 1; j++) {
+					for (int j = 0; j < filePathArray.length; j++) {
 						try {
 							byte[] byteFileArray = Files
 									.readAllBytes(filePathArray[j]);
