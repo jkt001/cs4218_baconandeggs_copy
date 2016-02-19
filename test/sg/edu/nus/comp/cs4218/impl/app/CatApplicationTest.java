@@ -77,13 +77,23 @@ public class CatApplicationTest {
 	}
 	
 	@Test
-	public void testCatWithNullArgsAndStdin() throws CatException {
+	public void testCatWithBothValidArgsAndValidStdin() throws CatException {
+		String expected = "";
+		for (int i = 0; i < CONTENTS.length; i++) {
+			expected += CONTENTS[i];
+		}
+		catApplication.run(READABLE_FILES, inStream, outStream);
+		assertEquals(expected, outStream.toString());
+	}
+	
+	@Test
+	public void testCatWithNullArgsAndValidStdin() throws CatException {
 		catApplication.run(null, inStream, outStream);
 		assertEquals(CONTENTS[0], outStream.toString());
 	}
 	
 	@Test
-	public void testCatWithEmptyArgsAndStdin() throws CatException {
+	public void testCatWithEmptyArgsAndValidStdin() throws CatException {
 		String[] files = {};
 		catApplication.run(files, inStream, outStream);
 		assertEquals(CONTENTS[0], outStream.toString());
