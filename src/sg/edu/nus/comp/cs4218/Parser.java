@@ -33,6 +33,7 @@ public class Parser {
 	private char openQuotation;
 	private boolean isFirstArg;
 	private boolean isWrapped;
+	private String prevWord; 					//Used when backquote is done wtih double quote
 	
 	public Parser() {
 		comds = new ArrayList<String>();
@@ -45,6 +46,7 @@ public class Parser {
 		openQuotation = ' ';
 		isFirstArg = true;
 		isWrapped = false;
+		prevWord = " ";
 	}
 	
 	/**
@@ -62,8 +64,7 @@ public class Parser {
 	 * @throws ShellException
 	 * 				If no such command is found
 	 */
-	public void parse(String cmdline, OutputStream stdout)
-			throws AbstractApplicationException, ShellException {
+	public void parse(String cmdline, OutputStream stdout) throws ShellException, AbstractApplicationException {
 		cmdline = postpendSemicolon(cmdline);
 		
 		for (int i = 0; i<cmdline.length(); i++) {
@@ -83,14 +84,17 @@ public class Parser {
 						endOfLineParse(stdout);
 						currentArgs = new ArrayList<String>();
 						currentWord = new StringBuilder();
+						isFirstArg = true;
 					} else if (thisChar == ' ') {
-						if (isFirstArg) {
-							isFirstArg = !isFirstArg;
-							comds.add(currentWord.toString());
-						} else {
-							currentArgs.add(currentWord.toString());	
+						if (currentWord.length() > 0) {
+							if (isFirstArg) {
+								isFirstArg = !isFirstArg;
+								comds.add(currentWord.toString());
+							} else {
+								currentArgs.add(currentWord.toString());	
+							}
+							currentWord = new StringBuilder();	
 						}
-						currentWord = new StringBuilder();
 					} else {
 						currentWord.append(thisChar);
 					}
@@ -110,7 +114,6 @@ public class Parser {
 	private String postpendSemicolon(String cmdline) {
 		if (!cmdline.endsWith(";")) {
 			cmdline = cmdline + ";";
-			System.out.println(cmdline);
 		}
 		return cmdline;
 	}
@@ -126,17 +129,19 @@ public class Parser {
 	 * @throws ShellException
 	 * 				if the recursive parse encounters one
 	 */
-	private void possibleClosureOfQuotation(char thisChar)
-			throws AbstractApplicationException, ShellException {
+	private void possibleClosureOfQuotation(char thisChar) throws ShellException, AbstractApplicationException {
 		if (thisChar == openQuotation) {
 			if (thisChar =='`') {
-				recursivelyParse();
+				String nextWord = recursivelyParse(currentWord.toString());
 				if (isWrapped) {
 					openQuotation = '"';
 					isWrapped = false;
 					isWithinQuotes = true;
+					currentWord = new StringBuilder(prevWord + nextWord);
 				} else {
 					isWithinQuotes = false;
+					currentArgs.add(nextWord);
+					currentWord = new StringBuilder();
 				}
 			} else {
 				if (isFirstArg) {
@@ -145,10 +150,12 @@ public class Parser {
 				} else {
 					currentArgs.add(currentWord.toString());
 				}
-				currentWord = new StringBuilder();
 				isWithinQuotes = false;
+				currentWord = new StringBuilder();
 			}
 		} else if (thisChar == '`' && openQuotation == '"') {
+			prevWord = currentWord.toString();
+			currentWord = new StringBuilder();
 			openQuotation = '`';
 			isWrapped = true;
 			isWithinQuotes = true;
@@ -168,7 +175,9 @@ public class Parser {
 		if (isFirstArg) {
 			comds.add(currentWord.toString());
 		} else {
-			currentArgs.add(currentWord.toString());
+			if (currentWord.length() > 0) {
+				currentArgs.add(currentWord.toString());
+			}
 		}
 		String[] arguments = new String[currentArgs.size()];
 		arguments = currentArgs.toArray(arguments);
@@ -186,14 +195,18 @@ public class Parser {
 	 * @throws ShellException
 	 * 						if parse throws one
 	 */
-	private void recursivelyParse() throws AbstractApplicationException, ShellException {
+	protected String recursivelyParse(String toParse) throws ShellException, AbstractApplicationException {
 		ByteArrayOutputStream bo = new ByteArrayOutputStream();
-		parse(currentWord.toString(), bo);
+		Parser nextInstance = new Parser();
+		nextInstance.parse(toParse, bo);
+		nextInstance.evaluate();
+		String result = "";
 		try {
-			currentArgs.add(bo.toString("UTF-8"));
+			result = bo.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
+		return result;
 	}
 	
 	/**
@@ -209,24 +222,11 @@ public class Parser {
 		for(int i = 0; i<comds.size(); i++) {
 			runApplication(comds.get(i), args.get(i), ins.get(i), outs.get(i));
 		}
-		//Test print
-		//System.out.println(comds.size());
-		//System.out.println(args.size());
-		//System.out.println(ins.size());
-		//System.out.println(outs.size());
-		//
-		//for(int i = 0; i<comds.size(); i++) {
-		//	System.out.println(comds.get(i));
-		//	System.out.print("args = ");
-		//	System.out.println(args.get(i).length);
-		//	for(int j = 0; j<args.get(i).length; j++) {
-		//		System.out.println(args.get(i)[j]);
-		//	}
-		//}
 	}
 	
 	/**
-	 * Runs the application based on the arguments provided
+	 * Runs the application based on the arguments provided.
+	 * Protected allows stubbing of the method such these applications do not actually run
 	 * 
 	 * @param cmd
 	 * 				command to decide which application to run
@@ -241,7 +241,8 @@ public class Parser {
 	 * @throws AbstractApplicationException
 	 * 				if the application throws one
 	 */
-	private void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
+	protected void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
+		print();
 		Application result = null;
 		switch(cmd){
 		case "cat":
@@ -262,5 +263,39 @@ public class Parser {
 			throw new ShellException("Unrecognized command");
 		}
 		result.run(args, in, out);
+	}
+
+	//Testing methods
+	public void print() {
+		System.out.println("comds = " + comds.size());
+		System.out.println("args size= " + args.size());
+		System.out.println("ins size =" + ins.size());
+		System.out.println("outs.size = " +outs.size());
+		
+		for(int i = 0; i<comds.size(); i++) {
+			System.out.println(comds.get(i));
+			System.out.print("args = ");
+			System.out.println(args.get(i).length);
+			for(int j = 0; j<args.get(i).length; j++) {
+				System.out.println("here" + args.get(i)[j]);
+			}
+		}
+	}
+	
+	//Stubbing methods for testing
+	public ArrayList<String> getCommands() {
+		return comds;
+	}
+	
+	public ArrayList<String[]> getArguments() {
+		return args;
+	}
+	
+	public ArrayList<InputStream> getInputStreams() {
+		return ins;
+	}
+	
+	public ArrayList<OutputStream> getOutputStreams() {
+		return outs;
 	}
 }
