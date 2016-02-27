@@ -51,6 +51,22 @@ public class ParserTest {
 	}
 	
 	@Test
+	public void testParseSingleCommandWithBackQuote() throws ShellException, AbstractApplicationException {
+		parser = new MockParser();
+		parser.parse("echo this is `echo a long` sentence", outStream);
+		ArrayList<String> comds = parser.getCommands();
+		ArrayList<String[]> args = parser.getArguments();
+		String[] expected = {"this", "is", "Mocked Output", "sentence"};
+		int numberComds = comds.size();
+		assertEquals(numberComds, 1);
+		assertEquals(comds.get(0), "echo");
+		assertEquals(args.get(0).length, 4);
+		for (int j = 0; j <expected.length; j++) {
+			assertEquals(expected[j], args.get(0)[j]);
+		}
+	}
+	
+	@Test
 	public void testParseMultipleCommand() throws ShellException, AbstractApplicationException {
 		parser.parse("echo first command; cat second command", outStream);
 		ArrayList<String> comds = parser.getCommands();
