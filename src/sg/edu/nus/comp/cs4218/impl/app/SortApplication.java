@@ -324,5 +324,10 @@ class NumericString implements Comparable<NumericString> {
 			return this.number.compareTo(other.getNumber());
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return this.getContent();
+	}
 
 }
