@@ -112,7 +112,6 @@ public class Parser {
 	private String postpendSemicolon(String cmdline) {
 		if (!cmdline.endsWith(";")) {
 			cmdline = cmdline + ";";
-			System.out.println(cmdline);
 		}
 		return cmdline;
 	}
@@ -131,7 +130,8 @@ public class Parser {
 	private void possibleClosureOfQuotation(char thisChar) throws ShellException, AbstractApplicationException {
 		if (thisChar == openQuotation) {
 			if (thisChar =='`') {
-				recursivelyParse();
+				String nextWord = recursivelyParse(currentWord.toString());
+				currentArgs.add(nextWord);
 				if (isWrapped) {
 					openQuotation = '"';
 					isWrapped = false;
@@ -146,9 +146,9 @@ public class Parser {
 				} else {
 					currentArgs.add(currentWord.toString());
 				}
-				currentWord = new StringBuilder();
 				isWithinQuotes = false;
 			}
+			currentWord = new StringBuilder();
 		} else if (thisChar == '`' && openQuotation == '"') {
 			openQuotation = '`';
 			isWrapped = true;
@@ -189,16 +189,18 @@ public class Parser {
 	 * @throws ShellException
 	 * 						if parse throws one
 	 */
-	private void recursivelyParse() throws ShellException, AbstractApplicationException {
+	protected String recursivelyParse(String toParse) throws ShellException, AbstractApplicationException {
 		ByteArrayOutputStream bo = new ByteArrayOutputStream();
 		Parser nextInstance = new Parser();
-		nextInstance.parse(currentWord.toString(), bo);
+		nextInstance.parse(toParse, bo);
 		nextInstance.evaluate();
+		String result = "";
 		try {
-			currentArgs.add(bo.toString("UTF-8"));
+			result = bo.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
+		return result;
 	}
 	
 	/**
@@ -217,7 +219,8 @@ public class Parser {
 	}
 	
 	/**
-	 * Runs the application based on the arguments provided
+	 * Runs the application based on the arguments provided.
+	 * Protected allows stubbing of the method such these applications do not actually run
 	 * 
 	 * @param cmd
 	 * 				command to decide which application to run
@@ -232,7 +235,7 @@ public class Parser {
 	 * @throws AbstractApplicationException
 	 * 				if the application throws one
 	 */
-	private void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
+	protected void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
 		Application result = null;
 		switch(cmd){
 		case "cat":
