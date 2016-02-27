@@ -285,14 +285,21 @@ class NumericString implements Comparable<NumericString> {
 	String content;
 
 	public NumericString(String content) {
-		StringBuilder prefixNumber = new StringBuilder();
+		StringBuilder prefixNumber = new StringBuilder("");
 		int index = 0;
 
-		while (Character.isDigit(content.charAt(index))) {
+		while (index < content.length() && Character.isDigit(content.charAt(index))){
 			prefixNumber.append(content.charAt(index++));
 		}
-
-		this.number = Integer.parseInt(prefixNumber.toString());
+		
+		String number = prefixNumber.toString();
+		
+		if (("").equals(number)) {
+			this.number = null;
+		} else {
+			this.number = Integer.parseInt(number);
+		}
+		
 		this.content = content.substring(index);
 	}
 
