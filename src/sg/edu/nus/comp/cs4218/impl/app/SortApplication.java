@@ -272,6 +272,14 @@ public class SortApplication implements Application {
 			throw new SortException("Could not read file");
 		}
 	}
+	
+	public static void main(String[] args) throws SortException {
+		SortApplication sa = new SortApplication();
+		String file = "haha.txt";
+		String[] ar = {"-n", file};
+		
+		sa.run(ar, System.in, System.out);
+	}
 
 }
 
@@ -318,7 +326,21 @@ class NumericString implements Comparable<NumericString> {
 
 	@Override
 	public int compareTo(NumericString other) {
-		if (this.number.compareTo(other.getNumber()) == 0) {
+		if (this.number == null && other.getNumber() == null) {
+			return this.getContent().compareTo(other.getContent());
+		} else if (this.number == null) {
+			if (other.getNumber() <= 0) {
+				return 1;
+			} else {
+				return -1;
+			}
+		} else if (other.number == null){
+			if (this.getNumber() <= 0) {
+				return -1;
+			} else {
+				return 1;
+			}
+		} else if (this.number.compareTo(other.getNumber()) == 0) {
 			return this.getContent().compareTo(other.getContent());
 		} else {
 			return this.number.compareTo(other.getNumber());
