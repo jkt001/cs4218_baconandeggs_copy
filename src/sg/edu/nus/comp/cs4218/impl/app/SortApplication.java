@@ -46,7 +46,7 @@ public class SortApplication implements Application {
 				numericSortFromStdinAndWriteToStdOut(stdin, stdout);
 			} else {
 				Path currentDir = Paths.get(Environment.currentDirectory);
-				Path filePath = currentDir.resolve(args[1]);
+				Path filePath = currentDir.resolve(args[0]);
 
 				if (checkIfFileIsReadable(filePath)) {
 					sortFromFileAndWriteToStdOut(filePath, stdout);
