@@ -308,8 +308,13 @@ class NumericString implements Comparable<NumericString> {
 	}
 
 	public String getContent() {
-		return this.getContent();
+		if (number == null) {
+			return content;
+		} else {
+			return number + content;
+		}
 	}
+	
 
 	@Override
 	public int compareTo(NumericString other) {
