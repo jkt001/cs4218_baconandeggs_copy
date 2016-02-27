@@ -1,4 +1,4 @@
-package sg.edu.nus.comp.cs4218;
+package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
+import sg.edu.nus.comp.cs4218.Parser;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
 

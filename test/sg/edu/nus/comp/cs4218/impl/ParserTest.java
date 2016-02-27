@@ -1,4 +1,4 @@
-package sg.edu.nus.comp.cs4218;
+package sg.edu.nus.comp.cs4218.impl;
 
 import static org.junit.Assert.*;
 
@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 
+import sg.edu.nus.comp.cs4218.Parser;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
 
@@ -64,6 +65,32 @@ public class ParserTest {
 		for (int j = 0; j <expected.length; j++) {
 			assertEquals(expected[j], args.get(0)[j]);
 		}
+	}
+	
+	@Test
+	public void testParseSingleCommandWithNestedQuotes() throws ShellException, AbstractApplicationException {
+		parser = new MockParser();
+		parser.parse("echo \"this is space: `echo hi`\"", outStream);
+		ArrayList<String> comds = parser.getCommands();
+		ArrayList<String[]> args = parser.getArguments();
+		int numberComds = comds.size();
+		assertEquals(numberComds, 1);
+		assertEquals(comds.get(0), "echo");
+		assertEquals(args.get(0).length, 1);
+		assertEquals(args.get(0)[0], "this is space: Mocked Output");
+	}
+	
+	@Test
+	public void testParseSingleCommandWithNestedQuotesButDisabled() throws ShellException, AbstractApplicationException {
+		parser = new MockParser();
+		parser.parse("echo 'this is space: `echo hi`'", outStream);
+		ArrayList<String> comds = parser.getCommands();
+		ArrayList<String[]> args = parser.getArguments();
+		int numberComds = comds.size();
+		assertEquals(numberComds, 1);
+		assertEquals(comds.get(0), "echo");
+		assertEquals(args.get(0).length, 1);
+		assertEquals(args.get(0)[0], "this is space: `echo hi`");
 	}
 	
 	@Test

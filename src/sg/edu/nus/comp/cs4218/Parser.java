@@ -33,6 +33,7 @@ public class Parser {
 	private char openQuotation;
 	private boolean isFirstArg;
 	private boolean isWrapped;
+	private String prevWord; 					//Used when backquote is done wtih double quote
 	
 	public Parser() {
 		comds = new ArrayList<String>();
@@ -45,6 +46,7 @@ public class Parser {
 		openQuotation = ' ';
 		isFirstArg = true;
 		isWrapped = false;
+		prevWord = " ";
 	}
 	
 	/**
@@ -131,13 +133,15 @@ public class Parser {
 		if (thisChar == openQuotation) {
 			if (thisChar =='`') {
 				String nextWord = recursivelyParse(currentWord.toString());
-				currentArgs.add(nextWord);
 				if (isWrapped) {
 					openQuotation = '"';
 					isWrapped = false;
 					isWithinQuotes = true;
+					currentWord = new StringBuilder(prevWord + nextWord);
 				} else {
 					isWithinQuotes = false;
+					currentArgs.add(nextWord);
+					currentWord = new StringBuilder();
 				}
 			} else {
 				if (isFirstArg) {
@@ -147,9 +151,11 @@ public class Parser {
 					currentArgs.add(currentWord.toString());
 				}
 				isWithinQuotes = false;
+				currentWord = new StringBuilder();
 			}
-			currentWord = new StringBuilder();
 		} else if (thisChar == '`' && openQuotation == '"') {
+			prevWord = currentWord.toString();
+			currentWord = new StringBuilder();
 			openQuotation = '`';
 			isWrapped = true;
 			isWithinQuotes = true;
@@ -236,6 +242,7 @@ public class Parser {
 	 * 				if the application throws one
 	 */
 	protected void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
+		print();
 		Application result = null;
 		switch(cmd){
 		case "cat":
