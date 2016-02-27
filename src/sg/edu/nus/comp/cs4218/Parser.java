@@ -62,8 +62,7 @@ public class Parser {
 	 * @throws ShellException
 	 * 				If no such command is found
 	 */
-	public void parse(String cmdline, OutputStream stdout)
-			throws AbstractApplicationException, ShellException {
+	public void parse(String cmdline, OutputStream stdout) throws ShellException, AbstractApplicationException {
 		cmdline = postpendSemicolon(cmdline);
 		
 		for (int i = 0; i<cmdline.length(); i++) {
@@ -83,14 +82,17 @@ public class Parser {
 						endOfLineParse(stdout);
 						currentArgs = new ArrayList<String>();
 						currentWord = new StringBuilder();
+						isFirstArg = true;
 					} else if (thisChar == ' ') {
-						if (isFirstArg) {
-							isFirstArg = !isFirstArg;
-							comds.add(currentWord.toString());
-						} else {
-							currentArgs.add(currentWord.toString());	
+						if (currentWord.length() > 0) {
+							if (isFirstArg) {
+								isFirstArg = !isFirstArg;
+								comds.add(currentWord.toString());
+							} else {
+								currentArgs.add(currentWord.toString());	
+							}
+							currentWord = new StringBuilder();	
 						}
-						currentWord = new StringBuilder();
 					} else {
 						currentWord.append(thisChar);
 					}
@@ -126,8 +128,7 @@ public class Parser {
 	 * @throws ShellException
 	 * 				if the recursive parse encounters one
 	 */
-	private void possibleClosureOfQuotation(char thisChar)
-			throws AbstractApplicationException, ShellException {
+	private void possibleClosureOfQuotation(char thisChar) throws ShellException, AbstractApplicationException {
 		if (thisChar == openQuotation) {
 			if (thisChar =='`') {
 				recursivelyParse();
@@ -168,7 +169,9 @@ public class Parser {
 		if (isFirstArg) {
 			comds.add(currentWord.toString());
 		} else {
-			currentArgs.add(currentWord.toString());
+			if (currentWord.length() > 0) {
+				currentArgs.add(currentWord.toString());
+			}
 		}
 		String[] arguments = new String[currentArgs.size()];
 		arguments = currentArgs.toArray(arguments);
@@ -186,9 +189,11 @@ public class Parser {
 	 * @throws ShellException
 	 * 						if parse throws one
 	 */
-	private void recursivelyParse() throws AbstractApplicationException, ShellException {
+	private void recursivelyParse() throws ShellException, AbstractApplicationException {
 		ByteArrayOutputStream bo = new ByteArrayOutputStream();
-		parse(currentWord.toString(), bo);
+		Parser nextInstance = new Parser();
+		nextInstance.parse(currentWord.toString(), bo);
+		nextInstance.evaluate();
 		try {
 			currentArgs.add(bo.toString("UTF-8"));
 		} catch (UnsupportedEncodingException e) {
@@ -209,20 +214,6 @@ public class Parser {
 		for(int i = 0; i<comds.size(); i++) {
 			runApplication(comds.get(i), args.get(i), ins.get(i), outs.get(i));
 		}
-		//Test print
-		//System.out.println(comds.size());
-		//System.out.println(args.size());
-		//System.out.println(ins.size());
-		//System.out.println(outs.size());
-		//
-		//for(int i = 0; i<comds.size(); i++) {
-		//	System.out.println(comds.get(i));
-		//	System.out.print("args = ");
-		//	System.out.println(args.get(i).length);
-		//	for(int j = 0; j<args.get(i).length; j++) {
-		//		System.out.println(args.get(i)[j]);
-		//	}
-		//}
 	}
 	
 	/**
@@ -262,5 +253,39 @@ public class Parser {
 			throw new ShellException("Unrecognized command");
 		}
 		result.run(args, in, out);
+	}
+
+	//Testing methods
+	public void print() {
+		System.out.println("comds = " + comds.size());
+		System.out.println("args size= " + args.size());
+		System.out.println("ins size =" + ins.size());
+		System.out.println("outs.size = " +outs.size());
+		
+		for(int i = 0; i<comds.size(); i++) {
+			System.out.println(comds.get(i));
+			System.out.print("args = ");
+			System.out.println(args.get(i).length);
+			for(int j = 0; j<args.get(i).length; j++) {
+				System.out.println("here" + args.get(i)[j]);
+			}
+		}
+	}
+	
+	//Stubbing methods for testing
+	public ArrayList<String> getCommands() {
+		return comds;
+	}
+	
+	public ArrayList<String[]> getArguments() {
+		return args;
+	}
+	
+	public ArrayList<InputStream> getInputStreams() {
+		return ins;
+	}
+	
+	public ArrayList<OutputStream> getOutputStreams() {
+		return outs;
 	}
 }
