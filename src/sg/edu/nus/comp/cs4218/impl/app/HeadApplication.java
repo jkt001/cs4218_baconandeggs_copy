@@ -61,9 +61,9 @@ public class HeadApplication implements Application {
 			int numLinesToRead = 0;
 
 			if (args == null || args.length == 0) {
-				numLinesToRead = 15;
+				numLinesToRead = 10;
 			} else {
-				if (args.length == 2 && args[0].equals("--n")) {
+				if (args.length == 2 && args[0].equals("-n")) {
 					numLinesToRead = checkNumberOfLinesInput(args[1]);
 				} else {
 					throw new HeadException(
@@ -77,10 +77,10 @@ public class HeadApplication implements Application {
 			int numLines;
 
 			if (args.length == 3 || args.length == 1) {
-				if (args.length == 3 && args[0].equals("--n")) {
+				if (args.length == 3 && args[0].equals("-n")) {
 					numLines = checkNumberOfLinesInput(args[1]);
 				} else if (args.length == 1) {
-					numLines = 15;
+					numLines = 10;
 				} else {
 					throw new HeadException("Incorrect flag used");
 				}
@@ -133,6 +133,9 @@ public class HeadApplication implements Application {
 		while (numLinesToRead != numRead) {
 			try {
 				String inputString = buffReader.readLine();
+				if (inputString == null) {
+					break;
+				}
 				stdout.write(inputString.getBytes("UTF-8"));
 				if (numLinesToRead == numRead) {
 					break;
@@ -158,6 +161,9 @@ public class HeadApplication implements Application {
 		int numLines;
 		try {
 			numLines = Integer.parseInt(numLinesString);
+			if (numLines <= 0) {
+				throw new HeadException("Invalid command, not a valid number");
+			}
 		} catch (NumberFormatException nfe) {
 			throw new HeadException("Invalid command, not a number.");
 		}
@@ -185,7 +191,7 @@ public class HeadApplication implements Application {
 		String encoding = "UTF-8";
 
 		if (stdout == null) {
-			throw new HeadException("Stdout is null");
+			throw new HeadException("Null Pointer Exception");
 		}
 
 		try {
