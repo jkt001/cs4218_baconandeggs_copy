@@ -95,7 +95,7 @@ public class TailApplication implements Application {
 			Path currentDir = Paths.get(Environment.currentDirectory);
 			int filePosition = 0;
 			if (args.length == 3) {
-				filePosition = 3;
+				filePosition = 2;
 			}
 			Path filePath = currentDir.resolve(args[filePosition]);
 			boolean isFileReadable = false;

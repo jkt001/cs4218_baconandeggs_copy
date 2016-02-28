@@ -139,37 +139,40 @@ public class TailApplicationTest {
 	}
 	
 	@Test
-	public void testTailWithNShorterThanFileLength() {
+	public void testTailWithNShorterThanFileLength() throws Exception {
+		String[] args = { "-n", "3", INPUT_FILE_NAME };
+		tailApplication.run(args, emptyInStream, outStream);
+		String result = outStream.toString();
+		assertEquals(3, result.split("\n").length);
+	}
+	
+	@Test
+	public void testTailWithNEqualToFileLength() throws Exception {
 		
 	}
 	
 	@Test
-	public void testTailWithNEqualToFileLength() {
+	public void testTailWithNLongerThanFailLength() throws Exception {
 		
 	}
 	
 	@Test
-	public void testTailWithNLongerThanFailLength() {
+	public void testTailWithoutN() throws Exception {
 		
 	}
 	
 	@Test
-	public void testTailWithoutN() {
+	public void testTailWithZeroN() throws Exception {
 		
 	}
 	
 	@Test
-	public void testTailWithZeroN() {
+	public void testTailWithNegativeN() throws Exception {
 		
 	}
 	
 	@Test
-	public void testTailWithNegativeN() {
-		
-	}
-	
-	@Test
-	public void testTailWithDecimalN() {
+	public void testTailWithDecimalN() throws Exception {
 		
 	}
 		
