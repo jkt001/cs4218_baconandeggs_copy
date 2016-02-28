@@ -17,10 +17,11 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
 public class Parser {
 	
 	//Parse & Evaluate shared variables
-	private ArrayList<String> comds = new ArrayList<String>();
-	private ArrayList<String[]> args = new ArrayList<String[]>();
-	private ArrayList<InputStream> ins = new ArrayList<InputStream>();
-	private ArrayList<OutputStream> outs = new ArrayList<OutputStream>();
+	private ArrayList<String> comds;
+	private ArrayList<String[]> args;
+	private ArrayList<InputStream> ins;
+	private ArrayList<OutputStream> outs;
+	private ArrayList<Integer> pipeIndex;
 	
 	//Parse variables
 	private StringBuilder currentWord;
@@ -38,6 +39,7 @@ public class Parser {
 		outs = new ArrayList<OutputStream>();
 		currentWord = new StringBuilder();
 		currentArgs = new ArrayList<String>();
+		pipeIndex = new ArrayList<Integer>();
 		isWithinQuotes = false;
 		openQuotation = ' ';
 		isFirstArg = true;
@@ -91,6 +93,12 @@ public class Parser {
 							}
 							currentWord = new StringBuilder();	
 						}
+					} else if (thisChar == '|') {
+						endOfLineParse(stdout);
+						pipeIndex.add(comds.size()-1);
+						currentArgs = new ArrayList<String>();
+						currentWord = new StringBuilder();
+						isFirstArg = true;
 					} else {
 						currentWord.append(thisChar);
 					}
