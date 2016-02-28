@@ -1,8 +1,10 @@
 package sg.edu.nus.comp.cs4218.impl;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
@@ -17,8 +19,17 @@ public class MockParser extends Parser {
 	
 	protected void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
 		try {
-			String mockOutput = "Mocked Output";
-			out.write(mockOutput.getBytes());
+			InputStreamReader inReader = new InputStreamReader(in);
+			BufferedReader reader = new BufferedReader(inReader);
+			StringBuilder mockOut = new StringBuilder();
+			String line;
+			if (inReader.ready()) {
+			while ((line = reader.readLine()) != null) {
+				mockOut.append(line);
+			}
+			}
+			mockOut.append("Mocked Output");
+			out.write(mockOut.toString().getBytes());
 		} catch (IOException e) {
 			throw new ShellException("Unable to write to output");
 		}
@@ -36,5 +47,9 @@ public class MockParser extends Parser {
 			e.printStackTrace();
 		}
 		return result;
+	}
+	
+	public void evaluate() throws ShellException, AbstractApplicationException {
+		super.evaluate();
 	}
 }

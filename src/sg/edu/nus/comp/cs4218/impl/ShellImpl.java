@@ -1,8 +1,6 @@
 package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -317,22 +315,107 @@ public class ShellImpl implements Shell {
 		p.evaluate();
 	}
 
-	@Override
+	/**
+	 * Pipes two commands as required by interface. Pipes the output of the first command
+	 * into the second command
+	 * 
+	 *  @param args
+	 *  			is taken to the the 2 commands, given as args[0] the first command,
+	 *   			and args[1] the second command
+	 *  @return 
+	 *  			the string output of the computation of these 2 commands, by piping the
+	 *  			output stream of the first command, into the second command
+	 */
 	public String pipeTwoCommands(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String output = "";
+		if (args.length != 2) {
+			return output;
+		}
+		String firstComd = args[0];
+		String secondComd = args[1];
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+
+		try {
+			parseAndEvaluate(firstComd + "|" + secondComd, bo);
+		} catch (AbstractApplicationException | ShellException e1) {
+			return output;
+		}
+		try {
+			output = bo.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return " ";
+		}
+		return output;
 	}
 
-	@Override
+	/**
+	 * Pipes n multiple commands as required by interface. 
+	 * Pipes the output of the first command into the second command, and repeats till
+	 * the last command
+	 * 
+	 *  @param args
+	 *  			is taken to the the n commands, given as args[0] the first command,
+	 *   			,args[1] the second command, ...
+	 *  @return 
+	 *  			the string output of the computation of these n commands, by piping the
+	 *  			output stream of the first command, into the second command
+	 */
 	public String pipeMultipleCommands(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String output = " ";
+		StringBuilder comd = new StringBuilder();
+		for (int i = 0; i < args.length; i++) {
+			comd.append(args[i]);
+			if (i != args.length-1) {
+				comd.append("|");
+			}
+		}
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+
+		try {
+			parseAndEvaluate(comd.toString(), bo);
+		} catch (AbstractApplicationException | ShellException e1) {
+			return output;
+		}
+		try {
+			output = bo.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return " ";
+		}
+		return output;
 	}
 
-	@Override
+	/**
+	 * Pipes n multiple commands but with as required by interface. 
+	 * When an exception is encountered, stop all calculations and return error string
+	 * 
+	 *  @param args
+	 *  			is taken to the the n commands, given as args[0] the first command,
+	 *   			,args[1] the second command, ...
+	 *  @return 
+	 *  			the expected error message
+	 */
 	public String pipeWithException(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String output = " ";
+		StringBuilder comd = new StringBuilder();
+		for (int i = 0; i < args.length; i++) {
+			comd.append(args[i]);
+			if (i != args.length-1) {
+				comd.append("|");
+			}
+		}
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+
+		try {
+			parseAndEvaluate(comd.toString(), bo);
+		} catch (AbstractApplicationException | ShellException e1) {
+			return e1.getMessage();
+		}
+		try {
+			output = bo.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return " ";
+		}
+		return output;
 	}
 
 	@Override

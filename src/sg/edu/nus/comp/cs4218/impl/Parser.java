@@ -1,18 +1,14 @@
 package sg.edu.nus.comp.cs4218.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
-import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
-import sg.edu.nus.comp.cs4218.impl.app.CatApplication;
-import sg.edu.nus.comp.cs4218.impl.app.EchoApplication;
-import sg.edu.nus.comp.cs4218.impl.app.HeadApplication;
-import sg.edu.nus.comp.cs4218.impl.app.TailApplication;
 
 /**
  * A parser handles all operations related to command parsing, which includes semicolon and quoting.
@@ -22,10 +18,12 @@ import sg.edu.nus.comp.cs4218.impl.app.TailApplication;
 public class Parser {
 	
 	//Parse & Evaluate shared variables
-	private ArrayList<String> comds = new ArrayList<String>();
-	private ArrayList<String[]> args = new ArrayList<String[]>();
-	private ArrayList<InputStream> ins = new ArrayList<InputStream>();
-	private ArrayList<OutputStream> outs = new ArrayList<OutputStream>();
+	private ArrayList<String> comds;
+	private ArrayList<String[]> args;
+	private ArrayList<InputStream> ins;
+	private ArrayList<OutputStream> outs;
+	private ArrayList<Integer> pipeIndex;
+	private ByteArrayOutputStream prevStream;
 	
 	//Parse variables
 	private StringBuilder currentWord;
@@ -43,6 +41,8 @@ public class Parser {
 		outs = new ArrayList<OutputStream>();
 		currentWord = new StringBuilder();
 		currentArgs = new ArrayList<String>();
+		pipeIndex = new ArrayList<Integer>();
+		prevStream = new ByteArrayOutputStream();
 		isWithinQuotes = false;
 		openQuotation = ' ';
 		isFirstArg = true;
@@ -96,6 +96,12 @@ public class Parser {
 							}
 							currentWord = new StringBuilder();	
 						}
+					} else if (thisChar == '|') {
+						endOfLineParse(stdout);
+						pipeIndex.add(comds.size()-1);
+						currentArgs = new ArrayList<String>();
+						currentWord = new StringBuilder();
+						isFirstArg = true;
 					} else {
 						currentWord.append(thisChar);
 					}
@@ -221,7 +227,16 @@ public class Parser {
 	 */
 	public void evaluate() throws ShellException, AbstractApplicationException {
 		for(int i = 0; i<comds.size(); i++) {
-			runApplication(comds.get(i), args.get(i), ins.get(i), outs.get(i));
+			InputStream in = ins.get(i);
+			OutputStream out = outs.get(i);
+			if (pipeIndex.contains(i-1)) {
+				in = new ByteArrayInputStream(prevStream.toByteArray()); 
+			}
+			if (pipeIndex.contains(i)) {
+				prevStream = new ByteArrayOutputStream();
+				out = prevStream;
+			}
+			runApplication(comds.get(i), args.get(i), in, out);
 		}
 	}
 	
@@ -253,6 +268,10 @@ public class Parser {
 		System.out.println("args size= " + args.size());
 		System.out.println("ins size =" + ins.size());
 		System.out.println("outs.size = " +outs.size());
+		
+		for(int i = 0; i<pipeIndex.size(); i++) {
+			System.out.println("pipeIndex = " + pipeIndex.get(i));
+		}
 		
 		for(int i = 0; i<comds.size(); i++) {
 			System.out.println(comds.get(i));
