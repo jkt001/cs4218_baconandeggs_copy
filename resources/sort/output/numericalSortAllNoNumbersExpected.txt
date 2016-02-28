@@ -1,0 +1,12 @@
+OK, got it?
+aaaa
+are
+file
+inside
+no
+numbers
+there
+this
+this file is composed entirely of strings
+yes
+zzzz
