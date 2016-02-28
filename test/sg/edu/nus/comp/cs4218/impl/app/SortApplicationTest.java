@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -227,6 +228,34 @@ public class SortApplicationTest {
 		
 		String[] args = {"-x", "dummyfile.txt", "dummyinput"};
 		sortApplication.run(args, inStream, outStream);
+	}
+	
+	@Test
+	public void testSortSimpleStringMethod() throws SortException, IOException {
+		List<String> result = sortApplication.sortStringsSimple(CONTENTS);
+		String expected = getFileContents(EXPECTED_FILES[8]);
+		StringBuilder actual = new StringBuilder();
+		for (String sorted : result) {
+			actual.append(sorted);
+			actual.append(System.lineSeparator());
+		}
+		
+		assertEquals(expected, actual.toString());
+		
+	}
+	
+	@Test
+	public void testNumericalSortSimpleStringMethod() throws SortException, IOException {
+		List<String> result = sortApplication.numericalSortStringsSimple(CONTENTS);
+		String expected = getFileContents(EXPECTED_FILES[9]);
+		StringBuilder actual = new StringBuilder();
+		for (String sorted : result) {
+			actual.append(sorted);
+			actual.append(System.lineSeparator());
+		}
+		
+		assertEquals(expected, actual.toString());
+		
 	}
 	
 	@After
