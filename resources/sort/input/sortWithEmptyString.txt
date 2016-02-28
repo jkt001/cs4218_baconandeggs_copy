@@ -1,0 +1,12 @@
+this file contains an empty string
+
+like that
+
+it should be dealt with as per the one in the bash shell
+
+123456
+hello
+123456hello
+-120
+0hello
+then it is handled properly
