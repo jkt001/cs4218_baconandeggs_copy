@@ -2,9 +2,11 @@ package sg.edu.nus.comp.cs4218.impl.app;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -152,46 +154,16 @@ public class TailApplication implements Application {
 
 		if (stdin == null || stdout == null) {
 			throw new TailException("Null Pointer Exception");
-		}
-
-		BufferedReader buffReader = new BufferedReader(new InputStreamReader(
-				stdin));
-		Queue<String> inputArray = new LinkedList<String>();
-		String input = "";
-		int intCount = 0;
-
+		}	
 		try {
 			if (numLinesRequired == 0) {
 				stdout.write("".getBytes(CHARSET_UTF_8));
 			} else {
-				while ((input = buffReader.readLine()) != null) {
-					if (intCount == numLinesRequired) {
-						inputArray.poll();
-						intCount--;
-					}
-					intCount++;
-					inputArray.add(input);
-				}
+				Queue<String> inputArray = getTailOfInputStream(numLinesRequired, stdin);
+				flushQueueToOutputStream(inputArray, stdout, CHARSET_UTF_8);
 			}
 		} catch (Exception e) {
 			throw new TailException("Exception caught");
-		}
-
-		while (!inputArray.isEmpty()) {
-			try {
-				if (inputArray.peek().equals("")) {
-					inputArray.poll();
-					stdout.write(System.lineSeparator().getBytes(CHARSET_UTF_8));
-				} else if (inputArray.size() == 1) {
-					stdout.write(inputArray.poll().getBytes(CHARSET_UTF_8));
-				} else {
-					stdout.write(inputArray.poll().getBytes(CHARSET_UTF_8));
-					stdout.write(System.lineSeparator().getBytes(CHARSET_UTF_8));
-				}
-
-			} catch (Exception e) {
-				throw new TailException("Exception caught");
-			}
 		}
 	}
 
@@ -212,53 +184,67 @@ public class TailApplication implements Application {
 	void readFromFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws TailException {
 
-		String encoding = CHARSET_UTF_8;
-
-		if (stdout == null) {
-			throw new TailException("Stdout is null");
-		}
 		try {
-			if (numLinesRequired == 0) {
-				stdout.write("".getBytes(encoding));
-			} else {
-				FileInputStream fileInStream = new FileInputStream(
-						filePath.toString());
-				BufferedReader buffReader = new BufferedReader(
-						new InputStreamReader(fileInStream));
-
-				// input
-				int inputChar;
-				Queue<String> inputArray = new LinkedList<String>();
-				StringBuilder stringBuilder = new StringBuilder();
-				while (true) {
-					inputChar = buffReader.read();
-					if (inputChar != -1) {
-						stringBuilder.append((char)inputChar);
-					}
-					if (inputChar == '\n' || inputChar == -1) {
-						if (stringBuilder.length() > 0) {
-							if (inputArray.size() == numLinesRequired) {
-								inputArray.poll();
-							}	
-							inputArray.add(stringBuilder.toString());
-							stringBuilder.setLength(0);	
-						}
-						if (inputChar == -1) {
-							break;
-						}
-					}
-				}
-				buffReader.close();
-				
-				// output
-				while (!inputArray.isEmpty()) {
-					String line = inputArray.poll();
-					stdout.write(line.getBytes(encoding));
-				}
-			}
+			FileInputStream fileInStream = new FileInputStream(
+					filePath.toString());
+			readFromStdinAndWriteToStdout(stdout, numLinesRequired, fileInStream);	
 		} catch (Exception e) {
 			throw new TailException("Exception caught");
 		}
+	}
+	
+	/**
+	 * Receives a queue of string and prints each one to the specified output stream.
+	 * The queue will be empty after being passed to this method.
+	 * 
+	 * @param inputArray
+	 * @param stdout
+	 * @param encoding
+	 * @throws UnsupportedEncodingException
+	 * @throws IOException
+	 */
+	private void flushQueueToOutputStream(Queue<String> inputArray,
+			OutputStream stdout, 
+			String encoding) throws UnsupportedEncodingException, IOException {
+		while (!inputArray.isEmpty()) {
+			String line = inputArray.poll();
+			stdout.write(line.getBytes(encoding));
+		}
+	}
+	
+	/**
+	 * Reads the input stream and returns a queue containing at most the last N lines
+	 * of the input stream.
+	 *  
+	 * @param numLinesRequired The "N" 
+	 * @param inStream
+	 * @return
+	 * @throws IOException
+	 */
+	private Queue<String> getTailOfInputStream(int numLinesRequired, InputStream inStream) throws IOException {
+		BufferedReader buffReader = new BufferedReader(new InputStreamReader(inStream));
+		Queue<String> inputArray = new LinkedList<String>();
+		StringBuilder stringBuilder = new StringBuilder();
+		while (true) {
+			int inputChar = buffReader.read();
+			if (inputChar != -1) {
+				stringBuilder.append((char)inputChar);
+			}
+			if (inputChar == '\n' || inputChar == -1) {
+				if (stringBuilder.length() > 0) {
+					if (inputArray.size() == numLinesRequired) {
+						inputArray.poll();
+					}	
+					inputArray.add(stringBuilder.toString());
+					stringBuilder.setLength(0);	
+				}
+				if (inputChar == -1) {
+					break;
+				}
+			}
+		}
+		buffReader.close();
+		return inputArray;
 	}
 
 	/**

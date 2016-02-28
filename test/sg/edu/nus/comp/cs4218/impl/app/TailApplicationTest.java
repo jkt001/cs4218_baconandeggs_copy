@@ -132,7 +132,10 @@ public class TailApplicationTest {
 	
 	@Test
 	public void testTailFromStandardInput() throws Exception {
-		
+		String[] args = { };
+		tailApplication.run(args, inStream, outStream);
+		String result = outStream.toString();
+		assertEquals(DEFAULT_INPUT_CONTENT, result);
 	}
 	
 	@Test
