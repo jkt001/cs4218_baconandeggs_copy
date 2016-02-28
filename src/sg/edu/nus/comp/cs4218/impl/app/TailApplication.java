@@ -226,28 +226,34 @@ public class TailApplication implements Application {
 				BufferedReader buffReader = new BufferedReader(
 						new InputStreamReader(fileInStream));
 
+				// input
+				int inputChar;
 				Queue<String> inputArray = new LinkedList<String>();
-				String input = "";
-				int intCount = 0;
-				while ((input = buffReader.readLine()) != null) {
-					if (intCount == numLinesRequired) {
-						inputArray.poll();
-						intCount--;
+				StringBuilder stringBuilder = new StringBuilder();
+				while (true) {
+					inputChar = buffReader.read();
+					if (inputChar != -1) {
+						stringBuilder.append((char)inputChar);
 					}
-					inputArray.add(input);
-					intCount++;
+					if (inputChar == '\n' || inputChar == -1) {
+						if (stringBuilder.length() > 0) {
+							if (inputArray.size() == numLinesRequired) {
+								inputArray.poll();
+							}	
+							inputArray.add(stringBuilder.toString());
+							stringBuilder.setLength(0);	
+						}
+						if (inputChar == -1) {
+							break;
+						}
+					}
 				}
 				buffReader.close();
+				
+				// output
 				while (!inputArray.isEmpty()) {
-					if (inputArray.peek().equals("")) {
-						inputArray.poll();
-						stdout.write(System.lineSeparator().getBytes(encoding));
-					} else if (inputArray.size() == 1) {
-						stdout.write(inputArray.poll().getBytes(encoding));
-					} else {
-						stdout.write(inputArray.poll().getBytes(encoding));
-						stdout.write(System.lineSeparator().getBytes(encoding));
-					}
+					String line = inputArray.poll();
+					stdout.write(line.getBytes(encoding));
 				}
 			}
 		} catch (Exception e) {
