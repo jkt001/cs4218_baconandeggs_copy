@@ -130,8 +130,6 @@ public class TailApplication implements Application {
 			throw new TailException("Invalid command, not a number.");
 		}
 
-		
-
 		return numLines;
 	}
 
@@ -206,6 +204,7 @@ public class TailApplication implements Application {
 	private void flushQueueToOutputStream(Queue<String> inputArray,
 			OutputStream stdout, 
 			String encoding) throws UnsupportedEncodingException, IOException {
+		
 		while (!inputArray.isEmpty()) {
 			String line = inputArray.poll();
 			stdout.write(line.getBytes(encoding));
@@ -222,6 +221,7 @@ public class TailApplication implements Application {
 	 * @throws IOException
 	 */
 	private Queue<String> getTailOfInputStream(int numLinesRequired, InputStream inStream) throws IOException {
+		
 		BufferedReader buffReader = new BufferedReader(new InputStreamReader(inStream));
 		Queue<String> inputArray = new LinkedList<String>();
 		StringBuilder stringBuilder = new StringBuilder();
@@ -257,7 +257,6 @@ public class TailApplication implements Application {
 	 * 		If the file is not readable
 	 */
 	boolean checkIfFileIsReadable(Path filePath) throws TailException {
-
 		
 		if (Files.exists(filePath) && Files.isReadable(filePath)) {
 			return true;
