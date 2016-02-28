@@ -227,7 +227,8 @@ public class Parser {
 	
 	/**
 	 * Runs the application based on the arguments provided.
-	 * Protected allows stubbing of the method such these applications do not actually run
+	 * Simply calls the functionality provided in ShellImpl but is neccessary and
+	 * protected to allow stubbing of the method such these applications do not actually run
 	 * 
 	 * @param cmd
 	 * 				command to decide which application to run
@@ -243,27 +244,7 @@ public class Parser {
 	 * 				if the application throws one
 	 */
 	protected void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
-		print();
-		Application result = null;
-		switch(cmd){
-		case "cat":
-			result= new CatApplication();
-			break;
-		case "echo":
-			result = new EchoApplication();
-			break;
-		case "head":
-			result = new HeadApplication();
-			break;
-		case "tail":
-			result = new TailApplication();
-			break;
-		case "fmt":
-		case "date":
-		default:
-			throw new ShellException("Unrecognized command");
-		}
-		result.run(args, in, out);
+		ShellImpl.runApp(cmd, args, in, out);
 	}
 
 	//Testing methods
