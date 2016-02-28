@@ -79,7 +79,7 @@ public class BcApplicationTest {
 	public void testRunForNumber() throws BcException {
 		String[] args = {"99999"};
 		bcApplication.run(args, null, outStream);
-		assertEquals("9999", outStream.toString());
+		assertEquals("99999", outStream.toString());
 	}
 	
 	@Test
