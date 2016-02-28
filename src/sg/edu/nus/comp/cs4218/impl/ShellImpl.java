@@ -348,10 +348,40 @@ public class ShellImpl implements Shell {
 		return output;
 	}
 
-	@Override
+	/**
+	 * Pipes n multiple commands as required by interface. 
+	 * Pipes the output of the first command into the second command, and repeats till
+	 * the last command
+	 * 
+	 *  @param args
+	 *  			is taken to the the n commands, given as args[0] the first command,
+	 *   			,args[1] the second command, ...
+	 *  @return 
+	 *  			the string output of the computation of these n commands, by piping the
+	 *  			output stream of the first command, into the second command
+	 */
 	public String pipeMultipleCommands(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String output = " ";
+		StringBuilder comd = new StringBuilder();
+		for (int i = 0; i < args.length; i++) {
+			comd.append(args[i]);
+			if (i != args.length-1) {
+				comd.append("|");
+			}
+		}
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+
+		try {
+			parseAndEvaluate(comd.toString(), bo);
+		} catch (AbstractApplicationException | ShellException e1) {
+			return output;
+		}
+		try {
+			output = bo.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return " ";
+		}
+		return output;
 	}
 
 	@Override

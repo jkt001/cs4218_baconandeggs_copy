@@ -32,8 +32,8 @@ public class ParserTest {
 		int numberComds = comds.size();
 		assertEquals(numberComds, 1);
 		for (int i = 0; i<numberComds; i++) {
-			assertEquals(comds.get(i), "echo");
-			assertEquals(args.get(i).length, 4);
+			assertEquals("echo", comds.get(i));
+			assertEquals(4, args.get(i).length);
 		}
 	}
 	
@@ -43,10 +43,10 @@ public class ParserTest {
 		ArrayList<String> comds = parser.getCommands();
 		ArrayList<String[]> args = parser.getArguments();
 		int numberComds = comds.size();
-		assertEquals(numberComds, 1);
+		assertEquals(1, numberComds);
 		for (int i = 0; i<numberComds; i++) {
-			assertEquals(comds.get(i), "echo");
-			assertEquals(args.get(i).length, 1);
+			assertEquals("echo", comds.get(i));
+			assertEquals(1, args.get(i).length);
 		}
 	}
 	
@@ -58,9 +58,9 @@ public class ParserTest {
 		ArrayList<String[]> args = parser.getArguments();
 		String[] expected = {"this", "is", "Mocked Output", "sentence"};
 		int numberComds = comds.size();
-		assertEquals(numberComds, 1);
-		assertEquals(comds.get(0), "echo");
-		assertEquals(args.get(0).length, 4);
+		assertEquals(1, numberComds);
+		assertEquals("echo", comds.get(0));
+		assertEquals(4, args.get(0).length);
 		for (int j = 0; j <expected.length; j++) {
 			assertEquals(expected[j], args.get(0)[j]);
 		}
@@ -73,10 +73,10 @@ public class ParserTest {
 		ArrayList<String> comds = parser.getCommands();
 		ArrayList<String[]> args = parser.getArguments();
 		int numberComds = comds.size();
-		assertEquals(numberComds, 1);
-		assertEquals(comds.get(0), "echo");
-		assertEquals(args.get(0).length, 1);
-		assertEquals(args.get(0)[0], "this is space: Mocked Output");
+		assertEquals(1, numberComds);
+		assertEquals("echo", comds.get(0));
+		assertEquals(1, args.get(0).length);
+		assertEquals("this is space: Mocked Output", args.get(0)[0]);
 	}
 	
 	@Test
@@ -86,10 +86,10 @@ public class ParserTest {
 		ArrayList<String> comds = parser.getCommands();
 		ArrayList<String[]> args = parser.getArguments();
 		int numberComds = comds.size();
-		assertEquals(numberComds, 1);
-		assertEquals(comds.get(0), "echo");
-		assertEquals(args.get(0).length, 1);
-		assertEquals(args.get(0)[0], "this is space: `echo hi`");
+		assertEquals(1, numberComds);
+		assertEquals("echo", comds.get(0));
+		assertEquals(1, args.get(0).length);
+		assertEquals("this is space: `echo hi`", args.get(0)[0]);
 	}
 	
 	@Test
@@ -98,14 +98,14 @@ public class ParserTest {
 		ArrayList<String> comds = parser.getCommands();
 		ArrayList<String[]> args = parser.getArguments();
 		int numberComds = comds.size();
-		assertEquals(numberComds, 2);
+		assertEquals(2, numberComds);
 		for (int i = 0; i<numberComds; i++) {
 			if (i==0) {
-				assertEquals(comds.get(i), "echo");
-				assertEquals(args.get(i).length, 2);	
+				assertEquals("echo", comds.get(i));
+				assertEquals(2, args.get(i).length);	
 			} else if (i == 1) {
-				assertEquals(comds.get(i), "cat");
-				assertEquals(args.get(i).length, 2);
+				assertEquals("cat", comds.get(i));
+				assertEquals(2, args.get(i).length);
 			} else {
 				fail("Should not have more than 2 commands");
 			}
@@ -119,5 +119,14 @@ public class ParserTest {
 		parser.evaluate();
 
 		assertEquals("Mocked OutputMocked Output", outStream.toString("UTF-8")) ;
+	}
+
+	@Test
+	public void testPipeMultipleCommands() throws ShellException, AbstractApplicationException, UnsupportedEncodingException {
+		parser = new MockParser();
+		parser.parse("echo first command | echo second command | cat third command", outStream);
+		parser.evaluate();
+
+		assertEquals("Mocked OutputMocked OutputMocked Output", outStream.toString("UTF-8")) ;
 	}
 }
