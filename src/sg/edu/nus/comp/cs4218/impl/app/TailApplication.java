@@ -69,7 +69,7 @@ public class TailApplication implements Application {
 			if (args == null || args.length == 0) {
 				numLinesToRead = 15;
 			} else {
-				if (args.length == 3 && args[0].equals("--n")) {
+				if (args.length == 2 && args[0].equals("-n")) {
 					numLinesToRead = checkNumberOfLinesInput(args[1]);
 				} else {
 					throw new TailException(

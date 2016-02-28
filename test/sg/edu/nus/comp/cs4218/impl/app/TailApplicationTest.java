@@ -147,6 +147,14 @@ public class TailApplicationTest {
 	}
 	
 	@Test
+	public void testTailWithNShorterThanFileLengthFromStandardInput() throws Exception {
+		String[] args = { "-n", "3" };
+		tailApplication.run(args, inStream, outStream);
+		String result = outStream.toString();
+		assertEquals(3, result.split("\n").length);
+	}
+	
+	@Test
 	public void testTailWithNEqualToFileLength() throws Exception {
 		
 	}
