@@ -11,13 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 
-import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
+import sg.edu.nus.comp.cs4218.app.Sort;
 import sg.edu.nus.comp.cs4218.exception.SortException;
 
-public class SortApplication implements Application {
+public class SortApplication implements Sort {
 
 	/**
 	 * Runs the sort application with the specified arguments.
@@ -280,6 +281,171 @@ public class SortApplication implements Application {
 		String[] ar = {"-n", "haha.txt" };
 
 		sa.run(ar, System.in, System.out);
+	}
+
+	@Override
+	public List<String> sortStringsSimple(String[] toSort) {
+		ArrayList<String> toBeSorted = new ArrayList<String>();
+		for (String lines : toSort) {
+			toBeSorted.add(lines);
+		}
+		sort(toBeSorted);
+		return toBeSorted;
+	}
+
+	@Override
+	public List<String> sortStringsCapital(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortNumbers(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortSpecialChars(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortSimpleCapital(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortSimpleNumbers(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortSimpleSpecialChars(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortCapitalNumbers(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortCapitalSpecialChars(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortNumbersSpecialChars(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortSimpleCapitalNumber(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortSimpleCapitalSpecialChars(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortSimpleNumbersSpecialChars(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortCapitalNumbersSpecialChars(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+
+	@Override
+	public List<String> sortAll(String[] toSort) {
+		return sortStringsSimple(toSort);
+	}
+	
+	public List<String> numericalSortStringsSimple(String[] toSort) {
+		ArrayList<NumericString> toBeSorted = new ArrayList<NumericString>();
+		for (String lines : toSort) {
+			toBeSorted.add(new NumericString(lines));
+		}
+		sort(toBeSorted);
+		
+		ArrayList<String> toBeReturned = new ArrayList<String>();
+		for (NumericString lines : toBeSorted) {
+			toBeReturned.add(lines.toString());
+		}
+		
+		return toBeReturned;
+	}
+	
+	
+	public List<String> numericalSortStringsCapital(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortNumbers(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortSpecialChars(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortSimpleCapital(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortSimpleNumbers(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortSimpleSpecialChars(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortCapitalNumbers(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortCapitalSpecialChars(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortNumbersSpecialChars(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortSimpleCapitalNumber(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortSimpleCapitalSpecialChars(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortSimpleNumbersSpecialChars(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortCapitalNumbersSpecialChars(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
+	}
+
+	
+	public List<String> numericalSortAll(String[] toSort) {
+		return numericalSortStringsSimple(toSort);
 	}
 
 }
