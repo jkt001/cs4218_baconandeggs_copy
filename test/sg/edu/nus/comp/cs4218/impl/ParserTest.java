@@ -3,7 +3,7 @@ package sg.edu.nus.comp.cs4218.impl;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import org.junit.Before;
@@ -16,7 +16,7 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
 public class ParserTest {
 	
 	private Parser parser;
-	private OutputStream outStream;
+	private ByteArrayOutputStream outStream;
 	
 	@Before
 	public void setUp() {
@@ -110,5 +110,14 @@ public class ParserTest {
 				fail("Should not have more than 2 commands");
 			}
 		}
+	}
+	
+	@Test
+	public void testPipeTwoCommands() throws ShellException, AbstractApplicationException, UnsupportedEncodingException {
+		parser = new MockParser();
+		parser.parse("echo first command|echo second command", outStream);
+		parser.evaluate();
+
+		assertEquals("Mocked OutputMocked Output", outStream.toString("UTF-8")) ;
 	}
 }

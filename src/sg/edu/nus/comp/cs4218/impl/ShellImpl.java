@@ -315,10 +315,37 @@ public class ShellImpl implements Shell {
 		p.evaluate();
 	}
 
-	@Override
+	/**
+	 * Pipes two commands as required by interface. Pipes the output of the first command
+	 * into the second command
+	 * 
+	 *  @param args
+	 *  			is taken to the the 2 commands, given as args[0] the first command,
+	 *   			and args[1] the second command
+	 *  @return 
+	 *  			the string output of the computation of these 2 commands, by piping the
+	 *  			output stream of the first command, into the second command
+	 */
 	public String pipeTwoCommands(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String output = "";
+		if (args.length != 2) {
+			return output;
+		}
+		String firstComd = args[0];
+		String secondComd = args[1];
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+
+		try {
+			parseAndEvaluate(firstComd + "|" + secondComd, bo);
+		} catch (AbstractApplicationException | ShellException e1) {
+			return output;
+		}
+		try {
+			output = bo.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return " ";
+		}
+		return output;
 	}
 
 	@Override
