@@ -1,0 +1,22 @@
+this file contains a mix of numbers and strings
+like this
+100
+111
+222
+100002
+111112
+88888888888888888888888888888888888888
+it can handle overflow
+qqqqq
+qqqqp
+111111
+5
+4
+3
+2
+9
+7
+1
+10
+100
+
