@@ -384,10 +384,38 @@ public class ShellImpl implements Shell {
 		return output;
 	}
 
-	@Override
+	/**
+	 * Pipes n multiple commands but with as required by interface. 
+	 * When an exception is encountered, stop all calculations and return error string
+	 * 
+	 *  @param args
+	 *  			is taken to the the n commands, given as args[0] the first command,
+	 *   			,args[1] the second command, ...
+	 *  @return 
+	 *  			the expected error message
+	 */
 	public String pipeWithException(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String output = " ";
+		StringBuilder comd = new StringBuilder();
+		for (int i = 0; i < args.length; i++) {
+			comd.append(args[i]);
+			if (i != args.length-1) {
+				comd.append("|");
+			}
+		}
+		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+
+		try {
+			parseAndEvaluate(comd.toString(), bo);
+		} catch (AbstractApplicationException | ShellException e1) {
+			return e1.getMessage();
+		}
+		try {
+			output = bo.toString("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			return " ";
+		}
+		return output;
 	}
 
 	@Override

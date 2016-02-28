@@ -7,7 +7,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
@@ -17,6 +19,9 @@ public class ParserTest {
 	
 	private Parser parser;
 	private ByteArrayOutputStream outStream;
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 	
 	@Before
 	public void setUp() {
@@ -128,5 +133,23 @@ public class ParserTest {
 		parser.evaluate();
 
 		assertEquals("Mocked OutputMocked OutputMocked Output", outStream.toString("UTF-8")) ;
+	}
+
+	@Test
+	public void testExceptionCommands() throws ShellException, AbstractApplicationException, UnsupportedEncodingException {
+		thrown.expect(ShellException.class);
+		thrown.expectMessage("shell: notacommand: Invalid app.");
+		
+		parser.parse("notacommand", outStream);
+		parser.evaluate();
+
+	}
+	@Test
+	public void testExceptionCommandsWithPiping() throws ShellException, AbstractApplicationException, UnsupportedEncodingException {
+		thrown.expect(ShellException.class);
+		thrown.expectMessage("shell: notacommand: Invalid app.");
+		
+		parser.parse("echo hi | notacommand", outStream);
+		parser.evaluate();
 	}
 }
