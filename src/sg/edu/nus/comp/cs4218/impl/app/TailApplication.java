@@ -126,6 +126,7 @@ public class TailApplication implements Application {
 
 		try {
 			numLines = Integer.parseInt(numLinesString);
+			numLines = Math.abs(numLines);
 		} catch (NumberFormatException nfe) {
 			throw new TailException("Invalid command, not a number.");
 		}

@@ -143,7 +143,10 @@ public class TailApplicationTest {
 		String[] args = { "-n", "3", INPUT_FILE_NAME };
 		tailApplication.run(args, emptyInStream, outStream);
 		String result = outStream.toString();
-		assertEquals(3, result.split("\n").length);
+		assertEquals(3, result.split(System.lineSeparator()).length);
+		assertEquals("reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla" + System.lineSeparator()
+				+ "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa" + System.lineSeparator()
+				+ "qui officia deserunt mollit anim id est laborum." + System.lineSeparator(), result);
 	}
 	
 	@Test
@@ -151,43 +154,78 @@ public class TailApplicationTest {
 		String[] args = { "-n", "3" };
 		tailApplication.run(args, inStream, outStream);
 		String result = outStream.toString();
-		assertEquals(3, result.split("\n").length);
+		assertEquals(3, result.split(System.lineSeparator()).length);
+		assertEquals("reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla" + System.lineSeparator()
+		+ "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa" + System.lineSeparator()
+		+ "qui officia deserunt mollit anim id est laborum." + System.lineSeparator(), result);
 	}
 	
 	@Test
 	public void testTailWithNEqualToFileLength() throws Exception {
-		
+		String[] args = { "-n", "7", INPUT_FILE_NAME };
+		tailApplication.run(args, emptyInStream, outStream);
+		String result = outStream.toString();
+		assertEquals(7, result.split(System.lineSeparator()).length);
+		assertEquals(DEFAULT_INPUT_CONTENT, result);
 	}
 	
 	@Test
-	public void testTailWithNLongerThanFailLength() throws Exception {
-		
+	public void testTailWithNEqualToFileLengthFromStandardInput() throws Exception {
+		String[] args = { "-n", "7" };
+		tailApplication.run(args, inStream, outStream);
+		String result = outStream.toString();
+		assertEquals(7, result.split(System.lineSeparator()).length);
+		assertEquals(DEFAULT_INPUT_CONTENT, result);
 	}
 	
 	@Test
-	public void testTailWithoutN() throws Exception {
-		
+	public void testTailWithNLongerThanFileLength() throws Exception {
+		String[] args = { "-n", "50", INPUT_FILE_NAME };
+		tailApplication.run(args, emptyInStream, outStream);
+		String result = outStream.toString();
+		assertEquals(7, result.split(System.lineSeparator()).length);
+		assertEquals(DEFAULT_INPUT_CONTENT, result);
+	}
+	
+	@Test
+	public void testTailWithNLongerThanFileLengthFromStandardInput() throws Exception {
+		String[] args = { "-n", "50" };
+		tailApplication.run(args, inStream, outStream);
+		String result = outStream.toString();
+		assertEquals(7, result.split(System.lineSeparator()).length);
+		assertEquals(DEFAULT_INPUT_CONTENT, result);
 	}
 	
 	@Test
 	public void testTailWithZeroN() throws Exception {
-		
+		String[] args = { "-n", "0", INPUT_FILE_NAME };
+		tailApplication.run(args, emptyInStream, outStream);
+		String result = outStream.toString();
+		assertEquals("", result);
 	}
 	
+	@Test
+	public void testTailWithZeroNFromStandardInput() throws Exception {
+		String[] args = { "-n", "0" };
+		tailApplication.run(args, inStream, outStream);
+		String result = outStream.toString();
+		assertEquals("", result);
+	}
+	
+	/**
+	 * Dash or negative sign in front of a number should be ignored.
+	 * @throws Exception
+	 */
 	@Test
 	public void testTailWithNegativeN() throws Exception {
-		
+		String[] args = { "-n", "-3", INPUT_FILE_NAME };
+		tailApplication.run(args, emptyInStream, outStream);
+		String result = outStream.toString();
+		assertEquals("reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla" + System.lineSeparator()
+				+ "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa" + System.lineSeparator()
+				+ "qui officia deserunt mollit anim id est laborum." + System.lineSeparator(), result);
 	}
-	
-	@Test
-	public void testTailWithDecimalN() throws Exception {
 		
-	}
-		
-	// Clear box testing
-	
-	
-	
 	// Test Setup methods
 	private static void initializeTestFiles() throws IOException {
 		writeToTestFile(DEFAULT_INPUT_CONTENT);
