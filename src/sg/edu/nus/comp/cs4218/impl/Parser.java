@@ -32,7 +32,7 @@ public class Parser {
 	private char openQuotation;
 	private boolean isFirstArg;
 	private boolean isWrapped;
-	private String prevWord; 					//Used when backquote is done wtih double quote
+	private String prevWord;
 	
 	public Parser() {
 		comds = new ArrayList<String>();
@@ -140,6 +140,7 @@ public class Parser {
 		if (thisChar == openQuotation) {
 			if (thisChar =='`') {
 				String nextWord = recursivelyParse(currentWord.toString());
+				nextWord = nextWord.replace("\n", "").replace("\r", "");
 				if (isWrapped) {
 					openQuotation = '"';
 					isWrapped = false;
