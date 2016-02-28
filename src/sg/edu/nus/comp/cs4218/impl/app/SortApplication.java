@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -272,12 +273,12 @@ public class SortApplication implements Application {
 			throw new SortException("Could not read file");
 		}
 	}
-	
+
 	public static void main(String[] args) throws SortException {
 		SortApplication sa = new SortApplication();
 		String file = "haha.txt";
-		String[] ar = {"-n", file};
-		
+		String[] ar = {"-n", "haha.txt" };
+
 		sa.run(ar, System.in, System.out);
 	}
 
@@ -289,29 +290,35 @@ public class SortApplication implements Application {
  */
 class NumericString implements Comparable<NumericString> {
 
-	Integer number;
-	String content;
+	private BigInteger number;
+	private String content;
 
 	public NumericString(String content) {
 		StringBuilder prefixNumber = new StringBuilder("");
 		int index = 0;
+		char dash = '-';
 
-		while (index < content.length() && Character.isDigit(content.charAt(index))){
+		if (content.length() >= 2 && content.charAt(0) == dash && Character.isDigit(content.charAt(1))) {
+			prefixNumber.append(dash);
+			index++;
+		}
+
+		while (index < content.length() && Character.isDigit(content.charAt(index))) {
 			prefixNumber.append(content.charAt(index++));
 		}
-		
+
 		String number = prefixNumber.toString();
-		
+
 		if (("").equals(number)) {
 			this.number = null;
 		} else {
-			this.number = Integer.parseInt(number);
+			this.number = new BigInteger(number);
 		}
-		
+
 		this.content = content.substring(index);
 	}
 
-	public Integer getNumber() {
+	public BigInteger getNumber() {
 		return this.number;
 	}
 
@@ -319,7 +326,7 @@ class NumericString implements Comparable<NumericString> {
 		if (number == null) {
 			return content;
 		} else {
-			return number + content;
+			return number.toString() + content;
 		}
 	}
 
@@ -328,13 +335,25 @@ class NumericString implements Comparable<NumericString> {
 		if (this.number == null && other.getNumber() == null) {
 			return this.getContent().compareTo(other.getContent());
 		} else if (this.number == null) {
-			if (other.getNumber() <= 0) {
+			if (this.getContent().isEmpty()) {
+				if (other.getNumber().compareTo(BigInteger.ZERO) < 0) {
+					return 1;
+				} else {
+					return -1;
+				}
+			} else if (other.getNumber().compareTo(BigInteger.ZERO) <= 0) {
 				return 1;
 			} else {
 				return -1;
 			}
-		} else if (other.number == null){
-			if (this.getNumber() <= 0) {
+		} else if (other.number == null) {
+			if (other.getContent().isEmpty()) {
+				if (this.getNumber().compareTo(BigInteger.ZERO) < 0) {
+					return -1;
+				} else {
+					return 1;
+				}
+			} else if (this.getNumber().compareTo(BigInteger.ZERO) <= 0) {
 				return -1;
 			} else {
 				return 1;
