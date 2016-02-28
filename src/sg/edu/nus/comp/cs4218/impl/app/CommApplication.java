@@ -24,14 +24,14 @@ public class CommApplication implements Comm {
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws CommException {
 		try {
-			if (args.length >= 2) {
+			if (args.length == 2) {
 				leftInputStream = inputStreamFromFileName(args[0]);
 				rightInputStream = inputStreamFromFileName(args[1]);
 			} else if (args.length == 1) {
 				leftInputStream = stdin;
 				rightInputStream = inputStreamFromFileName(args[0]);
 			} else {
-				throw new CommException("Usage: comm [FILE1] FILE2");
+				throw new CommException("usage: comm [FILE1] FILE2");
 			}
 		} catch (CommException ce) {
 			throw ce;
@@ -55,7 +55,7 @@ public class CommApplication implements Comm {
 	private boolean checkIfFileIsReadable(Path filePath, boolean raiseException) throws CommException {
 		boolean isReadable = checkIfFileIsReadable(filePath);
 		if (!isReadable && raiseException) {
-			throw new CommException("File is not readable");
+			throw new CommException("file is not readable");
 		}
 		return isReadable;
 	}
