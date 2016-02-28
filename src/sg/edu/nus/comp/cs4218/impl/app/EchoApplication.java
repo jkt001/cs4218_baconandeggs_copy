@@ -41,10 +41,13 @@ public class EchoApplication implements Application {
 		}
 		try {
 			if (args.length == 0) {
-				stdout.write("\n\n".getBytes());
+				stdout.write("\n".getBytes());
 			} else {
 				for (int i = 0; i < args.length; i++) {
 					stdout.write(args[i].getBytes());
+					if (i != args.length-1) {
+						stdout.write(" ".getBytes());
+					}
 				}
 				stdout.write("\n".getBytes());
 			}
