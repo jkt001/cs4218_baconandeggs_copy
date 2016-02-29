@@ -314,9 +314,9 @@ public class ShellImpl implements Shell {
 	 */
 	public void parseAndEvaluate(String cmdline, OutputStream stdout)
 			throws AbstractApplicationException, ShellException {
-		Parser p = new Parser();
-		p.parse(cmdline, stdout);
-		p.evaluate();
+		Parser parser = new Parser();
+		parser.parse(cmdline, stdout);
+		parser.evaluate();
 	}
 
 	/**
@@ -337,15 +337,15 @@ public class ShellImpl implements Shell {
 		}
 		String firstComd = args[0];
 		String secondComd = args[1];
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
 		try {
-			parseAndEvaluate(firstComd + "|" + secondComd, bo);
+			parseAndEvaluate(firstComd + "|" + secondComd, outStream);
 		} catch (AbstractApplicationException | ShellException e1) {
 			return output;
 		}
 		try {
-			output = bo.toString("UTF-8");
+			output = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			return " ";
 		}
@@ -370,18 +370,18 @@ public class ShellImpl implements Shell {
 		for (int i = 0; i < args.length; i++) {
 			comd.append(args[i]);
 			if (i != args.length-1) {
-				comd.append("|");
+				comd.append('|');
 			}
 		}
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
 		try {
-			parseAndEvaluate(comd.toString(), bo);
+			parseAndEvaluate(comd.toString(), outStream);
 		} catch (AbstractApplicationException | ShellException e1) {
 			return output;
 		}
 		try {
-			output = bo.toString("UTF-8");
+			output = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			return " ";
 		}
@@ -404,18 +404,18 @@ public class ShellImpl implements Shell {
 		for (int i = 0; i < args.length; i++) {
 			comd.append(args[i]);
 			if (i != args.length-1) {
-				comd.append("|");
+				comd.append('|');
 			}
 		}
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 
 		try {
-			parseAndEvaluate(comd.toString(), bo);
+			parseAndEvaluate(comd.toString(), outStream);
 		} catch (AbstractApplicationException | ShellException e1) {
 			return e1.getMessage();
 		}
 		try {
-			output = bo.toString("UTF-8");
+			output = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			return " ";
 		}

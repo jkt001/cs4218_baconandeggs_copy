@@ -30,7 +30,7 @@ public class HeadApplicationTest {
 	private static final Integer NUM_LINES_IN_FILE = 50;
 	
 	private static final String STDIN_CONTENT = "INPUT";
-	private static final Integer NUM_LINES_IN_STDIN = 50;
+	private static final Integer STDIN_NUM_LINES = 50;
 	
 	private static final Integer DEFAULT_NUM_LINES = 10;
 	
@@ -57,7 +57,7 @@ public class HeadApplicationTest {
 
 	@Test
 	public void testHeadWithStdinAndDefaultNumLines() throws HeadException {
-		String expected = generateExpected(STDIN_CONTENT, DEFAULT_NUM_LINES, NUM_LINES_IN_STDIN);
+		String expected = generateExpected(STDIN_CONTENT, DEFAULT_NUM_LINES, STDIN_NUM_LINES);
 		headApplication.run(null, inStream, outStream);
 		assertEquals(expected, outStream.toString());
 	}
@@ -74,7 +74,7 @@ public class HeadApplicationTest {
 	public void testHeadWithStdinAndInputNumLines() throws HeadException {
 		int numLinesInput = 5;
 		String[] args = { "-n", String.valueOf(numLinesInput) };
-		String expected = generateExpected(STDIN_CONTENT, numLinesInput, NUM_LINES_IN_STDIN);
+		String expected = generateExpected(STDIN_CONTENT, numLinesInput, STDIN_NUM_LINES);
 		headApplication.run(args, inStream, outStream);
 		assertEquals(expected, outStream.toString());
 	}
@@ -90,9 +90,9 @@ public class HeadApplicationTest {
 	
 	@Test
 	public void testHeadWithStdinShorterThanNumLinesArgs() throws HeadException {
-		int numLinesInput = NUM_LINES_IN_STDIN + 1;
+		int numLinesInput = STDIN_NUM_LINES + 1;
 		String[] args = { "-n", String.valueOf(numLinesInput) };
-		String expected = generateExpected(STDIN_CONTENT, numLinesInput, NUM_LINES_IN_STDIN);
+		String expected = generateExpected(STDIN_CONTENT, numLinesInput, STDIN_NUM_LINES);
 		headApplication.run(args, inStream, outStream);
 		assertEquals(expected, outStream.toString());
 	}
@@ -108,7 +108,7 @@ public class HeadApplicationTest {
 	
 	@Test
 	public void testHeadWithNullArgs() throws HeadException {
-		String expected = generateExpected(STDIN_CONTENT, DEFAULT_NUM_LINES, NUM_LINES_IN_STDIN); 
+		String expected = generateExpected(STDIN_CONTENT, DEFAULT_NUM_LINES, STDIN_NUM_LINES); 
 		headApplication.run(null, inStream, outStream);
 		assertEquals(expected, outStream.toString());
 	}
@@ -116,7 +116,7 @@ public class HeadApplicationTest {
 	@Test
 	public void testHeadWithEmptyArgs() throws HeadException {
 		String[] args = {};
-		String expected = generateExpected(STDIN_CONTENT, DEFAULT_NUM_LINES, NUM_LINES_IN_STDIN); 
+		String expected = generateExpected(STDIN_CONTENT, DEFAULT_NUM_LINES, STDIN_NUM_LINES); 
 		headApplication.run(args, inStream, outStream);
 		assertEquals(expected, outStream.toString());
 	}
@@ -214,9 +214,9 @@ public class HeadApplicationTest {
 	
 	private void initializeInputStream() {
 		String input = "";
-		for (int i = 0; i < NUM_LINES_IN_STDIN; i++) {
+		for (int i = 0; i < STDIN_NUM_LINES; i++) {
 			input += STDIN_CONTENT;
-			if (i < NUM_LINES_IN_STDIN - 1) {
+			if (i < STDIN_NUM_LINES - 1) {
 				input += System.getProperty("line.separator");
 			}
 		}
@@ -229,8 +229,8 @@ public class HeadApplicationTest {
 	 */
 	private String generateExpected(String content, int numOfLines, int actualLength) {
 		String expected = "";
-		numOfLines = Math.min(numOfLines, actualLength);
-		for (int i = 0; i < numOfLines; i++) {
+		int numLines = Math.min(numOfLines, actualLength);
+		for (int i = 0; i < numLines; i++) {
 			expected += content;
 			expected += System.getProperty("line.separator");
 		}

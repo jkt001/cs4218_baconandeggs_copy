@@ -29,7 +29,7 @@ public class TailApplicationTest {
 	private static final String DUMMY_FILE_NAME = "non_existent_file.xyz";
 	private static final File DUMMY_FILE = Paths.get(Environment.currentDirectory).resolve(DUMMY_FILE_NAME).toFile();
 	
-	private static final String DEFAULT_INPUT_CONTENT = 
+	private static final String INPUT_CONTENT = 
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit," + System.lineSeparator()
 					+ "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." + System.lineSeparator()
 					+ "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris" + System.lineSeparator()
@@ -51,7 +51,7 @@ public class TailApplicationTest {
 		initializeTestFiles();
 		tailApplication = new TailApplication();
 		emptyInStream = new ByteArrayInputStream("".getBytes());
-		inStream = new ByteArrayInputStream(DEFAULT_INPUT_CONTENT.getBytes());
+		inStream = new ByteArrayInputStream(INPUT_CONTENT.getBytes());
 		outStream = new ByteArrayOutputStream();
 	}
 	
@@ -81,7 +81,7 @@ public class TailApplicationTest {
 		String[] args = { INPUT_FILE_NAME };
 		tailApplication.run(args, emptyInStream, outStream);
 		String result = outStream.toString();
-		assertEquals(DEFAULT_INPUT_CONTENT, result);
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
@@ -127,7 +127,7 @@ public class TailApplicationTest {
 		String[] args = { INPUT_FILE_NAME };
 		tailApplication.run(args, emptyInStream, outStream);
 		String result = outStream.toString();
-		assertEquals(DEFAULT_INPUT_CONTENT, result);
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
@@ -135,7 +135,7 @@ public class TailApplicationTest {
 		String[] args = { };
 		tailApplication.run(args, inStream, outStream);
 		String result = outStream.toString();
-		assertEquals(DEFAULT_INPUT_CONTENT, result);
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
@@ -166,7 +166,7 @@ public class TailApplicationTest {
 		tailApplication.run(args, emptyInStream, outStream);
 		String result = outStream.toString();
 		assertEquals(7, result.split(System.lineSeparator()).length);
-		assertEquals(DEFAULT_INPUT_CONTENT, result);
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
@@ -175,7 +175,7 @@ public class TailApplicationTest {
 		tailApplication.run(args, inStream, outStream);
 		String result = outStream.toString();
 		assertEquals(7, result.split(System.lineSeparator()).length);
-		assertEquals(DEFAULT_INPUT_CONTENT, result);
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
@@ -184,7 +184,7 @@ public class TailApplicationTest {
 		tailApplication.run(args, emptyInStream, outStream);
 		String result = outStream.toString();
 		assertEquals(7, result.split(System.lineSeparator()).length);
-		assertEquals(DEFAULT_INPUT_CONTENT, result);
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
@@ -193,7 +193,7 @@ public class TailApplicationTest {
 		tailApplication.run(args, inStream, outStream);
 		String result = outStream.toString();
 		assertEquals(7, result.split(System.lineSeparator()).length);
-		assertEquals(DEFAULT_INPUT_CONTENT, result);
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
@@ -228,7 +228,7 @@ public class TailApplicationTest {
 		
 	// Test Setup methods
 	private static void initializeTestFiles() throws IOException {
-		writeToTestFile(DEFAULT_INPUT_CONTENT);
+		writeToTestFile(INPUT_CONTENT);
 	}
 	
 	private static void writeToTestFile(String content) throws IOException {
