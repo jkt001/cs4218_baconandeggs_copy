@@ -36,6 +36,11 @@ public class CatApplicationTest {
 				+ "qui officia deserunt mollit anim id est laborum."
 	};
 	
+	private static final String MULTI_LINE_FILE = "multiline.txt";
+	private static final String MULTI_LINE_CONTENT = 
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, " + System.lineSeparator() +
+			"sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ";
+	
 	private static CatApplication catApplication;
 	private static InputStream inStream;
 	
@@ -74,6 +79,13 @@ public class CatApplicationTest {
 		}
 		catApplication.run(READABLE_FILES, null, outStream);
 		assertEquals(expected, outStream.toString());
+	}
+	
+	@Test
+	public void testCatForMutipleLineFile() throws CatException {
+		String[] args = { MULTI_LINE_FILE };
+		catApplication.run(args, null, outStream);
+		assertEquals(MULTI_LINE_CONTENT, outStream.toString());
 	}
 	
 	@Test
@@ -167,6 +179,11 @@ public class CatApplicationTest {
 			inputFile.createNewFile();
 			inputFile.setReadable(false);
 		}
+		
+		File inputFile = Paths.get(Environment.currentDirectory).resolve(MULTI_LINE_FILE).toFile();
+		writer = new BufferedWriter(new FileWriter(inputFile));
+		writer.write(MULTI_LINE_CONTENT);
+		writer.close();
 	}
 	
 	private static void deleteAllFiles() {
@@ -179,6 +196,9 @@ public class CatApplicationTest {
 			File file = Paths.get(Environment.currentDirectory).resolve(NONREADABLE_FILES[i]).toFile();
 			file.delete();
 		}
+		
+		File file = Paths.get(Environment.currentDirectory).resolve(MULTI_LINE_FILE).toFile();
+		file.delete();
 	}
 	
 	private static void initializeInputStream() {
