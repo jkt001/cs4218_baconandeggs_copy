@@ -37,7 +37,7 @@ public class CatApplicationTest {
 	};
 	
 	private static final String MULTI_LINE_FILE = "multiline.txt";
-	private static final String MULTI_LINE_CONTENT = 
+	private static final String MULTI_LINE = 
 			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, " + System.lineSeparator() +
 			"sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ";
 	
@@ -85,7 +85,7 @@ public class CatApplicationTest {
 	public void testCatForMutipleLineFile() throws CatException {
 		String[] args = { MULTI_LINE_FILE };
 		catApplication.run(args, null, outStream);
-		assertEquals(MULTI_LINE_CONTENT, outStream.toString());
+		assertEquals(MULTI_LINE, outStream.toString());
 	}
 	
 	@Test
@@ -182,7 +182,7 @@ public class CatApplicationTest {
 		
 		File inputFile = Paths.get(Environment.currentDirectory).resolve(MULTI_LINE_FILE).toFile();
 		writer = new BufferedWriter(new FileWriter(inputFile));
-		writer.write(MULTI_LINE_CONTENT);
+		writer.write(MULTI_LINE);
 		writer.close();
 	}
 	

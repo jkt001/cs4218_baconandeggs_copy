@@ -24,6 +24,9 @@ import sg.edu.nus.comp.cs4218.exception.CommException;
 
 public class CommApplicationTest {
 	
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+	
 	private CommApplication commApp;
 	private InputStream inStream;
 	private OutputStream outStream;
@@ -60,9 +63,6 @@ public class CommApplicationTest {
 		writer.write(content);
 		writer.close();
 	}
-	
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 	
 	@Before
 	public void setUp() throws Exception {
@@ -211,10 +211,10 @@ public class CommApplicationTest {
 		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
 		commApp.run(args, inStream, outStream);
 		String result = outStream.toString();
-		StringBuilder expected = new StringBuilder();
-		expected.append("A is for the word awesome!").append(LINE_SEPARATOR);
-		expected.append(TAB_CHAR).append("Banana").append(LINE_SEPARATOR);
-		expected.append("C is for the food chocolate");
+		StringBuilder expected = new StringBuilder(100);
+		expected.append("A is for the word awesome!").append(LINE_SEPARATOR)
+			    .append(TAB_CHAR).append("Banana").append(LINE_SEPARATOR)
+			    .append("C is for the food chocolate");
 		assertEquals(expected.toString(), result);
 	}
 	
@@ -234,10 +234,10 @@ public class CommApplicationTest {
 		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
 		commApp.run(args, inStream, outStream);
 		String result = outStream.toString();
-		StringBuilder expected = new StringBuilder();
-		expected.append("A is for the word awesome!").append(LINE_SEPARATOR);
-		expected.append(TAB_CHAR).append("Banana");
-		expected.append("C is for the food chocolate");
+		StringBuilder expected = new StringBuilder(100);
+		expected.append("A is for the word awesome!").append(LINE_SEPARATOR)
+		 		.append(TAB_CHAR).append("Banana")
+		 		.append("C is for the food chocolate");
 		assertEquals(expected.toString(), result);
 	}
 	
