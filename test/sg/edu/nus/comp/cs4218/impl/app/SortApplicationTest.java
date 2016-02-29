@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,27 +32,27 @@ public class SortApplicationTest {
 	private OutputStream outStream;
 	
 	private static final String[] READABLE_FILES = { 
-		"resources/sort/input/sortAllNumbers.txt", 
-		"resources/sort/input/sortAllNoNumbers.txt",
-		"resources/sort/input/sortAllNumbersLarge.txt",
-		"resources/sort/input/sortMixNumbersAndStrings.txt",
-		"resources/sort/input/sortStringWithNumbers.txt",
-		"resources/sort/input/sortWithEmptyString.txt"
+		"resources" + File.separator + "sort" + File.separator + "input" + File.separator + "sortAllNumbers.txt", 
+		"resources" + File.separator + "sort" + File.separator + "input" + File.separator + "sortAllNoNumbers.txt",
+		"resources" + File.separator + "sort" + File.separator + "input" + File.separator + "sortAllNumbersLarge.txt",
+		"resources" + File.separator + "sort" + File.separator + "input" + File.separator + "sortMixNumbersAndStrings.txt",
+		"resources" + File.separator + "sort" + File.separator + "input" + File.separator + "sortStringWithNumbers.txt",
+		"resources" + File.separator + "sort" + File.separator + "input" + File.separator + "sortWithEmptyString.txt"
 	};
 	
 	private static final String[] EXPECTED_FILES = {
-		"resources/sort/output/sortAllNumbersExpected.txt", 
-		"resources/sort/output/numericalSortAllNumbersExpected.txt", 
-		"resources/sort/output/sortAllNoNumbersExpected.txt",
-		"resources/sort/output/numericalSortAllNoNumbersExpected.txt",
-		"resources/sort/output/sortAllNumbersLargeExpected.txt",
-		"resources/sort/output/numericalSortAllNumbersLargeExpected.txt",
-		"resources/sort/output/sortMixNumbersAndStringsExpected.txt",
-		"resources/sort/output/numericalSortMixNumbersAndStringsExpected.txt",
-		"resources/sort/output/sortStringWithNumbersExpected.txt",
-		"resources/sort/output/numericalSortStringWithNumbersExpected.txt",
-		"resources/sort/output/sortWithEmptyStringExpected.txt",
-		"resources/sort/output/numericalSortWithEmptyStringExpected.txt"
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "sortAllNumbersExpected.txt", 
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "numericalSortAllNumbersExpected.txt", 
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "sortAllNoNumbersExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "numericalSortAllNoNumbersExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "sortAllNumbersLargeExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "numericalSortAllNumbersLargeExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "sortMixNumbersAndStringsExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "numericalSortMixNumbersAndStringsExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "sortStringWithNumbersExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "numericalSortStringWithNumbersExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "sortWithEmptyStringExpected.txt",
+		"resources" + File.separator + "sort" + File.separator + "output" + File.separator + "numericalSortWithEmptyStringExpected.txt"
 	};
 	
 	private static final String[] CONTENTS = { 
@@ -77,7 +78,6 @@ public class SortApplicationTest {
 	
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws IOException {
