@@ -47,17 +47,17 @@ public class FmtApplicationTest {
 			FILE_1_CONTENTS, FILE_2_CONTENTS
 	};
 	
-	private static final String EXP_WITH_WIDTH_50 = "Lorem ipsum dolor sit amet, consectetur adipiscing\n"
-			+ "elit, sed do eiusmod tempor incididunt ut labore\n"
-			+ "et dolore magna aliqua.\n"
-			+ "\n"
-			+ "Ut enim ad minim veniam, quis nostrud exercitation\n"
+	private static final String EXP_WITH_WIDTH_50 = "Lorem ipsum dolor sit amet, consectetur adipiscing" + System.lineSeparator() + ""
+			+ "elit, sed do eiusmod tempor incididunt ut labore" + System.lineSeparator() + ""
+			+ "et dolore magna aliqua." + System.lineSeparator() + ""
+			+ "" + System.lineSeparator() + ""
+			+ "Ut enim ad minim veniam, quis nostrud exercitation" + System.lineSeparator() + ""
 			+ "ullamco laboris";
 
 	private static final String EXP_WITH_DEFAULT_WIDTH = 
-			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor\n"
-			+ "incididunt ut labore et dolore magna aliqua.\n"
-			+ "\n"
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor" + System.lineSeparator() + ""
+			+ "incididunt ut labore et dolore magna aliqua." + System.lineSeparator() + ""
+			+ "" + System.lineSeparator() + ""
 			+ "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris";
 	
 	@Rule
@@ -84,7 +84,7 @@ public class FmtApplicationTest {
 	@Test
 	public void testFmtWithNullArgs() throws FmtException {
 		fmtApplication.run(null, inStream, outStream);
-		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor\n" 
+		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor" + System.lineSeparator() + "" 
 				+ "incididunt ut labore et dolore magna aliqua.";
 		assertEquals(expected, outStream.toString());
 	}
@@ -93,7 +93,7 @@ public class FmtApplicationTest {
 	public void testFmtWithEmptyArgs() throws FmtException {
 		String[] args = {};
 		fmtApplication.run(args, inStream, outStream);
-		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor\n" 
+		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor" + System.lineSeparator() + "" 
 				+ "incididunt ut labore et dolore magna aliqua.";
 		assertEquals(expected, outStream.toString());
 	}
@@ -101,7 +101,7 @@ public class FmtApplicationTest {
 	@Test
 	public void testFmtWithStdinAndDefaultWidth() throws FmtException {
 		fmtApplication.run(null, inStream, outStream);
-		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor\n" 
+		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor" + System.lineSeparator() + "" 
 				+ "incididunt ut labore et dolore magna aliqua.";
 		assertEquals(expected, outStream.toString());
 	}
@@ -110,8 +110,8 @@ public class FmtApplicationTest {
 	public void testFmtWithStdinAndInputWidth() throws FmtException {
 		String[] args = {"-w", "50"};
 		fmtApplication.run(args, inStream, outStream);
-		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing\n"
-				+ "elit, sed do eiusmod tempor incididunt ut labore\n"
+		String expected = "Lorem ipsum dolor sit amet, consectetur adipiscing" + System.lineSeparator() + ""
+				+ "elit, sed do eiusmod tempor incididunt ut labore" + System.lineSeparator() + ""
 				+ "et dolore magna aliqua.";
 		assertEquals(expected, outStream.toString());
 	}
@@ -134,7 +134,7 @@ public class FmtApplicationTest {
 	public void testFmtWithMultipleValidFilesAndInputWidth() throws FmtException {
 		String[] args = {"-w", "50", READABLE_FILES[0], READABLE_FILES[1]};
 		fmtApplication.run(args, null, outStream);
-		String expected = EXP_WITH_WIDTH_50 + "\nTEST TEST";
+		String expected = EXP_WITH_WIDTH_50 + "" + System.lineSeparator() + "TEST TEST";
 		assertEquals(expected, outStream.toString());
 	}
 	
@@ -142,7 +142,7 @@ public class FmtApplicationTest {
 	public void testFmtWithMultipleValidFilesAndDefaultWidth() throws FmtException {
 		String[] args = READABLE_FILES;
 		fmtApplication.run(args, null, outStream);
-		String expected = EXP_WITH_DEFAULT_WIDTH + "\nTEST TEST";
+		String expected = EXP_WITH_DEFAULT_WIDTH + "" + System.lineSeparator() + "TEST TEST";
 		assertEquals(expected, outStream.toString());
 	}
 	
@@ -307,7 +307,7 @@ public class FmtApplicationTest {
 			for (int j = 0; j < FILE_CONTENTS[i].length; j++) {
 				writer.write(FILE_CONTENTS[i][j]);
 				if (j < FILE_CONTENTS[i].length - 1) {
-					writer.write("\n");
+					writer.write("" + System.lineSeparator() + "");
 				}
 			}
 			writer.close();
