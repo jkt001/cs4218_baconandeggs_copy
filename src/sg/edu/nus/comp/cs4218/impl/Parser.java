@@ -18,11 +18,11 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
 public class Parser {
 	
 	//Parse & Evaluate shared variables
-	private ArrayList<String> comds;
-	private ArrayList<String[]> args;
-	private ArrayList<InputStream> ins;
-	private ArrayList<OutputStream> outs;
-	private ArrayList<Integer> pipeIndex;
+	private final ArrayList<String> comds;
+	private final ArrayList<String[]> args;
+	private final ArrayList<InputStream> ins;
+	private final ArrayList<OutputStream> outs;
+	private final ArrayList<Integer> pipeIndex;
 	private ByteArrayOutputStream prevStream;
 	
 	//Parse variables
@@ -66,10 +66,10 @@ public class Parser {
 	 * 				If no such command is found
 	 */
 	public void parse(String cmdline, OutputStream stdout) throws ShellException, AbstractApplicationException {
-		cmdline = postpendSemicolon(cmdline);
+		String cmd = postpendSemicolon(cmdline);
 		
-		for (int i = 0; i<cmdline.length(); i++) {
-			char thisChar = cmdline.charAt(i);
+		for (int i = 0; i<cmd.length(); i++) {
+			char thisChar = cmd.charAt(i);
 			if (thisChar == '"' || thisChar == '\'' || thisChar == '`') {
 				if (isWithinQuotes) {
 					possibleClosureOfQuotation(thisChar);
@@ -119,10 +119,11 @@ public class Parser {
 	 * 				command line with a semicolon all the time
 	 */
 	private String postpendSemicolon(String cmdline) {
-		if (!cmdline.endsWith(";")) {
-			cmdline = cmdline + ";";
+		String cmd = cmdline;
+		if (!cmd.endsWith(";")) {
+			cmd = cmd + ";";
 		}
-		return cmdline;
+		return cmd;
 	}
 	
 	/**
@@ -145,7 +146,8 @@ public class Parser {
 					openQuotation = '"';
 					isWrapped = false;
 					isWithinQuotes = true;
-					currentWord = new StringBuilder(prevWord + nextWord);
+					String combined = prevWord + nextWord;
+					currentWord = new StringBuilder(combined);
 				} else {
 					isWithinQuotes = false;
 					currentArgs.add(nextWord);
@@ -204,13 +206,13 @@ public class Parser {
 	 * 						if parse throws one
 	 */
 	protected String recursivelyParse(String toParse) throws ShellException, AbstractApplicationException {
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		Parser nextInstance = new Parser();
-		nextInstance.parse(toParse, bo);
+		nextInstance.parse(toParse, outStream);
 		nextInstance.evaluate();
 		String result = "";
 		try {
-			result = bo.toString("UTF-8");
+			result = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
@@ -228,16 +230,16 @@ public class Parser {
 	 */
 	public void evaluate() throws ShellException, AbstractApplicationException {
 		for(int i = 0; i<comds.size(); i++) {
-			InputStream in = ins.get(i);
-			OutputStream out = outs.get(i);
+			InputStream inStream = ins.get(i);
+			OutputStream outStream = outs.get(i);
 			if (pipeIndex.contains(i-1)) {
-				in = new ByteArrayInputStream(prevStream.toByteArray()); 
+				inStream = new ByteArrayInputStream(prevStream.toByteArray()); 
 			}
 			if (pipeIndex.contains(i)) {
 				prevStream = new ByteArrayOutputStream();
-				out = prevStream;
+				outStream = prevStream;
 			}
-			runApplication(comds.get(i), args.get(i), in, out);
+			runApplication(comds.get(i), args.get(i), inStream, outStream);
 		}
 	}
 	
@@ -259,8 +261,8 @@ public class Parser {
 	 * @throws AbstractApplicationException
 	 * 				if the application throws one
 	 */
-	protected void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
-		ShellImpl.runApp(cmd, args, in, out);
+	protected void runApplication(String cmd, String[] args, InputStream inStream, OutputStream outStream) throws ShellException, AbstractApplicationException {
+		ShellImpl.runApp(cmd, args, inStream, outStream);
 	}
 
 	//Testing methods
