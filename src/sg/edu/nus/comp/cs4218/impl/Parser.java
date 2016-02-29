@@ -116,19 +116,18 @@ public class Parser {
 				}
 			}
 		}
-		print();
 	}
 
 	// Handles adding of words to args. Handles globbing is there is a need to
 	private ArrayList<String> addToArgs(String toAdd) {
 		ArrayList<String> currentDirectories = new ArrayList<String>();
-		if (toAdd.contains("\\*")) {
+		if (toAdd.contains("*")) {
 			boolean startsWithAsterisk = false;
 			boolean endsWithAsterisk = false;
-			if (toAdd.startsWith("\\*")) {
+			if (toAdd.startsWith("*")) {
 				startsWithAsterisk = true;
 			}
-			if (toAdd.endsWith("\\*")) {
+			if (toAdd.endsWith("*")) {
 				endsWithAsterisk = true;
 			}
 			String[] partsOfPath = toAdd.split("\\*");
