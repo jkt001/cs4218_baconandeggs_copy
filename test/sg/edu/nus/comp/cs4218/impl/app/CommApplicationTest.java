@@ -177,4 +177,45 @@ public class CommApplicationTest {
 		expected.append(LINE_SEPARATOR);
 		assertEquals(expected.toString(), result);
 	}
+	
+	@Test
+	public void testLongLineOnLeftFile() throws Exception {
+		String contentLeft = "A is for the word awesome!" + LINE_SEPARATOR +
+				"C is for the food chocolate";
+		String contentRight = "Banana" + LINE_SEPARATOR;
+		writeToFile(contentLeft, INPUT_FILE_1);
+		writeToFile(contentRight, INPUT_FILE_2);
+		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
+		commApp.run(args, inStream, outStream);
+		String result = outStream.toString();
+		StringBuilder expected = new StringBuilder();
+		expected.append("A is for the word awesome!").append(LINE_SEPARATOR);
+		expected.append(TAB_CHAR).append("Banana").append(LINE_SEPARATOR);
+		expected.append("C is for the food chocolate");
+		assertEquals(expected.toString(), result);
+	}
+	
+	/**
+	 * If a line of text that occurs on the middle of the output
+	 * does not end with a newline, then it should appear as is
+	 * without the addition of any newline character.
+	 * @throws Exception
+	 */
+	@Test
+	public void testMiddleLineWithoutNewline() throws Exception {
+		String contentLeft = "A is for the word awesome!" + LINE_SEPARATOR +
+				"C is for the food chocolate";
+		String contentRight = "Banana";
+		writeToFile(contentLeft, INPUT_FILE_1);
+		writeToFile(contentRight, INPUT_FILE_2);
+		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
+		commApp.run(args, inStream, outStream);
+		String result = outStream.toString();
+		StringBuilder expected = new StringBuilder();
+		expected.append("A is for the word awesome!").append(LINE_SEPARATOR);
+		expected.append(TAB_CHAR).append("Banana");
+		expected.append("C is for the food chocolate");
+		assertEquals(expected.toString(), result);
+	}
+	
 }
