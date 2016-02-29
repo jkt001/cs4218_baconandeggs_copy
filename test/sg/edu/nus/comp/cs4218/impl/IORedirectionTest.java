@@ -3,11 +3,14 @@ package sg.edu.nus.comp.cs4218.impl;
 import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.junit.After;
@@ -21,6 +24,9 @@ public class IORedirectionTest {
 	
 	private Shell shell;
 	private ByteArrayOutputStream outputStream;
+	private static final String INPUT_FILENAME = "tmp.in";
+	private static final String INPUT_CONTENT = "My secret password is 123***";
+	private static final File INPUT_FILE = Paths.get(Environment.currentDirectory).resolve(INPUT_FILENAME).toFile();
 	
 	private String contentOfFile(File file) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
@@ -35,16 +41,31 @@ public class IORedirectionTest {
 		return stringBuilder.toString();
 	}
 	
+	private void writeToFile(String content, File file) throws IOException {
+		BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+		writer.write(content);
+		writer.close();
+	}
+	
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		shell = new ShellImpl();
 		outputStream = new ByteArrayOutputStream();
+		writeToFile(INPUT_CONTENT, INPUT_FILE);
 	}
 	
 	@After
 	public void tearDown() {
 		shell = null;
 		outputStream = null;
+		INPUT_FILE.delete();
+	}
+	
+	@Test
+	public void testSetup() throws IOException {
+		assertTrue(INPUT_FILE.exists());
+		assertTrue(Files.isReadable(INPUT_FILE.toPath()));
+		assertEquals(contentOfFile(INPUT_FILE), INPUT_CONTENT);
 	}
 	
 	@Test
@@ -69,7 +90,8 @@ public class IORedirectionTest {
 	}
 	
 	@Test
-	public void testInputRedirection() {
+	public void testInputRedirection() throws IOException {
+		
 		
 	}
 	
