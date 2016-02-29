@@ -271,7 +271,6 @@ public class CalApplicationTest {
 		String file = "16_m.txt";
 		String expected = generateCalendar(file);
 		String actual = calApplication.printCalForYearMondayFirst(args);
-		System.out.println(expected);
 		assertEquals(expected, actual);
 	}
 	
@@ -311,7 +310,7 @@ public class CalApplicationTest {
 		if (!filename.isEmpty()) {
 			StringBuilder stringBuilder = new StringBuilder();
 			File file = Paths.get(Environment.currentDirectory)
-					.resolve("resources/cal/test/" + filename)
+					.resolve("resources" + File.separator + "cal" + File.separator + "test" + File.separator + filename)
 					.toFile();
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			String line;

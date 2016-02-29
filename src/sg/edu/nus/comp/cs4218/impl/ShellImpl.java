@@ -9,10 +9,7 @@ import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.Shell;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
-import sg.edu.nus.comp.cs4218.impl.app.CatApplication;
-import sg.edu.nus.comp.cs4218.impl.app.EchoApplication;
-import sg.edu.nus.comp.cs4218.impl.app.HeadApplication;
-import sg.edu.nus.comp.cs4218.impl.app.TailApplication;
+import sg.edu.nus.comp.cs4218.impl.app.*;
 
 /**
  * A Shell is a command interpreter and forms the backbone of the entire
@@ -112,8 +109,7 @@ public class ShellImpl implements Shell {
 	 * @throws ShellException
 	 *             If an unsupported or invalid application command is detected.
 	 */
-	public static void runApp(String app, String[] argsArray,
-			InputStream inputStream, OutputStream outputStream)
+	public static void runApp(String app, String[] argsArray, InputStream inputStream, OutputStream outputStream)
 			throws AbstractApplicationException, ShellException {
 		Application absApp = null;
 		if (("cat").equals(app)) {// cat [FILE]...
@@ -124,6 +120,14 @@ public class ShellImpl implements Shell {
 			absApp = new HeadApplication();
 		} else if (("tail").equals(app)) {// tail [OPTIONS] [FILE]
 			absApp = new TailApplication();
+		} else if (("sort").equals(app)) {
+			absApp = new SortApplication();
+		} else if (("date").equals(app)) {
+			absApp = new DateApplication();
+		} else if (("fmt").equals(app)) {
+			absApp = new FmtApplication();
+		} else if (("comm").equals(app)) {
+			absApp = new CommApplication();
 		} else { // invalid command
 			throw new ShellException(app + ": " + EXP_INVALID_APP);
 		}
