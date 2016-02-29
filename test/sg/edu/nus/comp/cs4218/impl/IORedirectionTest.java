@@ -90,14 +90,26 @@ public class IORedirectionTest {
 	}
 	
 	@Test
-	public void testInputRedirection() throws IOException {
-		
-		
+	public void testInputRedirection() throws Exception {
+		shell.parseAndEvaluate("head < " + INPUT_FILENAME, outputStream);
+		String result = outputStream.toString();
+		assertEquals(INPUT_CONTENT, result);
 	}
 	
 	@Test
-	public void testHereDocumentInputRedirection() {
-		
+	public void testHereDocumentInputRedirection() throws Exception {
+		StringBuilder commandBuilder = new StringBuilder();
+		commandBuilder.append("head > output.txt << EOF").append(System.lineSeparator());
+		commandBuilder.append("Line 1").append(System.lineSeparator());
+		commandBuilder.append("Line 2").append(System.lineSeparator());
+		commandBuilder.append("EOF").append(System.lineSeparator());
+		shell.parseAndEvaluate(commandBuilder.toString(), outputStream);
+		String shellOutput = outputStream.toString();
+		assertTrue(shellOutput.isEmpty());
+		File outputFile = Paths.get(Environment.currentDirectory).resolve("output.txt").toFile();
+		assertTrue(outputFile.exists());
+		String expectedResult = "Line 1" + System.lineSeparator() + "Line 2";
+		assertEquals(expectedResult, contentOfFile(outputFile));
 	}
 	
 }
