@@ -28,6 +28,7 @@ public class CommApplicationTest {
 	private InputStream inStream;
 	private OutputStream outStream;
 	
+	private static final String TAB_CHAR = "\t";
 	private static final String LINE_SEPARATOR = System.lineSeparator();
 	
 	private static final String INPUT_FILENAME_1 = "comm_input_1.txt";
@@ -119,4 +120,61 @@ public class CommApplicationTest {
 		commApp.run(args, inStream, outStream);
 	}
 	
+	@Test
+	public void testEmptyLeftFile() throws Exception {
+		writeToFile("", INPUT_FILE_1);
+		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
+		commApp.run(args, inStream, outStream);
+		String result = outStream.toString();
+		String expected = TAB_CHAR + "apple" + LINE_SEPARATOR
+				+ TAB_CHAR + "banana" + LINE_SEPARATOR
+				+ TAB_CHAR + "banana" + LINE_SEPARATOR
+				+ TAB_CHAR + "zucchini" + LINE_SEPARATOR;
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testFileNotEndingWithEndline() throws Exception {
+		writeToFile("", INPUT_FILE_1);
+		writeToFile("apple" + LINE_SEPARATOR
+			+ "banana" + LINE_SEPARATOR
+			+ "banana" + LINE_SEPARATOR
+			+ "zucchini", INPUT_FILE_2);
+		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
+		commApp.run(args, inStream, outStream);
+		String result = outStream.toString();
+		String expected = TAB_CHAR + "apple" + LINE_SEPARATOR
+				+ TAB_CHAR + "banana" + LINE_SEPARATOR
+				+ TAB_CHAR + "banana" + LINE_SEPARATOR
+				+ TAB_CHAR + "zucchini";
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testEmptyRightFile() throws Exception {
+		writeToFile("", INPUT_FILE_2);
+		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
+		commApp.run(args, inStream, outStream);
+		String result = outStream.toString();
+		assertEquals(INPUT_CONTENT_1, result);
+	}
+	
+	@Test
+	public void testResultOfSampleTestCase() throws Exception {
+		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
+		commApp.run(args, inStream, outStream);
+		String result = outStream.toString();
+		StringBuilder expected = new StringBuilder();
+		expected.append(TAB_CHAR).append(TAB_CHAR).append("apple");
+		expected.append(LINE_SEPARATOR);
+		expected.append(TAB_CHAR).append(TAB_CHAR).append("banana");
+		expected.append(LINE_SEPARATOR);
+		expected.append(TAB_CHAR).append("banana");
+		expected.append(LINE_SEPARATOR);
+		expected.append("eggplant");
+		expected.append(LINE_SEPARATOR);
+		expected.append(TAB_CHAR).append("zucchini");
+		expected.append(LINE_SEPARATOR);
+		assertEquals(expected.toString(), result);
+	}
 }

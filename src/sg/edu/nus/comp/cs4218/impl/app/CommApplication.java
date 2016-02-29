@@ -112,7 +112,8 @@ public class CommApplication implements Comm {
 	private void process() throws IOException {
 		leftString = "";
 		rightString = "";
-		while (leftReader.ready() || rightReader.ready()) {
+		while (leftReader.ready() || rightReader.ready() ||
+				!leftString.isEmpty() || !rightString.isEmpty()) {
 			if (leftString.equals("") && leftReader.ready()) {
 				leftString = readLine(leftReader);
 			}
@@ -141,21 +142,18 @@ public class CommApplication implements Comm {
 	
 	private void printLeftString() throws IOException {
 		writeString(leftString, outputStream);
-		writeNewLine(outputStream);
 		leftString = "";
 	}
 	
 	private void printRightString() throws IOException {
 		writeTabs(1, outputStream);
 		writeString(rightString, outputStream);
-		writeNewLine(outputStream);
 		rightString = "";
 	}
 	
 	private void printEqualString() throws IOException {
 		writeTabs(2, outputStream);
 		writeString(leftString, outputStream);
-		writeNewLine(outputStream);
 		leftString = "";
 		rightString = "";
 	}
