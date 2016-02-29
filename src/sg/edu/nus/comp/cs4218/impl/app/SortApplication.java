@@ -275,14 +275,6 @@ public class SortApplication implements Sort {
 		}
 	}
 
-	public static void main(String[] args) throws SortException {
-		SortApplication sa = new SortApplication();
-		String file = "haha.txt";
-		String[] ar = {"-n", "haha.txt" };
-
-		sa.run(ar, System.in, System.out);
-	}
-
 	@Override
 	public List<String> sortStringsSimple(String[] toSort) {
 		ArrayList<String> toBeSorted = new ArrayList<String>();

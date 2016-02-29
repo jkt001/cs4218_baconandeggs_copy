@@ -116,10 +116,10 @@ public class CommApplication implements Comm {
 		rightString = "";
 		while (leftReader.ready() || rightReader.ready() ||
 				!leftString.isEmpty() || !rightString.isEmpty()) {
-			if (leftString.equals("") && leftReader.ready()) {
+			if (leftString.isEmpty() && leftReader.ready()) {
 				leftString = readLine(leftReader);
 			}
-			if (rightString.equals("") && rightReader.ready()) {
+			if (rightString.isEmpty() && rightReader.ready()) {
 				rightString = readLine(rightReader);
 			}
 			writeOneLine();
@@ -174,17 +174,17 @@ public class CommApplication implements Comm {
 	}
 	
 	private String readLine(BufferedReader reader) throws IOException {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder stringBuilder = new StringBuilder();
 		while(true) {
 			int inputChar = reader.read();
 			if (inputChar != -1) {
-				sb.append((char)inputChar);
+				stringBuilder.append((char)inputChar);
 			}
 			if (inputChar == '\n' || inputChar == -1) {
 				break;
 			}
 		}
-		return sb.toString();
+		return stringBuilder.toString();
 	}
 	
 	@Override
