@@ -44,6 +44,12 @@ public class CommApplicationTest {
 			+ "banana" + LINE_SEPARATOR
 			+ "banana" + LINE_SEPARATOR
 			+ "zucchini" + LINE_SEPARATOR;
+	private static final String SAMPLE_RESULT = 
+			TAB_CHAR + TAB_CHAR + "apple" + LINE_SEPARATOR +
+			TAB_CHAR + TAB_CHAR + "banana" + LINE_SEPARATOR +
+			TAB_CHAR + "banana" + LINE_SEPARATOR +
+			"eggplant" + LINE_SEPARATOR +
+			TAB_CHAR + "zucchini" + LINE_SEPARATOR;
 	
 	private void writeToInputStream(String content) {
 		inStream = new ByteArrayInputStream(content.getBytes());
@@ -112,6 +118,10 @@ public class CommApplicationTest {
 		commApp.run(args, inStream, outStream);
 	}
 	
+	/**
+	 * Unreadable file should display a descriptive error message.
+	 * @throws Exception
+	 */
 	@Test
 	public void testUnreadableFile() throws Exception {
 		thrown.expect(CommException.class);
@@ -120,6 +130,11 @@ public class CommApplicationTest {
 		commApp.run(args, inStream, outStream);
 	}
 	
+	/**
+	 * If the left input file is empty, then the output
+	 * should be exactly the same as the right file content.
+	 * @throws Exception
+	 */
 	@Test
 	public void testEmptyLeftFile() throws Exception {
 		writeToFile("", INPUT_FILE_1);
@@ -133,6 +148,11 @@ public class CommApplicationTest {
 		assertEquals(expected, result);
 	}
 	
+	/**
+	 * If the last line does not end with a newline,
+	 * the utility should output as is without adding a newline.
+	 * @throws Exception
+	 */
 	@Test
 	public void testFileNotEndingWithEndline() throws Exception {
 		writeToFile("", INPUT_FILE_1);
@@ -150,6 +170,11 @@ public class CommApplicationTest {
 		assertEquals(expected, result);
 	}
 	
+	/**
+	 * If the right file is empty, the output should
+	 * be exactly the same as the left file content.
+	 * @throws Exception
+	 */
 	@Test
 	public void testEmptyRightFile() throws Exception {
 		writeToFile("", INPUT_FILE_2);
@@ -159,25 +184,23 @@ public class CommApplicationTest {
 		assertEquals(INPUT_CONTENT_1, result);
 	}
 	
+	/**
+	 * Running the sample test case from project description.
+	 * @throws Exception
+	 */
 	@Test
 	public void testResultOfSampleTestCase() throws Exception {
 		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2 };
 		commApp.run(args, inStream, outStream);
 		String result = outStream.toString();
-		StringBuilder expected = new StringBuilder();
-		expected.append(TAB_CHAR).append(TAB_CHAR).append("apple");
-		expected.append(LINE_SEPARATOR);
-		expected.append(TAB_CHAR).append(TAB_CHAR).append("banana");
-		expected.append(LINE_SEPARATOR);
-		expected.append(TAB_CHAR).append("banana");
-		expected.append(LINE_SEPARATOR);
-		expected.append("eggplant");
-		expected.append(LINE_SEPARATOR);
-		expected.append(TAB_CHAR).append("zucchini");
-		expected.append(LINE_SEPARATOR);
-		assertEquals(expected.toString(), result);
+		assertEquals(SAMPLE_RESULT, result);
 	}
 	
+	/**
+	 * No matter how long the text is, the columns will still be 
+	 * separated using one tab character, no less and no more.
+	 * @throws Exception
+	 */
 	@Test
 	public void testLongLineOnLeftFile() throws Exception {
 		String contentLeft = "A is for the word awesome!" + LINE_SEPARATOR +
@@ -202,7 +225,7 @@ public class CommApplicationTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testMiddleLineWithoutNewline() throws Exception {
+	public void testRightFileEndingWithoutNewline() throws Exception {
 		String contentLeft = "A is for the word awesome!" + LINE_SEPARATOR +
 				"C is for the food chocolate";
 		String contentRight = "Banana";
@@ -218,4 +241,12 @@ public class CommApplicationTest {
 		assertEquals(expected.toString(), result);
 	}
 	
+	@Test
+	public void testLeftFileFromStandardInput() throws Exception {
+		writeToInputStream(INPUT_CONTENT_1);
+		String[] args = { INPUT_FILENAME_2 };
+		commApp.run(args, inStream, outStream);
+		String result = outStream.toString();
+		assertEquals(SAMPLE_RESULT, result);
+	}
 }
