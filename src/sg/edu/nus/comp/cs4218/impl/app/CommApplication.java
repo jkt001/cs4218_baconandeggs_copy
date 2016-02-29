@@ -1,6 +1,8 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -187,32 +189,39 @@ public class CommApplication implements Comm {
 	
 	@Override
 	public String commNoMatches(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return runAndRetrieveResult(args);
 	}
 
 	@Override
 	public String commOnlyFirst(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return runAndRetrieveResult(args);
 	}
 
 	@Override
 	public String commOnlySecond(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return runAndRetrieveResult(args);
 	}
 
 	@Override
 	public String commBothMathches(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return runAndRetrieveResult(args);
 	}
 
 	@Override
 	public String commAllMatches(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return runAndRetrieveResult(args);
+	}
+	
+	private String runAndRetrieveResult(String[] args) {
+		try {
+			InputStream inputStream = new ByteArrayInputStream("".getBytes());
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			run(args, inputStream, outputStream);
+			return outputStream.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "comm: terminated with error message " + e.getMessage();
+		}
 	}
 	
 	/**
