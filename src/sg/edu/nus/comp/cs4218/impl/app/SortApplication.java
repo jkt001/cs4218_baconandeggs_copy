@@ -108,8 +108,6 @@ public class SortApplication implements Sort {
 			sort(toBeSorted);
 			print(toBeSorted, stdout);
 
-			buffReader.close();
-
 		} catch (IOException e) {
 			throw new SortException("IOException");
 		}
@@ -145,8 +143,6 @@ public class SortApplication implements Sort {
 
 			sort(toBeSorted);
 			print(toBeSorted, stdout);
-
-			buffReader.close();
 
 		} catch (IOException e) {
 			e.getMessage();	
@@ -189,8 +185,6 @@ public class SortApplication implements Sort {
 			sort(toBeSorted);
 			print(toBeSorted, stdout);
 
-			buffReader.close();
-
 		} catch (IOException e) {
 			throw new SortException("IOException");
 		}
@@ -229,8 +223,6 @@ public class SortApplication implements Sort {
 
 			sort(toBeSorted);
 			print(toBeSorted, stdout);
-
-			buffReader.close();
 
 		} catch (IOException e) {
 			throw new SortException("IOException");
