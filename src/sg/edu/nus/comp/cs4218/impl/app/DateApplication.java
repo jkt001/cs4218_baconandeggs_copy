@@ -56,6 +56,7 @@ public class DateApplication implements Application {
 		String dateString = formatDate(calendar);
 		try {
 			stdout.write(dateString.getBytes());
+			stdout.write(System.lineSeparator().getBytes());
 		} catch (IOException e) {
 			throw new DateException("Could not write to output stream");
 		}
