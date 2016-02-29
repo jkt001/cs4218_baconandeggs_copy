@@ -28,7 +28,10 @@ public class SortApplication implements Sort {
 	 *            specified. If file is specified, the input should be read from
 	 *            the file, else, input is read from stdin. If a flag,-n, is
 	 *            specified, it will treat the first word as a number and sort
-	 *            accordingly.
+	 *            accordingly. The method will parse the first number that it encounters.
+	 *            For example, 123hello will take "123" as the number to be compared
+	 *            first in the sorting, as with 123 hello. Then it will compare the string
+	 *            "hello" and " hello".
 	 * 
 	 * @param stdin
 	 *            An InputStream. The input for the command is read from this
@@ -146,7 +149,7 @@ public class SortApplication implements Sort {
 			buffReader.close();
 
 		} catch (IOException e) {
-			throw new SortException("IOException");
+			e.getMessage();	
 		}
 	}
 
@@ -234,6 +237,16 @@ public class SortApplication implements Sort {
 		}
 	}
 
+	/**
+	 * Writes the content to the specified output stream.
+	 * 
+	 * @param content
+	 *            The content to be printed.
+	 *        stdout
+	 *        	  The output stream that we want to write to.
+	 * @throws IOException
+	 *             If couldn't write to the specified output stream.
+	 */
 	private <E> void print(ArrayList<E> content, OutputStream stdout) throws IOException {
 		String encoding = "UTF-8";
 
@@ -245,7 +258,14 @@ public class SortApplication implements Sort {
 
 	}
 
-	private <E> void sort(ArrayList<E> toBeSorted) {
+	/**
+	 * Sorts the given List. Implements the HeapSort algorithm using
+	 * a min-heap priority queue.
+	 * 
+	 * @param toBeSorted
+	 *            The List to be sorted.
+	 */
+	private <E> void sort(List<E> toBeSorted) {
 		PriorityQueue<E> minHeap = new PriorityQueue<E>();
 
 		while (!toBeSorted.isEmpty()) {
@@ -274,15 +294,10 @@ public class SortApplication implements Sort {
 			throw new SortException("Could not read file");
 		}
 	}
-
-	public static void main(String[] args) throws SortException {
-		SortApplication sa = new SortApplication();
-		String file = "haha.txt";
-		String[] ar = {"-n", "haha.txt" };
-
-		sa.run(ar, System.in, System.out);
-	}
-
+	
+	/**
+	 * Returns an ordered list of lines containing only simple letters
+	 */
 	@Override
 	public List<String> sortStringsSimple(String[] toSort) {
 		ArrayList<String> toBeSorted = new ArrayList<String>();
@@ -293,76 +308,130 @@ public class SortApplication implements Sort {
 		return toBeSorted;
 	}
 
+	/**
+	 * Returns an ordered list of lines containing only capital letters
+	 */
 	@Override
 	public List<String> sortStringsCapital(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing only numbers
+	 */
 	@Override
 	public List<String> sortNumbers(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing only special characters
+	 */
 	@Override
 	public List<String> sortSpecialChars(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters
+	 */
 	@Override
 	public List<String> sortSimpleCapital(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing simple letters and numbers
+	 */
 	@Override
 	public List<String> sortSimpleNumbers(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing simple letters and special
+	 * characters
+	 */
 	@Override
 	public List<String> sortSimpleSpecialChars(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing capital letters and numbers
+	 */
 	@Override
 	public List<String> sortCapitalNumbers(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing capital letters and special
+	 * character
+	 */
 	@Override
 	public List<String> sortCapitalSpecialChars(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing numbers and special
+	 * characters
+	 */
 	@Override
 	public List<String> sortNumbersSpecialChars(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters
+	 * and numbers
+	 */
 	@Override
 	public List<String> sortSimpleCapitalNumber(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters
+	 * and special characters
+	 */
 	@Override
 	public List<String> sortSimpleCapitalSpecialChars(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing simple letters, numbers and
+	 * special characters
+	 */
 	@Override
 	public List<String> sortSimpleNumbersSpecialChars(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing capital letters, numbers and
+	 * special characters
+	 */
 	@Override
 	public List<String> sortCapitalNumbersSpecialChars(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters,
+	 * numbers and special characters
+	 */
 	@Override
 	public List<String> sortAll(String[] toSort) {
 		return sortStringsSimple(toSort);
 	}
 	
+	/**
+	 * Returns an ordered list of lines containing only simple letters,
+	 * using the first word as number
+	 */
 	public List<String> numericalSortStringsSimple(String[] toSort) {
 		ArrayList<NumericString> toBeSorted = new ArrayList<NumericString>();
 		for (String lines : toSort) {
@@ -378,77 +447,120 @@ public class SortApplication implements Sort {
 		return toBeReturned;
 	}
 	
-	
+	/**
+	 * Returns an ordered list of lines containing only capital letters,
+	 * using the first word as number
+	 */
 	public List<String> numericalSortStringsCapital(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing only numbers,
+	 * using the first word as number
+	 */
 	public List<String> numericalSortNumbers(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing only special characters,
+	 * using the first word as number
+	 */
 	public List<String> numericalSortSpecialChars(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters,
+	 * using the first word as number
+	 */
 	public List<String> numericalSortSimpleCapital(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing simple letters and numbers,
+	 * using the first word as number
+	 */
 	public List<String> numericalSortSimpleNumbers(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing simple letters and special
+	 * characters, using the first word as number
+	 */
 	public List<String> numericalSortSimpleSpecialChars(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing capital letters and numbers,
+	 * using the first word as number
+	 */
 	public List<String> numericalSortCapitalNumbers(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing capital letters and special
+	 * character, using the first word as number
+	 */
 	public List<String> numericalSortCapitalSpecialChars(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing numbers and special
+	 * characters, using the first word as number
+	 */
 	public List<String> numericalSortNumbersSpecialChars(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters
+	 * and numbers, using the first word as number
+	 */
 	public List<String> numericalSortSimpleCapitalNumber(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters
+	 * and special characters, using the first word as number
+	 */
 	public List<String> numericalSortSimpleCapitalSpecialChars(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing simple letters, numbers and
+	 * special characters, using the first word as number
+	 */
 	public List<String> numericalSortSimpleNumbersSpecialChars(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing capital letters, numbers and
+	 * special characters, using the first word as number
+	 */
 	public List<String> numericalSortCapitalNumbersSpecialChars(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
-	
+	/**
+	 * Returns an ordered list of lines containing simple and capital letters,
+	 * numbers and special characters, using the first word as number
+	 */
 	public List<String> numericalSortAll(String[] toSort) {
 		return numericalSortStringsSimple(toSort);
 	}
 
 }
+
 
 /**
  * Helper Class for sorting with "-n" option on
@@ -486,6 +598,10 @@ class NumericString implements Comparable<NumericString> {
 
 	public BigInteger getNumber() {
 		return this.number;
+	}
+	
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 	public String getContent() {
