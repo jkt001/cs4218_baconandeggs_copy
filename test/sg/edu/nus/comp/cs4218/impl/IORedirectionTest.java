@@ -58,8 +58,14 @@ public class IORedirectionTest {
 	}
 	
 	@Test
-	public void testOutputRedirectionAppend() {
-		
+	public void testOutputRedirectionAppend() throws Exception {
+		shell.parseAndEvaluate("echo hello world > tmp.out", outputStream);
+		shell.parseAndEvaluate("echo chocolate >> tmp.out", outputStream);
+		assertEquals("", outputStream.toString());
+		File outputFile = Paths.get(Environment.currentDirectory).resolve("tmp.out").toFile();
+		assertTrue("Output file gets created", outputFile.exists());
+		assertEquals("hello world" + System.lineSeparator() + "chocolate",
+			contentOfFile(outputFile));
 	}
 	
 	@Test
