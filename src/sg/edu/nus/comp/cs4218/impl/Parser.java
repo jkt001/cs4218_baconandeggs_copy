@@ -87,7 +87,14 @@ public class Parser {
 				}
 			} else {
 				if (isWithinQuotes) {
-					currentWord.append(thisChar);
+					if (thisChar == '\\' && openQuotation == '"') {
+						if (i < cmdline.length()-1) {
+							currentWord.append(cmdline.charAt(i+1));
+							i = i+1;
+						}
+					} else {
+						currentWord.append(thisChar);
+					}
 				} else {
 					if (thisChar == ';') {
 						endOfLineParse(stdout, currentWord.toString());
@@ -135,14 +142,12 @@ public class Parser {
 				currentDirectories = pushAllFiles(currentDirectories, null);
 				return currentDirectories;
 			}
-			System.out.println("here");
 			for (int i = 0; i < partsOfPath.length; i++) {
 				if (i == 0) {
 					if (startsWithAsterisk) {
 						currentDirectories = pushAllFilesWithExt(currentDirectories, null, partsOfPath[i]);
 					} else {
 						if (partsOfPath[i].endsWith(File.pathSeparator)) {
-							System.out.println("Should see");
 							currentDirectories = pushAllFiles(currentDirectories, partsOfPath[i]);
 						} else {
 							currentDirectories = pushAllFilesThatStart(currentDirectories, null, partsOfPath[i]);

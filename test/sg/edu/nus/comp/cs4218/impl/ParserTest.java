@@ -152,4 +152,17 @@ public class ParserTest {
 		parser.parse("echo hi | notacommand", outStream);
 		parser.evaluate();
 	}
+	
+	@Test
+	public void testSpecialCharacterInDoubleQuote() throws ShellException, AbstractApplicationException {
+		parser.parse("echo \" hi there \" ", outStream);
+		ArrayList<String> comds = parser.getCommands();
+		ArrayList<String[]> args = parser.getArguments();
+		int numberComds = comds.size();
+		assertEquals(numberComds, 1);
+		for (int i = 0; i<numberComds; i++) {
+			assertEquals("echo", comds.get(i));
+			assertEquals(1, args.get(i).length);
+		}
+	}
 }
