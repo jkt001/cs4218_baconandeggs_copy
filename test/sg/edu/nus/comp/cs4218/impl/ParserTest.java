@@ -160,9 +160,8 @@ public class ParserTest {
 		ArrayList<String[]> args = parser.getArguments();
 		int numberComds = comds.size();
 		assertEquals(numberComds, 1);
-		for (int i = 0; i<numberComds; i++) {
-			assertEquals("echo", comds.get(i));
-			assertEquals(1, args.get(i).length);
-		}
+		assertEquals("echo", comds.get(0));
+		assertEquals(1, args.get(0).length);
+		assertEquals(" hi there ", args.get(0)[0]);
 	}
 }
