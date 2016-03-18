@@ -33,6 +33,12 @@ import sg.edu.nus.comp.cs4218.exception.CommException;
  */
 public class CommApplication implements Comm {
 	
+	public static final String EXP_NULL_POINTER = "Output stream is null";
+	public static final String EXP_INVALID_ARGS = "Invalid args";
+	public static final String SINGLE_TAB = "\t";
+	public static final String DOUBLE_TAB = "\t\t";
+	public static final String EXP_FNF_EXCEPTION = "File not found";
+	
 	private InputStream leftInputStream;
 	private InputStream rightInputStream;
 	private BufferedReader leftReader;
@@ -43,6 +49,7 @@ public class CommApplication implements Comm {
 	
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws CommException {
+		checkArgs(args, stdin, stdout);
 		try {
 			readInputArgs(args, stdin, stdout);
 			setupBufferedReaders();
@@ -52,6 +59,29 @@ public class CommApplication implements Comm {
 			ce.printStackTrace();
 			throw ce;
 		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CommException(e.getMessage());
+		} finally {
+			leftInputStream = null;
+			rightInputStream = null;
+			leftReader = null;
+			rightReader = null;
+			leftString = null;
+			rightString = null;
+			outputStream = null;
+		}
+	}
+	
+	// testing method
+	public void comm(InputStream leftInputStream, InputStream rightInputStream, OutputStream outputStream) throws CommException {
+		try {
+			this.leftInputStream = leftInputStream;
+			this.rightInputStream = rightInputStream;
+			this.outputStream = outputStream;
+			setupBufferedReaders();
+			process();
+			closeStreams();
+		} catch (IOException e) {
 			e.printStackTrace();
 			throw new CommException(e.getMessage());
 		} finally {
@@ -78,7 +108,16 @@ public class CommApplication implements Comm {
 	}
 	
 	// Section: reading input arguments
-	private void readInputArgs(String[] args, InputStream stdin, OutputStream stdout) throws CommException, FileNotFoundException {
+	private void checkArgs(String[] args, InputStream stdin, OutputStream stdout) throws CommException {
+		if (stdout == null) {
+			throw new CommException(EXP_NULL_POINTER);
+		}
+		if (args == null || args.length == 0 || args.length > 2 ) {
+			throw new CommException(EXP_INVALID_ARGS);
+		}
+	}
+	
+	private void readInputArgs(String[] args, InputStream stdin, OutputStream stdout) throws CommException {
 		outputStream = stdout;
 		if (args.length == 2) {
 			leftInputStream = inputStreamFromFileName(args[0]);
@@ -91,11 +130,15 @@ public class CommApplication implements Comm {
 		}
 	}
 
-	private InputStream inputStreamFromFileName(String fileName) throws CommException, FileNotFoundException {
+	private InputStream inputStreamFromFileName(String fileName) throws CommException {
 		Path currentDir = Paths.get(Environment.currentDirectory);
 		Path filePath = currentDir.resolve(fileName);
 		checkIfFileIsReadable(filePath, true);
-		return new FileInputStream(filePath.toString());
+		try {
+			return new FileInputStream(filePath.toString());	
+		} catch (FileNotFoundException e) {
+			throw new CommException(EXP_FNF_EXCEPTION);
+		}
 	}
 	
 	private boolean checkIfFileIsReadable(Path filePath) {
@@ -105,7 +148,7 @@ public class CommApplication implements Comm {
 	private boolean checkIfFileIsReadable(Path filePath, boolean raiseException) throws CommException {
 		boolean isReadable = checkIfFileIsReadable(filePath);
 		if (!isReadable && raiseException) {
-			throw new CommException("file is not readable");
+			throw new CommException(EXP_FNF_EXCEPTION);
 		}
 		return isReadable;
 	}
