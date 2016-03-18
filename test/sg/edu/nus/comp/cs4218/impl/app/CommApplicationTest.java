@@ -93,7 +93,7 @@ public class CommApplicationTest {
 	@Test
 	public void testRunCommandZeroArgument() throws Exception {
 		thrown.expect(CommException.class);
-		thrown.expectMessage("comm: usage: comm [FILE1] FILE2");
+		thrown.expectMessage("comm: " + CommApplication.EXP_INVALID_ARGS);
 		String[] args = { };
 		commApp.run(args, inStream, outStream);
 	}
@@ -113,7 +113,7 @@ public class CommApplicationTest {
 	@Test
 	public void testRunCommandThreeArguments() throws Exception {
 		thrown.expect(CommException.class);
-		thrown.expectMessage("comm: usage: comm [FILE1] FILE2");
+		thrown.expectMessage("comm: Invalid args");
 		String[] args = { INPUT_FILENAME_1, INPUT_FILENAME_2, "Extra" };
 		commApp.run(args, inStream, outStream);
 	}
@@ -125,7 +125,7 @@ public class CommApplicationTest {
 	@Test
 	public void testUnreadableFile() throws Exception {
 		thrown.expect(CommException.class);
-		thrown.expectMessage("comm: file is not readable");
+		thrown.expectMessage("comm: " + CommApplication.EXP_FNF_EXCEPTION);
 		String[] args = { "doesnotexist.txt" };
 		commApp.run(args, inStream, outStream);
 	}
