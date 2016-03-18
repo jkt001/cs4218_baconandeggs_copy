@@ -7,11 +7,14 @@ import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.nio.*;
 
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
@@ -143,6 +146,7 @@ public class Parser {
 				return currentDirectories;
 			}
 			for (int i = 0; i < partsOfPath.length; i++) {
+				System.out.println("enter loop");
 				if (i == 0) {
 					if (startsWithAsterisk) {
 						currentDirectories = pushAllFilesWithExt(currentDirectories, null, partsOfPath[i]);
@@ -179,7 +183,8 @@ public class Parser {
 			File thisDir = new File(root.toUri());
 			File[] files = thisDir.listFiles();
 			for (File f : files) {
-				result.add(f.getPath());
+				String relative = new File(thisDir.getPath()).toURI().relativize(new File(f.getPath()).toURI()).getPath();
+				result.add(relative);
 			}
 		} catch (InvalidPathException e) {
 			return null;
