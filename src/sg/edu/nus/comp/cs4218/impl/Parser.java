@@ -3,15 +3,14 @@ package sg.edu.nus.comp.cs4218.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
@@ -24,6 +23,10 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
  * @author wilson
  */
 public class Parser {
+	
+	private enum GlobType {
+		ALL, FILE, FOLDER
+	}
 
 	// Parse & Evaluate shared variables
 	private ArrayList<String> comds;
@@ -128,40 +131,42 @@ public class Parser {
 	// Handles adding of words to args. Handles globbing is there is a need to
 	private ArrayList<String> addToArgs(String toAdd) {
 		ArrayList<String> currentDirectories = new ArrayList<String>();
+
+		ArrayList<Path> partialDirectories = new ArrayList<Path>();
+		Path root = Paths.get(Environment.currentDirectory);
+		partialDirectories.add(root);
 		if (toAdd.contains("*")) {
-			boolean startsWithAsterisk = false;
-			boolean endsWithAsterisk = false;
-			if (toAdd.startsWith("*")) {
-				startsWithAsterisk = true;
-			}
-			if (toAdd.endsWith("*")) {
-				endsWithAsterisk = true;
-			}
-			String[] partsOfPath = toAdd.split("\\*");
-			if (partsOfPath.length == 0) {
-				currentDirectories = pushAllFiles(currentDirectories, null);
+			if (toAdd.startsWith(File.separator)) {
 				return currentDirectories;
 			}
-			for (int i = 0; i < partsOfPath.length; i++) {
-				if (i == 0) {
-					if (startsWithAsterisk) {
-						currentDirectories = pushAllFilesWithExt(currentDirectories, null, partsOfPath[i]);
+			GlobType gType;
+			if (toAdd.endsWith(File.separator)) {
+				gType = GlobType.FOLDER;
+			} else if(!toAdd.endsWith("*")) {
+				gType = GlobType.FILE;
+			} else {
+				gType = GlobType.ALL;
+			}
+			String[] subs = toAdd.split(File.separator);
+			for (int i = 0; i<subs.length; i++) {
+				String sub = subs[i];
+				if (sub.contains("*")) {
+					if (i == subs.length-1) {
+						partialDirectories = updateDirectoriesWithGlob(partialDirectories, sub, gType);
 					} else {
-						if (partsOfPath[i].endsWith(File.pathSeparator)) {
-							currentDirectories = pushAllFiles(currentDirectories, partsOfPath[i]);
-						} else {
-							currentDirectories = pushAllFilesThatStart(currentDirectories, null, partsOfPath[i]);
-						}
-					}
-				} else if (i == partsOfPath.length - 1) {
-					if (endsWithAsterisk) {
-						currentDirectories = pushAllFilesThatStart(currentDirectories, null, partsOfPath[i]);
-					} else {
-						currentDirectories = pushAllFilesWithExt(currentDirectories, null, partsOfPath[i]);
+						partialDirectories = updateDirectoriesWithGlob(partialDirectories, sub, GlobType.FOLDER);
 					}
 				} else {
-					currentDirectories = pushAllFiles(currentDirectories, null);
+					if (i == subs.length-1) {
+						partialDirectories = updateDirectoriesWithoutGlob(partialDirectories, sub, gType);
+					} else {
+						partialDirectories = updateDirectoriesWithoutGlob(partialDirectories, sub, GlobType.FOLDER);
+					}
 				}
+			}
+			for (int i = 0; i<partialDirectories.size(); i++) {
+				String relative = new File(root.toUri()).toURI().relativize(new File(partialDirectories.get(i).toUri()).toURI()).getPath();
+				currentDirectories.add(relative);
 			}
 		} else {
 			currentDirectories.add(toAdd);
@@ -169,66 +174,72 @@ public class Parser {
 		return currentDirectories;
 	}
 
-	private ArrayList<String> pushAllFiles(ArrayList<String> paths, String subDirectory) {
-		ArrayList<String> result = new ArrayList<String>();
-		Path root = Paths.get(Environment.currentDirectory);
-		try {
-			if (subDirectory != null) {
-				root.resolve(subDirectory);
+	private ArrayList<Path> updateDirectoriesWithGlob(ArrayList<Path> toUpdate, String next, GlobType gType) {
+		ArrayList<Path> result = new ArrayList<Path>();
+		ArrayList<Path> temp = new ArrayList<Path>();
+		for (int j = 0; j < toUpdate.size(); j++) {
+			temp = getValidGlobPaths(toUpdate.get(j), next, gType);
+			for(int i = 0; i < temp.size(); i++) {
+				result.add(temp.get(i));
 			}
-			File thisDir = new File(root.toUri());
+		}
+		return result;
+	}
+
+	private ArrayList<Path> getValidGlobPaths(Path thisPath, String nextSub, GlobType gType) {
+		ArrayList<Path> newPaths = new ArrayList<Path>();
+		try {
+			File thisDir = new File(thisPath.toUri());
 			File[] files = thisDir.listFiles();
-			for (File f : files) {
-				result.add(f.getPath());
+			for (File f: files) {
+				String regexMatch = regexReplace(nextSub);
+				if (Pattern.matches(regexMatch, f.getName())) {
+					if ((gType == GlobType.FILE && f.isFile()) || (gType == GlobType.FOLDER && f.isDirectory())
+							|| (gType == GlobType.ALL)) {
+						newPaths.add(f.toPath());
+					}
+				}
 			}
 		} catch (InvalidPathException e) {
-			return null;
+			//skip this
+		}
+		return newPaths;
+	}
+
+	public String regexReplace(String toReplace) {
+		String temp = toReplace.replaceAll("\\.", "\\\\\\.");
+		return temp.replaceAll("\\*", "\\.\\*");
+	}
+
+	private ArrayList<Path> updateDirectoriesWithoutGlob(ArrayList<Path> toUpdate, String next, GlobType gType) {
+		ArrayList<Path> result = new ArrayList<Path>();
+		ArrayList<Path> temp = new ArrayList<Path>();
+		for (int j = 0; j < toUpdate.size(); j++) {
+			temp = getValidPaths(toUpdate.get(j), next, gType);
+			for(int i = 0; i < temp.size(); i++) {
+				result.add(temp.get(i));
+			}
 		}
 		return result;
 	}
 
-	private ArrayList<String> pushAllFilesWithExt(ArrayList<String> paths, String subDirectory, final String ext) {
-		ArrayList<String> result = new ArrayList<String>();
-		Path root = Paths.get(Environment.currentDirectory);
+	private ArrayList<Path> getValidPaths(Path thisPath, String nextSub, GlobType gType) {
+		ArrayList<Path> newPaths = new ArrayList<Path>();
 		try {
-			if (subDirectory != null) {
-				root.resolve(subDirectory);
-			}
-			File thisDir = new File(root.toUri());
-			File[] files = thisDir.listFiles(new FilenameFilter() {
-				public boolean accept(File dir, String filename) {
-					return filename.endsWith(ext);
+			File thisDir = new File(thisPath.toUri());
+			File[] files = thisDir.listFiles();
+			for (File f: files) {
+				if (f.getName().equals(nextSub)) {
+					if ((gType == GlobType.FILE && f.isFile()) || (gType == GlobType.FOLDER && f.isDirectory())
+							|| (gType == GlobType.ALL)) {
+						newPaths.add(f.toPath());
+					}
 				}
-			});
-			for (File f : files) {
-				result.add(f.getPath());
 			}
 		} catch (InvalidPathException e) {
-			return null;
+			//skip this
 		}
-		return result;
-	}
-
-	private ArrayList<String> pushAllFilesThatStart(ArrayList<String> paths, String subDirectory, final String start) {
-		ArrayList<String> result = new ArrayList<String>();
-		Path root = Paths.get(Environment.currentDirectory);
-		try {
-			if (subDirectory != null) {
-				root.resolve(subDirectory);
-			}
-			File thisDir = new File(root.toUri());
-			File[] files = thisDir.listFiles(new FilenameFilter() {
-				public boolean accept(File dir, String filename) {
-					return filename.startsWith(start);
-				}
-			});
-			for (File f : files) {
-				result.add(f.getPath());
-			}
-		} catch (InvalidPathException e) {
-			return null;
-		}
-		return result;
+		return newPaths;
 	}
 
 	/**
