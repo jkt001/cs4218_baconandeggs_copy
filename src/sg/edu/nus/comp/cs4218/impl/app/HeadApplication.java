@@ -129,23 +129,50 @@ public class HeadApplication implements Application {
 				stdin));
 
 		int numRead = 0;
-
-		while (numLinesToRead != numRead) {
-			try {
-				String inputString = buffReader.readLine();
-				if (inputString == null) {
+		
+		StringBuilder sb = new StringBuilder();
+		try {
+			int c;
+			while ((c = buffReader.read()) != -1) {
+				char ch = (char) c;
+				if (ch == '\n') {
+					if (sb.length() > 0) {
+						sb.append(System.lineSeparator());
+						numRead++;
+					}
+				} else {
+					sb.append(ch);
+				}
+				
+				if (numRead == numLinesToRead) {
 					break;
 				}
-				stdout.write(inputString.getBytes("UTF-8"));
-				if (numLinesToRead == numRead) {
-					break;
-				}
-				stdout.write(System.lineSeparator().getBytes("UTF-8"));
-				numRead++;
-			} catch (IOException e) {
-				throw new HeadException("IO Exception");
 			}
+			
+			stdout.write(sb.toString().getBytes());
+			
+		} catch (IOException e) {
+			throw new HeadException("IO Exception");
 		}
+		
+		
+
+//		while (numLinesToRead != numRead) {
+//			try {
+//				String inputString = buffReader.readLine();
+//				if (inputString == null) {
+//					break;
+//				}
+//				stdout.write(inputString.getBytes("UTF-8"));
+//				if (numLinesToRead == numRead) {
+//					break;
+//				}
+//				stdout.write(System.lineSeparator().getBytes("UTF-8"));
+//				numRead++;
+//			} catch (IOException e) {
+//				throw new HeadException("IO Exception");
+//			}
+//		}
 	}
 
 	/**
@@ -188,7 +215,7 @@ public class HeadApplication implements Application {
 	void readFromFileAndWriteToStdout(OutputStream stdout,
 			int numLinesRequired, Path filePath) throws HeadException {
 
-		String encoding = "UTF-8";
+//		String encoding = "UTF-8";
 
 		if (stdout == null) {
 			throw new HeadException("Null Pointer Exception");
@@ -201,16 +228,38 @@ public class HeadApplication implements Application {
 					new InputStreamReader(fileInStream));
 
 			int numLinesWrote = 0;
-			String input = "";
-			while ((input = buffReader.readLine()) != null) {
+//			String input = "";
+			
+			StringBuilder sb = new StringBuilder();
+			int c;
+			while ((c = buffReader.read()) != -1) {
+				char ch = (char) c;
+				if (ch == '\n') {
+					if (sb.length() > 0) {
+						sb.append(System.lineSeparator());
+						numLinesWrote++;
+					}
+				} else {
+					sb.append(ch);
+				}
+				
 				if (numLinesWrote == numLinesRequired) {
 					break;
 				}
-				stdout.write(input.getBytes(encoding));
-				stdout.write(System.lineSeparator().getBytes(encoding));
-				numLinesWrote++;
 			}
+			
+			stdout.write(sb.toString().getBytes());
 			buffReader.close();
+			
+//			while ((input = buffReader.readLine()) != null) {
+//				if (numLinesWrote == numLinesRequired) {
+//					break;
+//				}
+//				stdout.write(input.getBytes(encoding));
+//				stdout.write(System.lineSeparator().getBytes(encoding));
+//				numLinesWrote++;
+//			}
+//			buffReader.close();
 
 		} catch (IOException e) {
 			throw new HeadException("IOException");
