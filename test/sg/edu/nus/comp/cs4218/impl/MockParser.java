@@ -36,13 +36,13 @@ public class MockParser extends Parser {
 	}
 	
 	protected String recursivelyParse(String toParse) throws ShellException, AbstractApplicationException {
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
+		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		MockParser nextInstance = new MockParser();
-		nextInstance.parse(toParse, bo);
+		nextInstance.parse(toParse, outStream);
 		nextInstance.evaluate();
 		String result = "";
 		try {
-			result = bo.toString("UTF-8");
+			result = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}

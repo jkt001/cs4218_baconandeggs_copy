@@ -20,13 +20,13 @@ public class BcApplicationTest {
 	private static OutputStream outStream;
 	private static final int EPSILON = 10;
 	
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+	
 	@BeforeClass
 	public static void setUpBeforeClass() throws IOException {
 		bcApplication = new BcApplication();
 	}
-	
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 	
 	@Before
 	public void setup() throws IOException {
@@ -651,8 +651,7 @@ public class BcApplicationTest {
 	
 	
 	private String[] createArgument(String left, String right, String operation) {
-		String[] args = {left, operation, right};
-		return args;
+		return new String[] {left, operation, right};
 	}
 	
 }
