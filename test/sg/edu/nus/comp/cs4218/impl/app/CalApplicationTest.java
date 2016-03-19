@@ -59,6 +59,26 @@ public class CalApplicationTest {
 	}
 	
 	@Test
+	public void testRunNullArgs() throws CalException, IOException {
+		String[] args = null;
+		Calendar calendar = new GregorianCalendar();
+		int month = calendar.get(Calendar.MONTH);
+		String expected = generateCalendar(determineFile(month, false));
+		String actual = calApplication.printCal(args);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void testRunEmptyArgs() throws CalException, IOException {
+		String[] args = {};
+		Calendar calendar = new GregorianCalendar();
+		int month = calendar.get(Calendar.MONTH);
+		String expected = generateCalendar(determineFile(month, false));
+		String actual = calApplication.printCal(args);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void testRunWithNullStdout() throws CalException {
 		thrown.expect(CalException.class);
 		thrown.expectMessage("Null Pointer Exception");
