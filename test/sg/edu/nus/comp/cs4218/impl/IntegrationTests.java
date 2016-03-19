@@ -13,13 +13,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Calendar;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.BeforeClass;
 
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.Shell;
+import sg.edu.nus.comp.cs4218.impl.app.DateApplication;
 
 /**
  * Integration testing that treats the shell as a black box.
@@ -32,9 +35,14 @@ public class IntegrationTests {
 	
 	private Shell shell;
 	private ByteArrayOutputStream outputStream;
+	private String input2Content;
 	private static final String INPUT_FILENAME = "tmp.in";
+	private static final String INPUT2_FILENAME = "tmp2.in";
 	private static final String INPUT_CONTENT = "My secret password is 123***";
+	private static final Integer INPUT2_NUMLINES = 20;
 	private static final File INPUT_FILE = Paths.get(Environment.currentDirectory).resolve(INPUT_FILENAME).toFile();
+	private static final File INPUT2_FILE = Paths.get(Environment.currentDirectory).resolve(INPUT2_FILENAME).toFile();
+	private static final String ENDL = System.lineSeparator();
 	
 	private String contentOfFile(File file) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
@@ -55,11 +63,21 @@ public class IntegrationTests {
 		writer.close();
 	}
 	
+	private String contentOfInput2(Integer lineStart, Integer lineEnd) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = lineStart; i < Math.min(lineEnd, INPUT2_NUMLINES); i++) {
+			stringBuilder.append("Line").append(i).append(System.lineSeparator());
+		}
+		return stringBuilder.toString();
+	}
+	
 	@Before
 	public void setUp() throws IOException {
 		shell = new ShellImpl();
 		outputStream = new ByteArrayOutputStream();
 		writeToFile(INPUT_CONTENT, INPUT_FILE);
+		input2Content = contentOfInput2(0, INPUT2_NUMLINES);
+		writeToFile(input2Content, INPUT2_FILE);
 	}
 	
 	@After
@@ -67,6 +85,7 @@ public class IntegrationTests {
 		shell = null;
 		outputStream = null;
 		INPUT_FILE.delete();
+		INPUT2_FILE.delete();
 	}
 	
 	@Test
@@ -81,6 +100,136 @@ public class IntegrationTests {
 		shell.parseAndEvaluate("cat " + INPUT_FILENAME, outputStream);
 		String result = outputStream.toString();
 		assertEquals(INPUT_CONTENT, result);
+	}
+	
+	@Test
+	public void testEcho() throws Exception {
+		shell.parseAndEvaluate("echo hello world", outputStream);
+		String result = outputStream.toString();
+		assertEquals("hello world" + ENDL, result);
+	}
+	
+	@Test
+	public void testHead() throws Exception {
+		shell.parseAndEvaluate("head -n 5 " + INPUT2_FILENAME, outputStream);
+		String result = outputStream.toString();
+		assertEquals(contentOfInput2(0,5), result);
+	}
+	
+	@Test
+	public void testTail() throws Exception {
+		shell.parseAndEvaluate("tail -n 5 " + INPUT2_FILENAME, outputStream);
+		String result = outputStream.toString();
+		assertEquals(contentOfInput2(INPUT2_NUMLINES - 5, INPUT2_NUMLINES), result);
+	}
+	
+	@Test
+	public void testDate() throws Exception {
+		Calendar calendar = Calendar.getInstance();
+		shell.parseAndEvaluate("date", outputStream);
+		String result = outputStream.toString();
+		DateApplication dateApplication = new DateApplication();
+		
+		assertEquals(dateApplication.formatDate(calendar) + ENDL, result);
+	}
+	
+	@Test
+	public void testFmt() throws Exception {
+		shell.parseAndEvaluate("fmt -w 10 " + INPUT_FILENAME, outputStream);
+		String result = outputStream.toString();
+		String expected = "My secret" + ENDL + 
+				"password" + ENDL +
+				"is 123***";
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testSort() throws Exception {
+		writeToFile("10" + ENDL + "1" + ENDL + "2" + ENDL, INPUT_FILE);
+		shell.parseAndEvaluate("sort -n " + INPUT_FILENAME, outputStream);
+		String result = outputStream.toString();
+		String expected = "1" + ENDL + "2" + ENDL + "10" + ENDL;
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testComm() throws Exception {
+		writeToFile("apple" + ENDL, INPUT_FILE);
+		writeToFile("banana" + ENDL, INPUT2_FILE);
+		shell.parseAndEvaluate("comm " + INPUT_FILENAME + 
+				" " + INPUT2_FILENAME, outputStream);
+		String result = outputStream.toString();
+		String expected = "apple" + ENDL + "\tbanana" + ENDL;
+		assertEquals(expected, result);
+	}
+	
+	@Test
+	public void testBc() throws Exception {
+		writeToFile("5 + 5", INPUT_FILE);
+		shell.parseAndEvaluate("bc < " + INPUT_FILENAME, outputStream);
+		String result = outputStream.toString();
+		assertEquals("10", result);
+	}
+	
+	@Test
+	public void testCal() throws Exception {
+		shell.parseAndEvaluate("cal", outputStream);
+	}
+	
+	@Test
+	public void testCommandSequenceTwoCommands() throws Exception {
+		shell.parseAndEvaluate("echo hello; echo world;", outputStream);
+		String result = outputStream.toString();
+		assertEquals("hello" + ENDL + "world" + ENDL, result);
+	}
+	
+	@Test
+	public void testCommandSequenceThreeCommands() throws Exception {
+		shell.parseAndEvaluate("echo hello; echo from; echo the other side;", outputStream);
+		String result = outputStream.toString();
+		assertEquals("hello" + ENDL + "from" + ENDL + "the other side" + ENDL, result);
+	}
+	
+	@Test
+	public void testQuotedString() throws Exception {
+		shell.parseAndEvaluate("echo 'cat tmp.in'", outputStream);
+		String result = outputStream.toString();
+		assertEquals("cat tmp.in" + ENDL, result);
+	}
+	
+	@Test
+	public void testNonQuotedString() throws Exception {
+		shell.parseAndEvaluate("echo cat tmp.in", outputStream);
+		String result = outputStream.toString();
+		assertEquals("cat tmp.in" + ENDL, result);
+	}
+	
+	@Test
+	public void testCommandSubstitution() throws Exception {
+		shell.parseAndEvaluate("echo `cat tmp.in`", outputStream);
+		String result = outputStream.toString();
+		assertEquals(INPUT_CONTENT + "" + ENDL, result);
+	}
+	
+	@Test
+	public void testCommandSubstitutionInDoubleQuote() throws Exception {
+		shell.parseAndEvaluate("echo \"Hello! `cat tmp.in`\"", outputStream);
+		String result = outputStream.toString();
+		assertEquals("Hello! " + INPUT_CONTENT + ENDL, result);
+	}
+	
+	@Test
+	public void testBacktickInSingleQuote() throws Exception {
+		shell.parseAndEvaluate("echo 'Hello! `cat tmp.in`'", outputStream);
+		String result = outputStream.toString();
+		assertEquals("Hello! `cat tmp.in`" + ENDL, result);
+	}
+	
+	@Test
+	public void testPipeRedirection() throws Exception {
+		shell.parseAndEvaluate("cat " + INPUT2_FILENAME + " | head -n 5", outputStream);
+		String result = outputStream.toString();
+		assertEquals(contentOfInput2(0, 5), result);
 	}
 	
 }

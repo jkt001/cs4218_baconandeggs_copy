@@ -16,7 +16,7 @@ import sg.edu.nus.comp.cs4218.exception.EchoException;
  * </p>
  */
 public class EchoApplication implements Application {
-
+	
 	/**
 	 * Runs the echo application with the specified arguments.
 	 * 
@@ -41,7 +41,7 @@ public class EchoApplication implements Application {
 		}
 		try {
 			if (args.length == 0) {
-				stdout.write("\n".getBytes());
+				stdout.write(System.lineSeparator().getBytes());
 			} else {
 				for (int i = 0; i < args.length; i++) {
 					stdout.write(args[i].getBytes());
@@ -49,7 +49,7 @@ public class EchoApplication implements Application {
 						stdout.write(" ".getBytes());
 					}
 				}
-				stdout.write("\n".getBytes());
+				stdout.write(System.lineSeparator().getBytes());
 			}
 		} catch (IOException e) {
 			throw new EchoException("IOException");

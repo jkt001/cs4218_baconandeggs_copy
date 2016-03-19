@@ -70,7 +70,7 @@ public class DateApplication implements Application {
 	 * @return string representation of a calendar instance in the format specified above 
 	 * @throws DateException if there is an error in processing the calendar
 	 */
-	String formatDate(Calendar calendar) throws DateException {
+	public String formatDate(Calendar calendar) throws DateException {
 		String dayOfWeek = getDayOfWeek(calendar);
 		String month = getMonth(calendar);
 		int day = getDayOfMonth(calendar);
