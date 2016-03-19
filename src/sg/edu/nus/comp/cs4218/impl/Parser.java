@@ -124,7 +124,7 @@ public class Parser {
 								isFirstArg = !isFirstArg;
 								comds.add(currentWord.toString());
 							} else {
-								currentArgs.addAll(addToArgs(currentWord.toString()));
+								currentArgs.addAll(getGlobDirectories(currentWord.toString()));
 							}
 							currentWord = new StringBuilder();
 						}
@@ -159,7 +159,7 @@ public class Parser {
 	}
 
 	// Handles adding of words to args. Handles globbing is there is a need to
-	private ArrayList<String> addToArgs(String toAdd) {
+	public ArrayList<String> getGlobDirectories(String toAdd) {
 		ArrayList<String> currentDirectories = new ArrayList<String>();
 
 		ArrayList<Path> partialDirectories = new ArrayList<Path>();
@@ -350,7 +350,7 @@ public class Parser {
 			comds.add(lastWord);
 		} else {
 			if (currentWord.length() > 0) {
-				currentArgs.addAll(addToArgs(lastWord));
+				currentArgs.addAll(getGlobDirectories(lastWord));
 			}
 		}
 		//TODO: Test for exceptions too

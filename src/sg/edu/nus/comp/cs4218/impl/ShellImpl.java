@@ -1,8 +1,7 @@
 package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
@@ -237,27 +236,70 @@ public class ShellImpl implements Shell {
 		return output;
 	}
 
-	@Override
+
+	/**
+	 * Gets all the paths that is globbed (but none in this case)
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				empty string since there are no paths
+	 */
 	public String globNoPaths(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i<args.length; i++) {
+			sb.append(args[i]);
+			if (i != args.length-1) {
+				sb.append(File.separator);
+			}
+		}
+		String built = sb.toString();
+		Parser p = new Parser();
+		List<String> allPaths = p.getGlobDirectories(built);
+		sb = new StringBuilder();
+		for (int i = 0; i<allPaths.size(); i++) {
+			sb.append(allPaths.get(i));
+			if (i != allPaths.size()-1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
 	}
 
-	@Override
+	/**
+	 * Gets all the paths that is globbed (but one in this case)
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				path of the one file that is globbed
+	 */
 	public String globOneFile(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return globNoPaths(args);
 	}
 
-	@Override
+	/**
+	 * Gets all the paths of files and directories that are globbed  
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				the paths of all files and directories globbed
+	 */
 	public String globFilesDirectories(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return globNoPaths(args);
 	}
 
-	@Override
+	/**
+	 * Gets all the paths that is globbed at a multi level such as 
+	 * "*FILE.SEPARATOR*" 
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				the paths separated by a space
+	 */
 	public String globMultiLevel(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return globNoPaths(args);
 	}
 }
