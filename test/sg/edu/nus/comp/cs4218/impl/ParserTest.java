@@ -3,14 +3,20 @@ package sg.edu.nus.comp.cs4218.impl;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 
+import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
 
@@ -22,6 +28,9 @@ public class ParserTest {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
+	
+	@Rule
+	public TemporaryFolder tFolder = new TemporaryFolder(new File(Paths.get(Environment.currentDirectory).toUri())); 
 	
 	@Before
 	public void setUp() {
@@ -163,5 +172,24 @@ public class ParserTest {
 		assertEquals("echo", comds.get(0));
 		assertEquals(1, args.get(0).length);
 		assertEquals(" hi there ", args.get(0)[0]);
+	}
+	
+	@Test
+	public void testGlob() throws ShellException, AbstractApplicationException, IOException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+		tFolder.newFile("TestFile.txt");
+		tFolder.newFile("TestFile2.txt");
+		tFolder.newFolder("TestFolder");
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo " + relative + "*";
+		parser.parse(query, outStream);
+
+		ArrayList<String[]> args = parser.getArguments();
+		assertEquals(1, args.size());
+		assertEquals(3, args.get(0).length);
 	}
 }
