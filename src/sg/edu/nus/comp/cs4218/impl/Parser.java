@@ -3,6 +3,10 @@ package sg.edu.nus.comp.cs4218.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +31,10 @@ public class Parser {
 	private enum GlobType {
 		ALL, FILE, FOLDER
 	}
+	
+	private enum IOFirst {
+		NA, IN, OUT
+	}
 
 	// Parse & Evaluate shared variables
 	private ArrayList<String> comds;
@@ -44,6 +52,9 @@ public class Parser {
 	private boolean isFirstArg;
 	private boolean isWrapped;
 	private String prevWord;
+	private int redirectInFrom;
+	private int redirectOutTo;
+	private IOFirst streamFirst;
 
 	public Parser() {
 		comds = new ArrayList<String>();
@@ -59,6 +70,9 @@ public class Parser {
 		isFirstArg = true;
 		isWrapped = false;
 		prevWord = " ";
+		redirectInFrom = -1;
+		redirectOutTo = -1;
+		streamFirst = IOFirst.NA;
 	}
 
 	/**
@@ -120,6 +134,22 @@ public class Parser {
 						currentArgs = new ArrayList<String>();
 						currentWord = new StringBuilder();
 						isFirstArg = true;
+					} else if (thisChar == '<') {
+						if (redirectInFrom != -1) {
+							throw new ShellException("Multiple input streams detected");
+						}
+						redirectInFrom = currentArgs.size();
+						if (streamFirst == IOFirst.NA) {
+							streamFirst = IOFirst.IN;
+						}
+					} else if (thisChar == '>') {
+						if (redirectOutTo != -1) {
+							throw new ShellException("Multiple output streams detected");
+						}
+						redirectOutTo = currentArgs.size();
+						if (streamFirst == IOFirst.NA) {
+							streamFirst = IOFirst.OUT;
+						}
 					} else {
 						currentWord.append(thisChar);
 					}
@@ -206,6 +236,7 @@ public class Parser {
 		return newPaths;
 	}
 
+	//Replaces all "." with "\\." and all "*" to ".*" to generate a regex pattern used in matching file names
 	public String regexReplace(String toReplace) {
 		String temp = toReplace.replaceAll("\\.", "\\\\\\.");
 		return temp.replaceAll("\\*", "\\.\\*");
@@ -288,7 +319,9 @@ public class Parser {
 					isFirstArg = !isFirstArg;
 					comds.add(currentWord.toString());
 				} else {
-					currentArgs.add(currentWord.toString());
+					if (currentWord.toString().length() != 0) {
+						currentArgs.add(currentWord.toString());
+					}
 				}
 				isWithinQuotes = false;
 				currentWord = new StringBuilder();
@@ -310,8 +343,9 @@ public class Parser {
 	 * 
 	 * @param stdout
 	 *            Output stream of the current command
+	 * @throws ShellException 
 	 */
-	private void endOfLineParse(OutputStream stdout, String lastWord) {
+	private void endOfLineParse(OutputStream stdout, String lastWord) throws ShellException {
 		if (isFirstArg) {
 			comds.add(lastWord);
 		} else {
@@ -319,11 +353,82 @@ public class Parser {
 				currentArgs.addAll(addToArgs(lastWord));
 			}
 		}
+		//TODO: Test for exceptions too
+		if (redirectInFrom != -1) {
+			if ((streamFirst == IOFirst.IN) && (redirectInFrom == redirectOutTo)) {
+				ins.add(null);
+			} else {
+				if (redirectInFrom < currentArgs.size()) {
+					String fileName = currentArgs.get(redirectInFrom); 
+					ins.add(getInStream(fileName));
+				} else { 
+					ins.add(null);
+				}
+			}
+		} else {
+			ins.add(System.in);
+		}
+		
+		if (redirectOutTo != -1) {
+			if ((streamFirst == IOFirst.OUT) && (redirectInFrom == redirectOutTo)) {
+				outs.add(null);
+			} else {
+				if (redirectOutTo < currentArgs.size()) {
+					String fileName = currentArgs.get(redirectOutTo); 
+					outs.add(getOutStream(fileName));
+				} else { 
+					outs.add(null);
+				}
+			}
+		} else {
+			outs.add(stdout);
+		}
+		
+		if (redirectInFrom != -1 && redirectOutTo != -1) {
+			if (redirectInFrom > redirectOutTo) {
+				currentArgs.remove(redirectInFrom);
+				currentArgs.remove(redirectOutTo);
+			} else if (redirectOutTo > redirectInFrom) {
+				currentArgs.remove(redirectOutTo);
+				currentArgs.remove(redirectInFrom);
+			} else {
+				currentArgs.remove(redirectOutTo);
+			}
+		} else if (redirectInFrom != -1) {
+			currentArgs.remove(redirectInFrom);
+		} else if (redirectOutTo != -1) {
+			currentArgs.remove(redirectOutTo);
+		}
+		//TODO: reset all values in case of semicolon
+		//TODO: test throwing of exceptions
 		String[] arguments = new String[currentArgs.size()];
 		arguments = currentArgs.toArray(arguments);
 		args.add(arguments);
-		outs.add(stdout);
-		ins.add(System.in);
+	}
+	
+	private InputStream getInStream(String fileName) throws ShellException {
+		InputStream result = null;
+		try {
+			result = new FileInputStream(fileName);
+		} catch (FileNotFoundException e) {
+			throw new ShellException("Input file not found");
+		} 
+		return result;
+	}
+	
+	private OutputStream getOutStream(String fileName) throws ShellException {
+		OutputStream result = null;
+		File outFile = new File(fileName);
+		if (outFile.exists()) {
+			outFile.delete();
+		}
+		try {
+			outFile.createNewFile();
+			result = new FileOutputStream(outFile);		
+		} catch (IOException e) {
+			throw new ShellException("No such directory exists");
+		}
+		return result;
 	}
 
 	/**
