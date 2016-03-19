@@ -136,18 +136,18 @@ public class Parser {
 		Path root = Paths.get(Environment.currentDirectory);
 		partialDirectories.add(root);
 		if (toAdd.contains("*")) {
-			if (toAdd.startsWith(File.pathSeparator)) {
+			if (toAdd.startsWith(File.separator)) {
 				return currentDirectories;
 			}
 			GlobType gType;
-			if (toAdd.endsWith(File.pathSeparator)) {
+			if (toAdd.endsWith(File.separator)) {
 				gType = GlobType.FOLDER;
 			} else if(!toAdd.endsWith("*")) {
 				gType = GlobType.FILE;
 			} else {
 				gType = GlobType.ALL;
 			}
-			String[] subs = toAdd.split(File.pathSeparator);
+			String[] subs = toAdd.split(File.separator);
 			for (int i = 0; i<subs.length; i++) {
 				String sub = subs[i];
 				if (sub.contains("*")) {
@@ -229,7 +229,7 @@ public class Parser {
 			File thisDir = new File(thisPath.toUri());
 			File[] files = thisDir.listFiles();
 			for (File f: files) {
-				if (f.getName().contains(nextSub)) {
+				if (f.getName().equals(nextSub)) {
 					if ((gType == GlobType.FILE && f.isFile()) || (gType == GlobType.FOLDER && f.isDirectory())
 							|| (gType == GlobType.ALL)) {
 						newPaths.add(f.toPath());
