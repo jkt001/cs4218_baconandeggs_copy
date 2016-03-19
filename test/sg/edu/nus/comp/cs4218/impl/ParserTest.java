@@ -175,7 +175,7 @@ public class ParserTest {
 	}
 	
 	@Test
-	public void testGlob() throws ShellException, AbstractApplicationException, IOException {
+	public void testGlobAllFilesAndFolder() throws ShellException, AbstractApplicationException, IOException {
 		Path root = Paths.get(Environment.currentDirectory);
 		File rootFile = new File(root.toUri());
 		tFolder.newFile("TestFile.txt");
@@ -191,5 +191,111 @@ public class ParserTest {
 		ArrayList<String[]> args = parser.getArguments();
 		assertEquals(1, args.size());
 		assertEquals(3, args.get(0).length);
+	}
+
+	@Test
+	public void testGlobAllFilesAndFoldersPre() throws ShellException, AbstractApplicationException, IOException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+		tFolder.newFile("TestFile.txt");
+		tFolder.newFile("TestFile2.txt");
+		tFolder.newFolder("TestFolder");
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo " + relative + "Tes*";
+		parser.parse(query, outStream);
+
+		ArrayList<String[]> args = parser.getArguments();
+		assertEquals(1, args.size());
+		assertEquals(3, args.get(0).length);
+	}
+
+	@Test
+	public void testGlobAllFilesPreAndPost() throws ShellException, AbstractApplicationException, IOException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+		tFolder.newFile("TestFile.txt");
+		tFolder.newFile("TestFile2.txt");
+		tFolder.newFolder("TestFolder");
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo " + relative + "Tes*txt";
+		parser.parse(query, outStream);
+
+		ArrayList<String[]> args = parser.getArguments();
+		assertEquals(1, args.size());
+		assertEquals(2, args.get(0).length);
+	}
+
+	@Test
+	public void testGlobAllFolders() throws ShellException, AbstractApplicationException, IOException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+		tFolder.newFile("TestFile.txt");
+		tFolder.newFile("TestFile2.txt");
+		File folder1 = tFolder.newFolder("TestFolder");
+		File.createTempFile("TestFile3", "txt", folder1);
+		File folder2 = tFolder.newFolder("TestFolder2");
+		File.createTempFile("TestFile4", "txt", folder2);
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo " + relative + "*" + File.separator + "*";
+		parser.parse(query, outStream);
+
+		ArrayList<String[]> args = parser.getArguments();
+		assertEquals(1, args.size());
+		assertEquals(2, args.get(0).length);
+	}
+
+	@Test
+	public void testGlobAllFoldersWithSpecificFilePre() throws ShellException, AbstractApplicationException, IOException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+		tFolder.newFile("TestFile.txt");
+		tFolder.newFile("TestFile2.txt");
+		File folder1 = tFolder.newFolder("TestFolder");
+		File.createTempFile("TestFile3", "txt", folder1);
+		File.createTempFile("WeirdTestFile", "txt", folder1);
+		File folder2 = tFolder.newFolder("TestFolder2");
+		File.createTempFile("TestFile4", "txt", folder2);
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo " + relative + "*" + File.separator + "Test*";
+		parser.parse(query, outStream);
+
+		ArrayList<String[]> args = parser.getArguments();
+		assertEquals(1, args.size());
+		assertEquals(2, args.get(0).length);
+	}
+
+	@Test
+	public void testGlobAllFoldersWithSpecificFilePost() throws ShellException, AbstractApplicationException, IOException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+		tFolder.newFile("TestFile.txt");
+		tFolder.newFile("TestFile2.txt");
+		File folder1 = tFolder.newFolder("TestFolder");
+		File.createTempFile("TestFile3", "txt", folder1);
+		File.createTempFile("WeirdTestFile", "mp3", folder1);
+		File folder2 = tFolder.newFolder("TestFolder2");
+		File.createTempFile("TestFile4", "txt", folder2);
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo " + relative + "*" + File.separator + "Test*";
+		parser.parse(query, outStream);
+
+		ArrayList<String[]> args = parser.getArguments();
+		assertEquals(1, args.size());
+		assertEquals(2, args.get(0).length);
 	}
 }
