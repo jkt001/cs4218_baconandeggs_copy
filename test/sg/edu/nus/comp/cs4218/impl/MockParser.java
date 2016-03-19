@@ -12,11 +12,11 @@ import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
 
 public class MockParser extends Parser {
-	
+
 	public void parse(String cmdline, OutputStream stdout) throws ShellException, AbstractApplicationException {
 		super.parse(cmdline, stdout);
 	}
-	
+
 	protected void runApplication(String cmd, String[] args, InputStream in, OutputStream out) throws ShellException, AbstractApplicationException {
 		try {
 			InputStreamReader inReader = new InputStreamReader(in);
@@ -24,9 +24,9 @@ public class MockParser extends Parser {
 			StringBuilder mockOut = new StringBuilder();
 			String line;
 			if (inReader.ready()) {
-			while ((line = reader.readLine()) != null) {
-				mockOut.append(line);
-			}
+				while ((line = reader.readLine()) != null) {
+					mockOut.append(line);
+				}
 			}
 			mockOut.append("Mocked Output");
 			out.write(mockOut.toString().getBytes());
@@ -34,7 +34,7 @@ public class MockParser extends Parser {
 			throw new ShellException("Unable to write to output");
 		}
 	}
-	
+
 	protected String recursivelyParse(String toParse) throws ShellException, AbstractApplicationException {
 		ByteArrayOutputStream outStream = new ByteArrayOutputStream();
 		MockParser nextInstance = new MockParser();
@@ -48,7 +48,7 @@ public class MockParser extends Parser {
 		}
 		return result;
 	}
-	
+
 	public void evaluate() throws ShellException, AbstractApplicationException {
 		super.evaluate();
 	}
