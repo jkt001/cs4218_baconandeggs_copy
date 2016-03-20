@@ -392,4 +392,41 @@ public class GivenBcApplicationTest {
 		String exp = "(2 + (3 * 7 * (9 + 2) + (2 - 3)) + 3 * (2 - (9 * (2+3)))))";
 		assertFalse(bcApp.isValidBracketMatching(exp));
 	}
+	
+	@Test
+	public void testPostfixBulderOne() throws BcException {
+		String exp = "2*(33+44.5)";
+		assertEquals("2 33 44.5 + *", bcApp.getPostfixExpression(exp));
+	}
+	
+	@Test
+	public void testCalculateOne() {
+		String res = bcApp.calculate("2 3 4 + *");
+		assertEquals("14", res);
+	}
+	
+	@Test
+	public void testPostfixBulderTwo() throws BcException {
+		String exp = "2>=33+44.5";
+		assertEquals("2 33 >= 44.5 +", bcApp.getPostfixExpression(exp));
+	}
+	
+	@Test
+	public void testCalculateTwo() {
+		String res = bcApp.calculate("2 33 >= 44.5 +");
+		assertEquals("44.5", res);
+	}
+	
+	@Test
+	public void testPostfixBulderThree() throws BcException {
+		String exp = "1-(6+2*4.5)/5";
+		assertEquals("1 6 2 4.5 * + 5 / -", bcApp.getPostfixExpression(exp));
+	}
+	
+	@Test
+	public void testCalculateThree() {
+		String res = bcApp.calculate("1 6 2 4.5 * + 5 / -");
+		assertTrue(Math.abs(Double.parseDouble(res) - (-2)) <= 10e-5);
+	}
+	
 }
