@@ -358,4 +358,38 @@ public class GivenBcApplicationTest {
 		
 		assertEquals(expected, result);
 	}
+
+	// new tests added
+	@Test
+	public void testValidBracketMatchingOne() {
+		String exp = "(((2)) + 3)";
+
+		assertTrue(bcApp.isValidBracketMatching(exp));
+	}
+
+	@Test
+	public void testValidBracketMatchingTwo() {
+		String exp = "(2 + (3 * 7 * (9 + 2) + (2 - 3)) + 3 * (2 - (9 * (2+3))))";
+
+		assertTrue(bcApp.isValidBracketMatching(exp));
+	}
+
+	@Test
+	public void testInvalidBracketBatchingOne() {
+		String exp = ")((2)) + 3)";
+
+		assertFalse(bcApp.isValidBracketMatching(exp));
+	}
+	
+	@Test
+	public void testInvalidBracketMatchingTwo() {
+		String exp = "((2 + (3 * 7 * (9 + 2) + (2 - 3)) + 3 * (2 - (9 * (2+3))))";
+		assertFalse(bcApp.isValidBracketMatching(exp));
+	}
+	
+	@Test
+	public void testInvalidBracketMatchingThree() {
+		String exp = "(2 + (3 * 7 * (9 + 2) + (2 - 3)) + 3 * (2 - (9 * (2+3)))))";
+		assertFalse(bcApp.isValidBracketMatching(exp));
+	}
 }
