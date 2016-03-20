@@ -8,16 +8,196 @@ import java.math.BigDecimal;
 
 import java.util.HashMap;
 import java.util.Stack;
+
 import sg.edu.nus.comp.cs4218.app.Bc;
-import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.BcException;
 
 public class BcApplication implements Bc {
 
+	HashMap<String, Integer> precedenceMapping;
+	private final String[][] OPERATORS = { { "+", "-" }, { "*", "/" }, { "^" }, { "<", ">", "<=", ">=", "!=", "==" },
+			{ "&&" }, { "||" }, { "!" } };
+
+	public BcApplication() {
+		precedenceMapping = new HashMap<String, Integer>();
+
+		for (int i = 0; i < OPERATORS.length; i++) {
+			for (String op : OPERATORS[i]) {
+				precedenceMapping.put(op, i);
+			}
+		}
+	}
+
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws BcException {
-		// TODO Auto-generated method stub
+		if (args == null || args.length == 0) {
+			throw new BcException("No expressions specified");
+		} else if (stdout == null) {
+			throw new BcException("No output stream specified");
+		} else if (args.length == 1) {
+			String expression = args[0];
+
+			if (isValidBracketMatching(expression)) {
+				String postfixExpression = getPostfixExpression(expression);
+				String result = calculate(postfixExpression);
+				printResult(result, stdout);
+			} else {
+				throw new BcException("Invalid expression");
+			}
+
+		} else {
+			throw new BcException("Too many arguments specified");
+		}
+
+	}
+
+	private void printResult(String result, OutputStream stdout) throws BcException {
+		try {
+			result += System.lineSeparator();
+			stdout.write(result.getBytes("UTF-8"));
+		} catch (IOException e) {
+			throw new BcException("IOException");
+		}
+	}
+
+	public String getPostfixExpression(String toBeProcessed) throws BcException {
+		Stack<String> postfixStack = new Stack<String>();
+
+		StringBuilder postFixBuilder = new StringBuilder();
+
+		String[] expression = toBeProcessed.split("");
+
+		for (int i = 1; i < expression.length; i++) {
+			String exp = expression[i];
+
+			if (exp.equals("(")) {
+				postfixStack.push(exp);
+			} else if (exp.equals(")")) {
+
+				while (!postfixStack.peek().equals("(")) {
+					postFixBuilder.append(postfixStack.pop());
+					postFixBuilder.append(" ");
+				}
+				postfixStack.pop();
+			} else if (isValidOperator(exp)) {
+
+				if (i == expression.length) {
+					throw new BcException("Invalid expression");
+				} else {
+					//check next
+					if (isValidOperator(exp + expression[i + 1])) {
+						exp = exp + expression[++i];
+					}
+					
+					int currentPrecedenceLevel = precedenceMapping.get(exp);
+					while (!postfixStack.isEmpty() && !postfixStack.peek().equals("(")
+							&& currentPrecedenceLevel <= precedenceMapping.get(postfixStack.peek())) {
+						postFixBuilder.append(postfixStack.pop());
+						postFixBuilder.append(" ");
+					}
+					postfixStack.push(exp);
+				}
+			} else {
+				StringBuilder number = new StringBuilder();
+
+				while ((Character.isDigit(exp.toCharArray()[0]) || exp.equals(".")) && i < expression.length) {
+					number.append(exp);
+					if (i < expression.length - 1) {
+						exp = expression[++i];
+					} else {
+						++i;
+					}
+				}
+				--i;
+
+				postFixBuilder.append(number.toString());
+				postFixBuilder.append(" ");
+			}
+		}
+
+		while (!postfixStack.isEmpty()) {
+			postFixBuilder.append(postfixStack.pop());
+			postFixBuilder.append(" ");
+		}
+
+		String postFixExpression = postFixBuilder.toString().trim();
+		return postFixExpression;
+	}
+
+	public String calculate(String postFixExpression) {
+		Stack<String> myStack = new Stack<String>();
+
+		for (String s : postFixExpression.split(" ")) {
+			if (isValidOperator(s)) {
+				String arg2 = myStack.pop();
+				String arg1 = myStack.pop();
+				String op = s;
+				String result = performOperation(arg1, arg2, op);
+				myStack.push(result);
+			} else {
+				myStack.push(s);
+			}
+		}
 		
+		return myStack.pop();
+	}
+
+	private String performOperation(String arg1, String arg2, String op) {
+		String result = "";
+		switch (op) {
+		case "+":
+			return add(createArgument(arg1, arg2));
+		case "-":
+			return subtract(createArgument(arg1, arg2));
+		case "*":
+			return multiply(createArgument(arg1, arg2));
+		case "/":
+			return divide(createArgument(arg1, arg2));
+		case "^":
+			return pow(createArgument(arg1, arg2));
+		case ">":
+			return greaterThan(createArgument(arg1, arg2));
+		case ">=":
+			return greaterThanOrEqual(createArgument(arg1, arg2));
+		case "<":
+			return lessThan(createArgument(arg1, arg2));
+		case "<=":
+			return lessThanOrEqual(createArgument(arg1, arg2));
+		case "==":
+			return equalEqual(createArgument(arg1, arg2));
+		case "!=":
+			return notEqual(createArgument(arg1, arg2));
+		case "&&":
+			return and(createArgument(arg1, arg2));
+		case "||":
+			return or(createArgument(arg1, arg2));
+		}
+
+		return result;
+	}
+
+	private String[] createArgument(String... args) {
+		String[] arguments = new String[args.length];
+
+		for (int i = 0; i < args.length; i++) {
+			arguments[i] = args[i];
+		}
+
+		return arguments;
+	}
+
+	public boolean isValidOperator(String operator) {
+		for (String[] ops : OPERATORS) {
+			for (String op : ops) {
+				if (op.equals(operator)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public boolean isValidBracketMatching(String expression) {
 		Stack<Character> brackets = new Stack<Character>();
 
