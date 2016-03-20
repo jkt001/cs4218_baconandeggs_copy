@@ -17,104 +17,163 @@ public class BcApplication implements Bc {
 
 	@Override
 	public String number(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return args[0];
 	}
 
 	@Override
 	public String negate(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder myStringBuilder = new StringBuilder();
+
+		String num = args[0];
+		if (num.charAt(0) == '-') {
+			myStringBuilder.append(num.substring(1));
+		} else {
+			myStringBuilder.append("-");
+			myStringBuilder.append(num);
+		}
+
+		return myStringBuilder.toString();
 	}
 
 	@Override
 	public String add(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal sum = firstOperand.add(secondOperand);
+
+		return sum.toString();
 	}
 
 	@Override
 	public String subtract(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal result = firstOperand.subtract(secondOperand);
+
+		return result.toString();
 	}
 
 	@Override
 	public String multiply(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal result = firstOperand.multiply(secondOperand);
+
+		return result.toString();
 	}
 
 	@Override
 	public String divide(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal result = firstOperand.divide(secondOperand);
+
+		return result.toString();
 	}
 
 	@Override
 	public String pow(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		int exponent = Integer.parseInt(args[1]);
+
+		BigDecimal result = firstOperand.pow(exponent);
+
+		return result.toString();
 	}
 
 	@Override
 	public String bracket(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String[] split = args[0].split("");
+		return split[2];
 	}
 
 	@Override
 	public String greaterThan(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare > 0) ? "1" : "0";
 	}
 
 	@Override
 	public String greaterThanOrEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare >= 0) ? "1" : "0";
 	}
 
 	@Override
 	public String lessThan(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare < 0) ? "1" : "0";
 	}
 
 	@Override
 	public String lessThanOrEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare <= 0) ? "1" : "0";
 	}
 
 	@Override
 	public String equalEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare == 0) ? "1" : "0";
 	}
 
 	@Override
 	public String notEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare != 0) ? "1" : "0";
 	}
 
 	@Override
 	public String and(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		long first = Long.parseLong(args[0]);
+		long second = Long.parseLong(args[1]);
+
+		boolean res = (first != 0) && (second != 0);
+
+		return res ? "1" : "0";
 	}
 
 	@Override
 	public String or(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		long first = Long.parseLong(args[0]);
+		long second = Long.parseLong(args[1]);
+
+		Boolean res = (first != 0) || (second != 0);
+
+		return res ? "1" : "0";
 	}
 
 	@Override
 	public String not(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return (args[0].equals("0")) ? "1" : "0";
 	}
 
 }
