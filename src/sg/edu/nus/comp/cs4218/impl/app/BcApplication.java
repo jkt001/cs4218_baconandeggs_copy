@@ -13,6 +13,20 @@ public class BcApplication implements Bc {
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws BcException {
 		// TODO Auto-generated method stub
 		
+	public boolean isValidBracketMatching(String expression) {
+		Stack<Character> brackets = new Stack<Character>();
+
+		for (char c : expression.toCharArray()) {
+			if (c == '(') {
+				brackets.push(c);
+			} else if (c == ')') {
+				if (brackets.isEmpty() || brackets.pop() != '(') {
+					return false;
+				}
+			}
+		}
+
+		return brackets.isEmpty();
 	}
 
 	@Override
