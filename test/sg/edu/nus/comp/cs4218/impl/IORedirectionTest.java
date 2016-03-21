@@ -76,7 +76,8 @@ public class IORedirectionTest {
 		assertEquals("", result);
 		File outputFile = Paths.get(Environment.currentDirectory).resolve("tmp.out").toFile();
 		assertTrue("Output file gets created", outputFile.exists());
-		assertEquals("hello world", contentOfFile(outputFile));
+		assertEquals("hello world" + System.lineSeparator(), contentOfFile(outputFile));
+		outputFile.delete();
 	}
 	
 	@Test
