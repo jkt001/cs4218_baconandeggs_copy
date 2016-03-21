@@ -22,13 +22,12 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
 
 /**
  * A parser handles all operations related to command parsing, which includes
- * semicolon, quoting, IO-redirection and command substituition
+ * semicolon, quoting, IO-redirection and command substitution
  * 
  * Functionality is guaranteed for valid inputs, but not defined for invalid ones
  * 
  * Invalid inputs include:
  * 		- Opening quotations without closing it
- * 
  */
 public class Parser {
 	

@@ -27,9 +27,6 @@ import sg.edu.nus.comp.cs4218.exception.CommException;
  * 
  * The comm utility assumes that the files are lexically sorted; all characters
  * participate in line comparisons.
- * 
- * @author andhieka
- *
  */
 public class CommApplication implements Comm {
 	

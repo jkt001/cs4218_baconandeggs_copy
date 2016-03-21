@@ -28,9 +28,7 @@ import sg.edu.nus.comp.cs4218.impl.app.DateApplication;
 /**
  * Integration testing that treats the shell as a black box.
  * Enters a sequence of commands into the shell and inspects 
- * the output. 
- * @author andhieka
- *
+ * the output.
  */
 public class IntegrationTests {
 	
