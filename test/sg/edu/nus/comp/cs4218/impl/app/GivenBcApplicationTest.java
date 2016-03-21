@@ -139,7 +139,7 @@ public class GivenBcApplicationTest {
 	public void testDivide() throws BcException {
 		String[] args = {"1", "2"};
 		String result = bcApp.divide(args);
-		String expected = "0.5";
+		String expected = "0.5"; //changed to 0.5 because of different specification
 		
 		assertEquals(expected, result);
 	}

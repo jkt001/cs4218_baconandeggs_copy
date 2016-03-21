@@ -161,7 +161,13 @@ public class Parser {
 		}
 	}
 
-	// Handles adding of words to args. Handles globbing is there is a need to
+	/**
+	 * gets all the directories given a string that contains a path with or without globbing
+	 * @param toAdd
+	 * 				path that may or may not contain globbing
+	 * @return
+	 * 				a list of all paths to valid files
+	 */
 	public ArrayList<String> getGlobDirectories(String toAdd) {
 		ArrayList<String> currentDirectories = new ArrayList<String>();
 
