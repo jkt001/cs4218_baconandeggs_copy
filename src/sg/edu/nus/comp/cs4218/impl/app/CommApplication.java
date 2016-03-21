@@ -62,10 +62,8 @@ public class CommApplication implements Comm {
 			process();
 			closeStreams();
 		} catch (CommException ce) {
-			ce.printStackTrace();
 			throw ce;
 		} catch (Exception e) {
-			e.printStackTrace();
 			throw new CommException(e.getMessage());
 		} finally {
 			leftInputStream = null;
@@ -95,7 +93,6 @@ public class CommApplication implements Comm {
 			process();
 			closeStreams();
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new CommException(e.getMessage());
 		} finally {
 			leftInputStream = null;
@@ -297,7 +294,6 @@ public class CommApplication implements Comm {
 			run(args, inputStream, outputStream);
 			return outputStream.toString();
 		} catch (Exception e) {
-			e.printStackTrace();
 			return "comm: terminated with error message " + e.getMessage();
 		}
 	}
