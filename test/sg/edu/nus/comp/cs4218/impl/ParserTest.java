@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -324,7 +325,7 @@ public class ParserTest {
 		parser.parse(query, outStream);
 		parser.evaluate();
 		
-		List<String> linesRead = Files.readAllLines(test2.toPath());
+		List<String> linesRead = Files.readAllLines(test2.toPath(), StandardCharsets.UTF_8);
 		assertEquals(1, linesRead.size());
 		assertEquals("line to write Mocked Output", linesRead.get(0));
 	}
@@ -345,7 +346,7 @@ public class ParserTest {
 		
 		File writtenFile = new File(relative + "TestFile2.txt");
 		assertTrue(writtenFile.exists());
-		List<String> linesRead = Files.readAllLines(writtenFile.toPath());
+		List<String> linesRead = Files.readAllLines(writtenFile.toPath(), StandardCharsets.UTF_8);
 		assertEquals(1, linesRead.size());
 		assertEquals("Mocked Output", linesRead.get(0));
 	}
