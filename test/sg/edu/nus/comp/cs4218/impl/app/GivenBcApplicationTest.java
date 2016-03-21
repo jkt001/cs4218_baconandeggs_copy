@@ -13,6 +13,11 @@ import org.junit.rules.ExpectedException;
 
 import sg.edu.nus.comp.cs4218.exception.BcException;
 
+/**
+ * Contains given tests and self-defined tests for BC application
+ * 
+ */
+
 public class GivenBcApplicationTest {
 	private BcApplication bcApp;
 	private OutputStream outStream;
@@ -35,6 +40,14 @@ public class GivenBcApplicationTest {
 	@Test
 	public void testRunAddition() throws BcException {
 		String[] args = {"1+2"};
+		bcApp.run(args, null, outStream);
+		String expected = "3\n";
+		assertEquals(expected, outStream.toString());
+	}
+	
+	@Test
+	public void testRunWithWhitespaces() throws BcException {
+		String[] args = {"1 + 2 + 3 * ( 2  - 2)"};
 		bcApp.run(args, null, outStream);
 		String expected = "3\n";
 		assertEquals(expected, outStream.toString());
