@@ -5,7 +5,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import java.math.BigDecimal;
-
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Stack;
 
@@ -79,39 +80,17 @@ public class BcApplication implements Bc {
 					postFixBuilder.append(" ");
 				}
 				postfixStack.pop();
-			} else if (isValidOperator(exp)) {
+			} else if (isValidOperator(exp) && !exp.equals("-")) {
 
-				if (i == expression.length) {
-					throw new BcException("Invalid expression");
+				i = processOperator(postfixStack, postFixBuilder, expression, i, exp);
+			} else if (exp.equals("-")) {
+				if (isNegationAndNotSubtraction(expression, i)) {
+					i = processOperand(postFixBuilder, expression, i, exp);
 				} else {
-					//check next
-					if (isValidOperator(exp + expression[i + 1])) {
-						exp = exp + expression[++i];
-					}
-					
-					int currentPrecedenceLevel = precedenceMapping.get(exp);
-					while (!postfixStack.isEmpty() && !postfixStack.peek().equals("(")
-							&& currentPrecedenceLevel <= precedenceMapping.get(postfixStack.peek())) {
-						postFixBuilder.append(postfixStack.pop());
-						postFixBuilder.append(" ");
-					}
-					postfixStack.push(exp);
+					i = processOperator(postfixStack, postFixBuilder, expression, i, exp);
 				}
 			} else {
-				StringBuilder number = new StringBuilder();
-
-				while ((Character.isDigit(exp.toCharArray()[0]) || exp.equals(".")) && i < expression.length) {
-					number.append(exp);
-					if (i < expression.length - 1) {
-						exp = expression[++i];
-					} else {
-						++i;
-					}
-				}
-				--i;
-
-				postFixBuilder.append(number.toString());
-				postFixBuilder.append(" ");
+				i = processOperand(postFixBuilder, expression, i, exp);
 			}
 		}
 
@@ -124,7 +103,63 @@ public class BcApplication implements Bc {
 		return postFixExpression;
 	}
 
-	public String calculate(String postFixExpression) {
+	private boolean isNegationAndNotSubtraction(String[] expression, int i) {
+		return i == 1 || isValidOperator(expression[i-1]) || expression[i-1].equals("(");
+	}
+
+	private int processOperand(StringBuilder postFixBuilder, String[] expression, int i, String exp)
+			throws BcException {
+		if (!Character.isDigit(exp.toCharArray()[0]) && !exp.equals(".") && !exp.equals("-")) {
+			throw new BcException("Invalid operator");
+		}
+		StringBuilder number = new StringBuilder();
+		
+		if (exp.equals("-")) {
+			number.append(exp);
+			if (i < expression.length - 1) {
+				exp = expression[++i];
+			} else {
+				throw new BcException("Invalid Expression");
+			}
+		}
+
+		while ((Character.isDigit(exp.toCharArray()[0]) || exp.equals(".")) && i < expression.length) {
+			number.append(exp);
+			if (i < expression.length - 1) {
+				exp = expression[++i];
+			} else {
+				++i;
+			}
+		}
+		--i;
+
+		postFixBuilder.append(number.toString());
+		postFixBuilder.append(" ");
+		return i;
+	}
+
+	private int processOperator(Stack<String> postfixStack, StringBuilder postFixBuilder, String[] expression, int i,
+			String exp) throws BcException {
+		if (i == expression.length - 1) {
+			throw new BcException("Invalid expression");
+		} else {
+			// check next
+			if (isValidOperator(exp + expression[i + 1])) {
+				exp = exp + expression[++i];
+			}
+
+			int currentPrecedenceLevel = precedenceMapping.get(exp);
+			while (!postfixStack.isEmpty() && !postfixStack.peek().equals("(")
+					&& currentPrecedenceLevel <= precedenceMapping.get(postfixStack.peek())) {
+				postFixBuilder.append(postfixStack.pop());
+				postFixBuilder.append(" ");
+			}
+			postfixStack.push(exp);
+		}
+		return i;
+	}
+
+	public String calculate(String postFixExpression) throws BcException {
 		Stack<String> myStack = new Stack<String>();
 
 		for (String s : postFixExpression.split(" ")) {
@@ -138,11 +173,11 @@ public class BcApplication implements Bc {
 				myStack.push(s);
 			}
 		}
-		
+
 		return myStack.pop();
 	}
 
-	private String performOperation(String arg1, String arg2, String op) {
+	private String performOperation(String arg1, String arg2, String op) throws BcException {
 		String result = "";
 		switch (op) {
 		case "+":
@@ -265,23 +300,44 @@ public class BcApplication implements Bc {
 	}
 
 	@Override
-	public String divide(String[] args) {
-		BigDecimal firstOperand = new BigDecimal(args[0]);
-		BigDecimal secondOperand = new BigDecimal(args[1]);
+	public String divide(String[] args) throws BcException {
+		if (args[1].equals("0")) {
+			throw new BcException("Division by zero");
+		}
+		try {
 
-		BigDecimal result = firstOperand.divide(secondOperand);
+			BigDecimal firstOperand = new BigDecimal(args[0]);
+			BigDecimal secondOperand = new BigDecimal(args[1]);
 
-		return result.toString();
+			BigDecimal result = firstOperand.divide(secondOperand);
+			return result.toString();
+
+		} catch (Exception e) {
+			MathContext mc = new MathContext(9, RoundingMode.CEILING);
+
+			BigDecimal firstOperand = new BigDecimal(args[0]);
+			BigDecimal secondOperand = new BigDecimal(args[1]);
+
+			BigDecimal result = firstOperand.divide(secondOperand, mc).setScale(10, RoundingMode.CEILING);
+			return result.toString();
+		}
+
 	}
 
 	@Override
-	public String pow(String[] args) {
+	public String pow(String[] args) throws BcException {
+		int exponent = 0;
+		
+		try {
+			exponent = Integer.parseInt(args[1]);
+		} catch (NumberFormatException e) {
+			throw new BcException("Exponent is not an integer");
+		}
+		
 		BigDecimal firstOperand = new BigDecimal(args[0]);
-		int exponent = Integer.parseInt(args[1]);
-
 		BigDecimal result = firstOperand.pow(exponent);
-
 		return result.toString();
+
 	}
 
 	@Override
@@ -372,7 +428,7 @@ public class BcApplication implements Bc {
 
 	@Override
 	public String not(String[] args) {
-		return (args[0].equals("0")) ? "1" : "0";
+		return (args[0].equals("0") || args[0].equals("-0")) ? "1" : "0";
 	}
 
 }
