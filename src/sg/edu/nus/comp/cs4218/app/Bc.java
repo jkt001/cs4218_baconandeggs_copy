@@ -1,6 +1,7 @@
 package sg.edu.nus.comp.cs4218.app;
 
 import sg.edu.nus.comp.cs4218.Application;
+import sg.edu.nus.comp.cs4218.exception.BcException;
 
 public interface Bc extends Application {
 
@@ -37,14 +38,16 @@ public interface Bc extends Application {
 	/**
 	 * Returns resultant string with expression of the form <expression> /
 	 * <expression> evaluated
+	 * @throws BcException 
 	 */
-	public String divide(String[] args);
+	public String divide(String[] args) throws BcException;
 
 	/**
 	 * Returns resultant string with expression of the form <expression> ^
 	 * <expression> evaluated
+	 * @throws BcException 
 	 */
-	public String pow(String[] args);
+	public String pow(String[] args) throws BcException;
 
 	/**
 	 * Returns resultant string with expression of the form (<expression>)
