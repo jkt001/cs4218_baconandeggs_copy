@@ -83,11 +83,11 @@ public class CommApplication implements Comm {
 	 * @param outputStream OutputStream where the evaluation result will be output.
 	 * @throws CommException if there is any problem when running the application.
 	 */
-	public void comm(InputStream leftInputStream, InputStream rightInputStream, OutputStream outputStream) throws CommException {
+	public void comm(InputStream leftStream, InputStream rightStream, OutputStream outStream) throws CommException {
 		try {
-			this.leftInputStream = leftInputStream;
-			this.rightInputStream = rightInputStream;
-			this.outputStream = outputStream;
+			this.leftInputStream = leftStream;
+			this.rightInputStream = rightStream;
+			this.outputStream = outStream;
 			setupBufferedReaders();
 			process();
 			closeStreams();

@@ -84,8 +84,8 @@ public class BcApplication implements Bc {
 
 	private void printResult(String result, OutputStream stdout) throws BcException {
 		try {
-			result += System.lineSeparator();
 			stdout.write(result.getBytes("UTF-8"));
+			stdout.write(System.lineSeparator().getBytes("UTF-8"));
 		} catch (IOException e) {
 			throw new BcException("IOException");
 		}
