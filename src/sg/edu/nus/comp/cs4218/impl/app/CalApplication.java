@@ -5,8 +5,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import sg.edu.nus.comp.cs4218.util.BESHCalendar;
 
 import sg.edu.nus.comp.cs4218.app.Cal;
 import sg.edu.nus.comp.cs4218.exception.CalException;
@@ -49,13 +51,13 @@ public class CalApplication implements Cal {
 		
 		if (args == null || args.length <= 0) {
 			// run cal
-			Calendar calendar = constructCurrentDate();
+			BESHCalendar calendar = constructCurrentDate();
 			calendarString = printMonthCal(calendar, false);
 			
 		} else if (args.length == 1) {
 			if (args[0].equals("-m")) {
 				// run cal -m
-				Calendar calendar = constructCurrentDate();
+				BESHCalendar calendar = constructCurrentDate();
 				calendarString = printMonthCal(calendar, true);
 			} else {
 			
@@ -82,7 +84,7 @@ public class CalApplication implements Cal {
 				checkYearBounds(year);
 				
 				// run cal [month] [year]
-				Calendar calendar = constructDate(month, year);
+				BESHCalendar calendar = constructDate(month, year);
 				calendarString = printMonthCal(calendar, false);
 			}
 			
@@ -98,7 +100,7 @@ public class CalApplication implements Cal {
 			checkYearBounds(year);
 			
 			// run cal -m [month] [year]
-			Calendar calendar = constructDate(month, year);
+			BESHCalendar calendar = constructDate(month, year);
 			calendarString = printMonthCal(calendar, true);
 			
 		} else {
@@ -116,13 +118,13 @@ public class CalApplication implements Cal {
 	// Interface for testing
 	@Override
 	public String printCal(String[] args) {
-		Calendar calendar = constructCurrentDate();
+		BESHCalendar calendar = constructCurrentDate();
 		return printMonthCal(calendar, false);
 	}
 
 	@Override
 	public String printCalWithMondayFirst(String[] args) {
-		Calendar calendar = constructCurrentDate();
+		BESHCalendar calendar = constructCurrentDate();
 		return printMonthCal(calendar, true);
 	}
 
@@ -130,7 +132,7 @@ public class CalApplication implements Cal {
 	public String printCalForMonthYear(String[] args) {
 		int month = Integer.valueOf(args[0]) - 1;
 		int year = Integer.valueOf(args[1]);
-		Calendar calendar = constructDate(month, year);
+		BESHCalendar calendar = constructDate(month, year);
 		return printMonthCal(calendar, false);	
 	}
 
@@ -144,7 +146,7 @@ public class CalApplication implements Cal {
 	public String printCalForMonthYearMondayFirst(String[] args) {
 		int month = Integer.valueOf(args[0]) - 1;
 		int year = Integer.valueOf(args[1]);
-		Calendar calendar = constructDate(month, year);
+		BESHCalendar calendar = constructDate(month, year);
 		return printMonthCal(calendar, true);
 	}
 
@@ -155,12 +157,18 @@ public class CalApplication implements Cal {
 	}
 	
 	/**
-	 * Construct new current calendar
+	 * Construct current calendar
 	 * 
 	 * @return current calendar
 	 */
-	private Calendar constructCurrentDate() {
-		return new GregorianCalendar();
+	private BESHCalendar constructCurrentDate() {
+		Date today = new Date();
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(today);
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
+		int month = calendar.get(Calendar.MONTH);
+		int year = calendar.get(Calendar.YEAR);
+		return new BESHCalendar(day, month, year);
 	}
 	
 	/**
@@ -170,8 +178,8 @@ public class CalApplication implements Cal {
 	 * @param year
 	 * @return the calendar based on month and year
 	 */
-	private Calendar constructDate(int month, int year) {
-		return new GregorianCalendar(year, month, 1);
+	private BESHCalendar constructDate(int month, int year) {
+		return new BESHCalendar(1, month, year);
 	}
 	
 	/**
@@ -181,13 +189,13 @@ public class CalApplication implements Cal {
 	 * @param isMonday The boolean to specify whether the starting day is Sunday or Monday. True for Monday, False for Sunday.
 	 * @return The result of printing a monthly calendar
 	 */
-	private String printMonthCal(Calendar calendar, boolean isMonday) {
+	private String printMonthCal(BESHCalendar calendar, boolean isMonday) {
 		StringBuilder sb = new StringBuilder();
-		String header = getHeader(calendar.get(Calendar.MONTH), 
-				calendar.get(Calendar.YEAR), false);
+		String header = getHeader(calendar.getMonth(), 
+				calendar.getYear(), false);
 		String monthHeader = getMonthHeader(isMonday);
 		String monthDates = getMonthDatesStartingAt(getFirstDayOfMonth(calendar, isMonday), 
-				calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+				calendar.getNumberOfDaysInAMonth());
 		
 		sb.append(header).append(System.lineSeparator())
 		  .append(monthHeader).append(System.lineSeparator())
@@ -205,24 +213,24 @@ public class CalApplication implements Cal {
 	 */
 	private String printYearCal(int year, boolean isMonday) {
 		StringBuilder sb = new StringBuilder();
-		List<Calendar> calList = new ArrayList<Calendar>();
+		List<BESHCalendar> calList = new ArrayList<BESHCalendar>();
 		
 		for (int i = 0; i < 12; i++) {
-			Calendar calendar = constructDate(i, year);
+			BESHCalendar calendar = constructDate(i, year);
 			calList.add(calendar);
 		}
 		
 		for (int i = 0; i < 4; i++) {
-			Calendar[] calendars = new Calendar[3];
+			BESHCalendar[] calendars = new BESHCalendar[3];
 			int[] offsets = new int[3]; 
 			int[] maxDates = new int[3];
 			int[] lastValues = {1, 1, 1};
 			
 			for (int j = 0; j < 3; j++) {
-				Calendar cal = calList.get(i * 3 + j);
+				BESHCalendar cal = calList.get(i * 3 + j);
 				calendars[j] = cal;
 				offsets[j] = getFirstDayOfMonth(cal, isMonday);
-				maxDates[j] = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+				maxDates[j] = cal.getNumberOfDaysInAMonth();
 			}
 			
 			sb.append(getThreeHeader(calendars[0], calendars[1], calendars[2]))
@@ -331,10 +339,8 @@ public class CalApplication implements Cal {
 	 * @param isMonday The option for the starting day. True for Monday. False for Sunday. 
 	 * @return
 	 */
-	private Integer getFirstDayOfMonth(Calendar calendar, boolean isMonday) {
-		calendar.set(Calendar.DAY_OF_MONTH, 1);
-		
-		int day = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+	private Integer getFirstDayOfMonth(BESHCalendar calendar, boolean isMonday) {
+		int day = calendar.getDayOfFirstDayInMonth() - 1;
 		if (isMonday) {
 			day -= 1;
 			if (day < 0) {
@@ -353,13 +359,13 @@ public class CalApplication implements Cal {
 	 * @param cal3 Calendar to be processed
 	 * @return header of 3 calendars side by side.
 	 */
-	private String getThreeHeader(Calendar cal1, Calendar cal2, Calendar cal3) {
+	private String getThreeHeader(BESHCalendar cal1, BESHCalendar cal2, BESHCalendar cal3) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(getHeader(cal1.get(Calendar.MONTH), cal1.get(Calendar.YEAR), true));
+		sb.append(getHeader(cal1.getMonth(), cal1.getYear(), true));
 		sb.append("  ");
-		sb.append(getHeader(cal2.get(Calendar.MONTH), cal2.get(Calendar.YEAR), true));
+		sb.append(getHeader(cal2.getMonth(), cal2.getYear(), true));
 		sb.append("  ");
-		sb.append(getHeader(cal3.get(Calendar.MONTH), cal3.get(Calendar.YEAR), false));
+		sb.append(getHeader(cal3.getMonth(), cal3.getYear(), false));
 		
 		return sb.toString();
 	}

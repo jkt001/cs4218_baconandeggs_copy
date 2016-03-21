@@ -9,8 +9,8 @@ public class BESHCalendar {
 	private int year;
 
 	public BESHCalendar(int d, int m, int y) {
-		day = d;
-		month = m;
+		setDay(d);
+		month = m + 1;
 		year = y;
 	}
 	
@@ -47,9 +47,9 @@ public class BESHCalendar {
 			while (dayOfWeek < 0) {
 				dayOfWeek += 7;
 			}
-			return dayOfWeek;
+			return dayOfWeek + 1;
 		}
-		return 7;
+		return dayOfWeek + 1;
 	}
 	
 	private int getZellerMonth() {
@@ -80,5 +80,27 @@ public class BESHCalendar {
 			return true;
 		}
 		return false;
+	}
+
+	public int getDay() {
+		return day;
+	}
+
+	public void setDay(int day) {
+		this.day = day;
+	}
+	
+	public int getMonth() {
+		return month - 1;
+	}
+	
+	public int getYear() {
+		return year;
+	}
+	
+	public static void main(String[] args) {
+		BESHCalendar calendar = new BESHCalendar(21, 3, 2016);
+		System.out.println(calendar.getNumberOfDaysInAMonth());
+		System.out.println(calendar.getDayOfFirstDayInMonth());
 	}
 }
