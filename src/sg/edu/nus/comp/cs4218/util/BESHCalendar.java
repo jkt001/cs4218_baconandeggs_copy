@@ -2,12 +2,25 @@ package sg.edu.nus.comp.cs4218.util;
 
 import java.util.Date;
 
+/**
+ * BESHCalendar does not make use of any date libraries and provides functionality for CalApplication
+ */
 public class BESHCalendar {
 	
 	private int day;
 	private int month;
 	private int year;
 
+	/**
+	 * Constructor for BESHCalendar using the following variables
+	 * 
+	 * @param d
+	 * 		day from 1 - 31
+	 * @param m
+	 * 		month starting from 0 - 11
+	 * @param y
+	 * 		year
+	 */
 	public BESHCalendar(int d, int m, int y) {
 		setDay(d);
 		month = m + 1;
@@ -34,7 +47,11 @@ public class BESHCalendar {
 		}
 	}
 	
-	//1- Sunday, 7- Saturday
+	/**
+	 * Gets the first day of the current month set whereby
+	 * 1 - Sunday and 7 - Saturday
+	 * @return the day of the first day of month
+	 */
 	public int getDayOfFirstDayInMonth() {
 		int thisMonth = getZellerMonth();
 		int thisYear = getZellerYear();
@@ -52,6 +69,10 @@ public class BESHCalendar {
 		return dayOfWeek + 1;
 	}
 	
+	/**
+	 * 1 - March, 12 - February
+	 * @return the month used in zeller's formula
+	 */
 	private int getZellerMonth() {
 		int zMonth = (month-2) % 12;
 		if (zMonth <= 0) {
@@ -71,6 +92,13 @@ public class BESHCalendar {
 		return new Date();
 	}
 	
+	/**
+	 * Checks if a year is a leap year
+	 * @param y
+	 * 			to check
+	 * @return
+	 * 			boolean of where year y is a leap year
+	 */
 	public boolean isLeapYear(int y) {
 		if (y % 400 ==0) {
 			return true;
