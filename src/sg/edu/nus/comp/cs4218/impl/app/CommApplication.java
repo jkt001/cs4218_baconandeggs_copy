@@ -47,6 +47,12 @@ public class CommApplication implements Comm {
 	private String leftString;
 	private String rightString;
 	
+	/**
+	 * This method runs comm based on the given args and stdin.
+	 * 
+	 * @param args An array of String that should contain one or two filenames of the input.
+	 * @param stdin The input stream that will be used as FILE1 if there is only one argument.
+	 */
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws CommException {
 		checkArgs(args, stdin, stdout);
@@ -72,7 +78,14 @@ public class CommApplication implements Comm {
 		}
 	}
 	
-	// testing method
+	/**
+	 * This is a convenience method for testing.
+	 * 
+	 * @param leftInputStream InputStream containing the contents of the first file.
+	 * @param rightInputStream InputStream containing the contents of the second file.
+	 * @param outputStream OutputStream where the evaluation result will be output.
+	 * @throws CommException if there is any problem when running the application.
+	 */
 	public void comm(InputStream leftInputStream, InputStream rightInputStream, OutputStream outputStream) throws CommException {
 		try {
 			this.leftInputStream = leftInputStream;
@@ -212,10 +225,6 @@ public class CommApplication implements Comm {
 		outputStream.write(stringToWrite.getBytes());
 	}
 	
-	private void writeNewLine(OutputStream outputStream) throws IOException {
-		outputStream.write(System.lineSeparator().getBytes());
-	}
-	
 	private String readLine(BufferedReader reader) throws IOException {
 		StringBuilder stringBuilder = new StringBuilder();
 		while(true) {
@@ -230,26 +239,52 @@ public class CommApplication implements Comm {
 		return stringBuilder.toString();
 	}
 	
+	/**
+	 * Runs comm on the given input files.
+	 * This comm implementation can handle the case where there are exactly
+	 * zero match between the left and right files. The output format is as
+	 * described in the comment on top of this class declaration. 
+	 */
 	@Override
 	public String commNoMatches(String[] args) {
 		return runAndRetrieveResult(args);
 	}
 
+	/**
+	 * Runs comm on the given input files.
+	 * This comm implementation can handle the case where there there are only
+	 * contents in the first file, and the second file exists but is empty.
+	 */
 	@Override
 	public String commOnlyFirst(String[] args) {
 		return runAndRetrieveResult(args);
 	}
 
+	/**
+	 * Runs comm on the given input files.
+	 * This comm implementation can handle the case where there there are only
+	 * contents in the second file, and the first file exists but is empty.
+	 */
 	@Override
 	public String commOnlySecond(String[] args) {
 		return runAndRetrieveResult(args);
 	}
 
+	/**
+	 * Runs comm on the given input files.
+	 * This comm implementation can handle the case where there are some 
+	 * matches between the first and second input files.
+	 */
 	@Override
 	public String commBothMathches(String[] args) {
 		return runAndRetrieveResult(args);
 	}
 
+	/**
+	 * Run comm on the given input files. 
+	 * This comm implementation can handle the case where first and second
+	 * input have exactly the same contents.
+	 */
 	@Override
 	public String commAllMatches(String[] args) {
 		return runAndRetrieveResult(args);
