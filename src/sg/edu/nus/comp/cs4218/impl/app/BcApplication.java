@@ -80,6 +80,8 @@ public class BcApplication implements Bc {
 					postFixBuilder.append(" ");
 				}
 				postfixStack.pop();
+			} else if (exp.equals("!")) {
+				i = processOperandWithNot(postFixBuilder, expression, i, exp);
 			} else if (isValidOperator(exp) && !exp.equals("-")) {
 
 				i = processOperator(postfixStack, postFixBuilder, expression, i, exp);
@@ -99,8 +101,7 @@ public class BcApplication implements Bc {
 			postFixBuilder.append(" ");
 		}
 
-		String postFixExpression = postFixBuilder.toString().trim();
-		return postFixExpression;
+		return postFixBuilder.toString().trim();
 	}
 
 	private boolean isNegationAndNotSubtraction(String[] expression, int i) {
@@ -135,6 +136,38 @@ public class BcApplication implements Bc {
 
 		postFixBuilder.append(number.toString());
 		postFixBuilder.append(" ");
+		return i;
+	}
+	
+	private int processOperandWithNot(StringBuilder postfixBuilder, String[] expression, int i, String exp)
+			throws BcException {
+		if (!Character.isDigit(exp.toCharArray()[0]) && !exp.equals("!")) {
+			throw new BcException("Invalid operator");
+		}
+		StringBuilder number = new StringBuilder();
+		
+	
+		if (i < expression.length - 1) {
+			exp = expression[++i];
+		} else {
+			throw new BcException("Invalid Expression");
+		}
+		
+		while ((Character.isDigit(exp.toCharArray()[0]) || exp.equals(".")) && i < expression.length) {
+			number.append(exp);
+			if (i < expression.length - 1) {
+				exp = expression[++i];
+			} else {
+				++i;
+			}
+		}
+		--i;
+		
+		String[] arg = new String[]{number.toString()};
+		String res = this.not(arg);
+
+		postfixBuilder.append(res);
+		postfixBuilder.append(" ");
 		return i;
 	}
 

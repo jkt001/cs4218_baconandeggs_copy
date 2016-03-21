@@ -368,6 +368,22 @@ public class GivenBcApplicationTest {
 	// new tests added
 	
 	@Test
+	public void testRunWithNot() throws BcException {
+		String[] args = {"!10+!12"};
+		bcApp.run(args, null, outStream);
+		String expected = "0" + System.lineSeparator();
+		assertEquals(expected, outStream.toString());
+	}
+	
+	@Test
+	public void testRunWithNotTwo() throws BcException {
+		String[] args = {"!0+!0"};
+		bcApp.run(args, null, outStream);
+		String expected = "2" + System.lineSeparator();
+		assertEquals(expected, outStream.toString());
+	}
+	
+	@Test
 	public void testRunWithSubtractionAndNoNegation() throws BcException {
 		String[] args = {"10-1-1-1-1-1"};
 		bcApp.run(args, null, outStream);
