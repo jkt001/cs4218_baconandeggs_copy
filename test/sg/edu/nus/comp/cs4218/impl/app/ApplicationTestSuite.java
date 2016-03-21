@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+	CalApplicationTest.class,
 	CatApplicationTest.class,
 	CommApplicationTest.class,
 	DateApplicationTest.class,

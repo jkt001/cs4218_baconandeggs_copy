@@ -1,6 +1,6 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -224,16 +224,20 @@ public class HeadApplicationTest {
 		inStream = new ByteArrayInputStream(input.getBytes());
 	}
 	
-	/**
-	 * Always generate a new line at the end of the result
-	 */
 	private String generateExpected(String content, int numOfLines, int actualLength) {
 		String expected = "";
 		int numLines = Math.min(numOfLines, actualLength);
 		for (int i = 0; i < numLines; i++) {
 			expected += content;
+			if (i < numLines - 1) {
+				expected += System.getProperty("line.separator");
+			}
+		}
+		
+		if (actualLength > numOfLines) {
 			expected += System.getProperty("line.separator");
 		}
+		
 		return expected;
 	}
 	

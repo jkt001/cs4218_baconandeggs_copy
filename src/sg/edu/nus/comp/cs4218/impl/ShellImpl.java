@@ -128,6 +128,8 @@ public class ShellImpl implements Shell {
 			absApp = new FmtApplication();
 		} else if (("comm").equals(app)) {
 			absApp = new CommApplication();
+		} else if (("cal").equals(app)) {
+			absApp = new CalApplication();
 		} else { // invalid command
 			throw new ShellException(app + ": " + EXP_INVALID_APP);
 		}

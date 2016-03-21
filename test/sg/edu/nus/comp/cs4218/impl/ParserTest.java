@@ -6,9 +6,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,10 +20,10 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import edu.emory.mathcs.backport.java.util.Arrays;
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.ShellException;
-
 
 public class ParserTest {
 	
@@ -297,5 +301,60 @@ public class ParserTest {
 		ArrayList<String[]> args = parser.getArguments();
 		assertEquals(1, args.size());
 		assertEquals(2, args.get(0).length);
+	}
+
+	@Test
+	public void testIORedirectionValidInAndExistingOut() throws IOException, ShellException, AbstractApplicationException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+		File test1 = tFolder.newFile("TestFile.txt");
+		String toWrite = "line to write ";
+		Files.write(test1.toPath(), toWrite.getBytes());
+
+		File test2 = tFolder.newFile("TestFile2.txt");
+		String toWrite2 = "should be overwritten";
+		Files.write(test2.toPath(), toWrite2.getBytes());
+
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo <" + relative + "TestFile.txt >" + relative + "TestFile2.txt";
+		parser = new MockParser();
+		parser.parse(query, outStream);
+		parser.evaluate();
+		
+		List<String> linesRead = Files.readAllLines(test2.toPath());
+		assertEquals(1, linesRead.size());
+		assertEquals("line to write Mocked Output", linesRead.get(0));
+	}
+
+	@Test
+	public void testIORedirectionNonExistingOut() throws IOException, ShellException, AbstractApplicationException {
+		Path root = Paths.get(Environment.currentDirectory);
+		File rootFile = new File(root.toUri());
+
+		String folderPath = tFolder.getRoot().getAbsolutePath();
+		String rootPath = rootFile.getAbsolutePath();
+		String relative = new File(rootPath).toURI().relativize(new File(folderPath).toURI()).getPath(); 
+
+		String query = "echo random_file_name >" + relative + "TestFile2.txt";
+		parser = new MockParser();
+		parser.parse(query, outStream);
+		parser.evaluate();
+		
+		File writtenFile = new File(relative + "TestFile2.txt");
+		assertTrue(writtenFile.exists());
+		List<String> linesRead = Files.readAllLines(writtenFile.toPath());
+		assertEquals(1, linesRead.size());
+		assertEquals("Mocked Output", linesRead.get(0));
+	}
+
+	@Test
+	public void testIORedirectionInvalidIn() throws ShellException, AbstractApplicationException {
+		thrown.expect(ShellException.class);
+		thrown.expectMessage("Input file not found");
+		
+		parser.parse("echo <test/nonexistentfolder/nonexistentfile", outStream);
 	}
 }

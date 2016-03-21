@@ -1,120 +1,378 @@
 package sg.edu.nus.comp.cs4218.impl.app;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import java.math.BigDecimal;
+
+import java.util.HashMap;
+import java.util.Stack;
+
 import sg.edu.nus.comp.cs4218.app.Bc;
-import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
 import sg.edu.nus.comp.cs4218.exception.BcException;
 
 public class BcApplication implements Bc {
 
+	HashMap<String, Integer> precedenceMapping;
+	private final String[][] OPERATORS = { { "+", "-" }, { "*", "/" }, { "^" }, { "<", ">", "<=", ">=", "!=", "==" },
+			{ "&&" }, { "||" }, { "!" } };
+
+	public BcApplication() {
+		precedenceMapping = new HashMap<String, Integer>();
+
+		for (int i = 0; i < OPERATORS.length; i++) {
+			for (String op : OPERATORS[i]) {
+				precedenceMapping.put(op, i);
+			}
+		}
+	}
+
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws BcException {
-		// TODO Auto-generated method stub
+		if (args == null || args.length == 0) {
+			throw new BcException("No expressions specified");
+		} else if (stdout == null) {
+			throw new BcException("No output stream specified");
+		} else if (args.length == 1) {
+			String expression = args[0];
+
+			if (isValidBracketMatching(expression)) {
+				String postfixExpression = getPostfixExpression(expression);
+				String result = calculate(postfixExpression);
+				printResult(result, stdout);
+			} else {
+				throw new BcException("Invalid expression");
+			}
+
+		} else {
+			throw new BcException("Too many arguments specified");
+		}
+
+	}
+
+	private void printResult(String result, OutputStream stdout) throws BcException {
+		try {
+			result += System.lineSeparator();
+			stdout.write(result.getBytes("UTF-8"));
+		} catch (IOException e) {
+			throw new BcException("IOException");
+		}
+	}
+
+	public String getPostfixExpression(String toBeProcessed) throws BcException {
+		Stack<String> postfixStack = new Stack<String>();
+
+		StringBuilder postFixBuilder = new StringBuilder();
+
+		String[] expression = toBeProcessed.split("");
+
+		for (int i = 1; i < expression.length; i++) {
+			String exp = expression[i];
+
+			if (exp.equals("(")) {
+				postfixStack.push(exp);
+			} else if (exp.equals(")")) {
+
+				while (!postfixStack.peek().equals("(")) {
+					postFixBuilder.append(postfixStack.pop());
+					postFixBuilder.append(" ");
+				}
+				postfixStack.pop();
+			} else if (isValidOperator(exp)) {
+
+				if (i == expression.length) {
+					throw new BcException("Invalid expression");
+				} else {
+					//check next
+					if (isValidOperator(exp + expression[i + 1])) {
+						exp = exp + expression[++i];
+					}
+					
+					int currentPrecedenceLevel = precedenceMapping.get(exp);
+					while (!postfixStack.isEmpty() && !postfixStack.peek().equals("(")
+							&& currentPrecedenceLevel <= precedenceMapping.get(postfixStack.peek())) {
+						postFixBuilder.append(postfixStack.pop());
+						postFixBuilder.append(" ");
+					}
+					postfixStack.push(exp);
+				}
+			} else {
+				StringBuilder number = new StringBuilder();
+
+				while ((Character.isDigit(exp.toCharArray()[0]) || exp.equals(".")) && i < expression.length) {
+					number.append(exp);
+					if (i < expression.length - 1) {
+						exp = expression[++i];
+					} else {
+						++i;
+					}
+				}
+				--i;
+
+				postFixBuilder.append(number.toString());
+				postFixBuilder.append(" ");
+			}
+		}
+
+		while (!postfixStack.isEmpty()) {
+			postFixBuilder.append(postfixStack.pop());
+			postFixBuilder.append(" ");
+		}
+
+		String postFixExpression = postFixBuilder.toString().trim();
+		return postFixExpression;
+	}
+
+	public String calculate(String postFixExpression) {
+		Stack<String> myStack = new Stack<String>();
+
+		for (String s : postFixExpression.split(" ")) {
+			if (isValidOperator(s)) {
+				String arg2 = myStack.pop();
+				String arg1 = myStack.pop();
+				String op = s;
+				String result = performOperation(arg1, arg2, op);
+				myStack.push(result);
+			} else {
+				myStack.push(s);
+			}
+		}
 		
+		return myStack.pop();
+	}
+
+	private String performOperation(String arg1, String arg2, String op) {
+		String result = "";
+		switch (op) {
+		case "+":
+			return add(createArgument(arg1, arg2));
+		case "-":
+			return subtract(createArgument(arg1, arg2));
+		case "*":
+			return multiply(createArgument(arg1, arg2));
+		case "/":
+			return divide(createArgument(arg1, arg2));
+		case "^":
+			return pow(createArgument(arg1, arg2));
+		case ">":
+			return greaterThan(createArgument(arg1, arg2));
+		case ">=":
+			return greaterThanOrEqual(createArgument(arg1, arg2));
+		case "<":
+			return lessThan(createArgument(arg1, arg2));
+		case "<=":
+			return lessThanOrEqual(createArgument(arg1, arg2));
+		case "==":
+			return equalEqual(createArgument(arg1, arg2));
+		case "!=":
+			return notEqual(createArgument(arg1, arg2));
+		case "&&":
+			return and(createArgument(arg1, arg2));
+		case "||":
+			return or(createArgument(arg1, arg2));
+		}
+
+		return result;
+	}
+
+	private String[] createArgument(String... args) {
+		String[] arguments = new String[args.length];
+
+		for (int i = 0; i < args.length; i++) {
+			arguments[i] = args[i];
+		}
+
+		return arguments;
+	}
+
+	public boolean isValidOperator(String operator) {
+		for (String[] ops : OPERATORS) {
+			for (String op : ops) {
+				if (op.equals(operator)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public boolean isValidBracketMatching(String expression) {
+		Stack<Character> brackets = new Stack<Character>();
+
+		for (char c : expression.toCharArray()) {
+			if (c == '(') {
+				brackets.push(c);
+			} else if (c == ')') {
+				if (brackets.isEmpty() || brackets.pop() != '(') {
+					return false;
+				}
+			}
+		}
+
+		return brackets.isEmpty();
 	}
 
 	@Override
 	public String number(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return args[0];
 	}
 
 	@Override
 	public String negate(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder myStringBuilder = new StringBuilder();
+
+		String num = args[0];
+		if (num.charAt(0) == '-') {
+			myStringBuilder.append(num.substring(1));
+		} else {
+			myStringBuilder.append("-");
+			myStringBuilder.append(num);
+		}
+
+		return myStringBuilder.toString();
 	}
 
 	@Override
 	public String add(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal sum = firstOperand.add(secondOperand);
+
+		return sum.toString();
 	}
 
 	@Override
 	public String subtract(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal result = firstOperand.subtract(secondOperand);
+
+		return result.toString();
 	}
 
 	@Override
 	public String multiply(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal result = firstOperand.multiply(secondOperand);
+
+		return result.toString();
 	}
 
 	@Override
 	public String divide(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		BigDecimal result = firstOperand.divide(secondOperand);
+
+		return result.toString();
 	}
 
 	@Override
 	public String pow(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		int exponent = Integer.parseInt(args[1]);
+
+		BigDecimal result = firstOperand.pow(exponent);
+
+		return result.toString();
 	}
 
 	@Override
 	public String bracket(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		String[] split = args[0].split("");
+		return split[2];
 	}
 
 	@Override
 	public String greaterThan(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare > 0) ? "1" : "0";
 	}
 
 	@Override
 	public String greaterThanOrEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare >= 0) ? "1" : "0";
 	}
 
 	@Override
 	public String lessThan(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare < 0) ? "1" : "0";
 	}
 
 	@Override
 	public String lessThanOrEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare <= 0) ? "1" : "0";
 	}
 
 	@Override
 	public String equalEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare == 0) ? "1" : "0";
 	}
 
 	@Override
 	public String notEqual(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		BigDecimal firstOperand = new BigDecimal(args[0]);
+		BigDecimal secondOperand = new BigDecimal(args[1]);
+
+		int compare = firstOperand.compareTo(secondOperand);
+
+		return (compare != 0) ? "1" : "0";
 	}
 
 	@Override
 	public String and(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		long first = Long.parseLong(args[0]);
+		long second = Long.parseLong(args[1]);
+
+		boolean res = (first != 0) && (second != 0);
+
+		return res ? "1" : "0";
 	}
 
 	@Override
 	public String or(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		long first = Long.parseLong(args[0]);
+		long second = Long.parseLong(args[1]);
+
+		Boolean res = (first != 0) || (second != 0);
+
+		return res ? "1" : "0";
 	}
 
 	@Override
 	public String not(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return (args[0].equals("0")) ? "1" : "0";
 	}
 
 }
