@@ -99,7 +99,7 @@ public class BESHCalendar {
 	 * @return
 	 * 			boolean of where year y is a leap year
 	 */
-	private boolean isLeapYear(int y) {
+	public boolean isLeapYear(int y) {
 		if (y % 400 ==0) {
 			return true;
 		} else if (y % 100 == 0) {
