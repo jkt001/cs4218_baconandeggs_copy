@@ -386,8 +386,14 @@ public class BcApplication implements Bc {
 
 	@Override
 	public String bracket(String[] args) {
-		String[] split = args[0].split("");
-		return split[2];
+		StringBuilder res = new StringBuilder();
+		for (char c : args[0].toCharArray()) {
+			if (c != '(' && c != ')') {
+				res.append(c);
+			}
+		}
+		
+		return res.toString();
 	}
 
 	@Override
