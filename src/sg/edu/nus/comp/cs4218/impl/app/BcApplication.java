@@ -18,7 +18,7 @@ public class BcApplication implements Bc {
 	HashMap<String, Integer> precedenceMapping;
 	private final String[][] OPERATORS = { { "+", "-" }, { "*", "/" }, { "^" }, { "<", ">", "<=", ">=", "!=", "==" },
 			{ "&&" }, { "||" }, { "!" } };
-	
+
 	int start;
 
 	public BcApplication() {
@@ -31,6 +31,31 @@ public class BcApplication implements Bc {
 		}
 	}
 
+	/**
+	 * Runs the bc application with the specified arguments. This will perform
+	 * calculation and all calculation is done with the upmost precision. All
+	 * numbers will be treated as floating point numbers.
+	 * 
+	 * When calling this app, it is recommended to use quotation marks when
+	 * using the < or > operation, etc.
+	 * 
+	 * 
+	 * @param args
+	 *            Array of arguments for the application. Only one argument
+	 *            should be specified, which is the expression to be evaluated.
+	 * 
+	 * @param stdin
+	 *            Not used.
+	 * 
+	 * @param stdout
+	 *            An OutputStream. The output of the command is written to this
+	 *            OutputStream.
+	 * 
+	 * @throws BcException
+	 *             If the expression is not able to be evaluated (invalid
+	 *             operator / expression).
+	 */
+
 	@Override
 	public void run(String[] args, InputStream stdin, OutputStream stdout) throws BcException {
 		if (args == null || args.length == 0) {
@@ -38,8 +63,7 @@ public class BcApplication implements Bc {
 		} else if (stdout == null) {
 			throw new BcException("No output stream specified");
 		} else if (args.length == 1) {
-			String expression = args[0];
-
+			String expression = args[0].replaceAll(" ", "");
 			if (isValidBracketMatching(expression)) {
 				String postfixExpression = getPostfixExpression(expression);
 				String result = calculate(postfixExpression);
@@ -63,16 +87,26 @@ public class BcApplication implements Bc {
 		}
 	}
 
+	/**
+	 * Returns the postfix expression of the specified infix expression.
+	 * 
+	 * @param toBeProcessed
+	 *            The infix expression specified. This infix expression cannot
+	 *            contain any whitespace.
+	 * 
+	 * @throws BcException
+	 *             If the expression is not able to be parsed to postfix
+	 *             (invalid operator / expression).
+	 */
+
 	public String getPostfixExpression(String toBeProcessed) throws BcException {
-		
+
 		Stack<String> postfixStack = new Stack<String>();
 
 		StringBuilder postFixBuilder = new StringBuilder();
 
 		String[] expression = toBeProcessed.split("");
-		
-		
-		
+
 		if (expression[0].equals("")) {
 			start = 1;
 		} else {
@@ -116,7 +150,7 @@ public class BcApplication implements Bc {
 	}
 
 	private boolean isNegationAndNotSubtraction(String[] expression, int i) {
-		return i == start || isValidOperator(expression[i-1]) || expression[i-1].equals("(");
+		return i == start || isValidOperator(expression[i - 1]) || expression[i - 1].equals("(");
 	}
 
 	private int processOperand(StringBuilder postFixBuilder, String[] expression, int i, String exp)
@@ -125,7 +159,7 @@ public class BcApplication implements Bc {
 			throw new BcException("Invalid operator");
 		}
 		StringBuilder number = new StringBuilder();
-		
+
 		if (exp.equals("-")) {
 			number.append(exp);
 			if (i < expression.length - 1) {
@@ -149,21 +183,20 @@ public class BcApplication implements Bc {
 		postFixBuilder.append(" ");
 		return i;
 	}
-	
+
 	private int processOperandWithNot(StringBuilder postfixBuilder, String[] expression, int i, String exp)
 			throws BcException {
 		if (!Character.isDigit(exp.toCharArray()[0]) && !exp.equals("!")) {
 			throw new BcException("Invalid operator");
 		}
 		StringBuilder number = new StringBuilder();
-		
-	
+
 		if (i < expression.length - 1) {
 			exp = expression[++i];
 		} else {
 			throw new BcException("Invalid Expression");
 		}
-		
+
 		while ((Character.isDigit(exp.toCharArray()[0]) || exp.equals(".")) && i < expression.length) {
 			number.append(exp);
 			if (i < expression.length - 1) {
@@ -173,8 +206,8 @@ public class BcApplication implements Bc {
 			}
 		}
 		--i;
-		
-		String[] arg = new String[]{number.toString()};
+
+		String[] arg = new String[] { number.toString() };
 		String res = this.not(arg);
 
 		postfixBuilder.append(res);
@@ -203,6 +236,16 @@ public class BcApplication implements Bc {
 		return i;
 	}
 
+	/**
+	 * Returns the result of the calculation of the postfixExpression as string
+	 * 
+	 * @param postfixExpression
+	 *            The postfix expression specified.
+	 * 
+	 * @throws BcException
+	 *             If the expression contains invalid parameters for the operation
+	 */
+	
 	public String calculate(String postFixExpression) throws BcException {
 		Stack<String> myStack = new Stack<String>();
 
@@ -265,7 +308,7 @@ public class BcApplication implements Bc {
 		return arguments;
 	}
 
-	public boolean isValidOperator(String operator) {
+	private boolean isValidOperator(String operator) {
 		for (String[] ops : OPERATORS) {
 			for (String op : ops) {
 				if (op.equals(operator)) {
@@ -277,6 +320,14 @@ public class BcApplication implements Bc {
 		return false;
 	}
 
+	/**
+	 * Returns true if the expression has a valid bracket matching and false otherwise
+	 * 
+	 * @param expression
+	 *            The infix expression specified. This infix expression cannot
+	 *            contain any whitespace.
+	 * 
+	 */
 	public boolean isValidBracketMatching(String expression) {
 		Stack<Character> brackets = new Stack<Character>();
 
@@ -293,11 +344,31 @@ public class BcApplication implements Bc {
 		return brackets.isEmpty();
 	}
 
+	/**
+	 * Perform the number operation
+	 * 
+	 * @param args
+	 *            Array of arguments. Will just return the argument since it is
+	 *            a number. The argument must be a valid number. A valid number
+	 *            is either "X" or "-X". X can be as large as the computer
+	 *            memory can hold.
+	 * 
+	 */
 	@Override
 	public String number(String[] args) {
 		return args[0];
 	}
 
+	/**
+	 * Perform the negate operation and return the result as string.
+	 * 
+	 * @param args
+	 *            Array of arguments. Will just return the argument since it is
+	 *            a number, and negated. The argument must be a valid number. A
+	 *            valid number is either "X" or "-X". X can be as large as the
+	 *            computer memory can hold.
+	 * 
+	 */
 	@Override
 	public String negate(String[] args) {
 		StringBuilder myStringBuilder = new StringBuilder();
@@ -313,6 +384,14 @@ public class BcApplication implements Bc {
 		return myStringBuilder.toString();
 	}
 
+	/**
+	 * Perform the addition operation and return the result as string.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String add(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -323,6 +402,14 @@ public class BcApplication implements Bc {
 		return sum.toString();
 	}
 
+	/**
+	 * Perform the subtraction operation and return the result as string.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String subtract(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -333,6 +420,14 @@ public class BcApplication implements Bc {
 		return result.toString();
 	}
 
+	/**
+	 * Perform the multiplication operation and return the result as string.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String multiply(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -343,6 +438,17 @@ public class BcApplication implements Bc {
 		return result.toString();
 	}
 
+	/**
+	 * Perform the division operation and return the result as string.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 * @throws BcException
+	 *             If there's division by zero, an exception will be thrown
+	 * 
+	 */
 	@Override
 	public String divide(String[] args) throws BcException {
 		if (args[1].equals("0")) {
@@ -368,22 +474,41 @@ public class BcApplication implements Bc {
 
 	}
 
+	/**
+	 * Perform the power operation and return the result as string.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the exponent. Both must be valid numbers.
+	 * 
+	 * @throws BcException
+	 *             If the exponent is not an integer, an exception is thrown
+	 * 
+	 */
 	@Override
 	public String pow(String[] args) throws BcException {
 		int exponent = 0;
-		
+
 		try {
 			exponent = Integer.parseInt(args[1]);
 		} catch (NumberFormatException e) {
 			throw new BcException("Exponent is not an integer");
 		}
-		
+
 		BigDecimal firstOperand = new BigDecimal(args[0]);
 		BigDecimal result = firstOperand.pow(exponent);
 		return result.toString();
 
 	}
 
+	/**
+	 * Returns whatever is inside an opening and closing bracket.
+	 * 
+	 * @param args
+	 *            Array of arguments. The argument specified in index 0 must be
+	 *            a string that starts with "(" and ends with ")".
+	 * 
+	 */
 	@Override
 	public String bracket(String[] args) {
 		StringBuilder res = new StringBuilder();
@@ -392,10 +517,19 @@ public class BcApplication implements Bc {
 				res.append(c);
 			}
 		}
-		
+
 		return res.toString();
 	}
 
+	/**
+	 * Performs the greaterThan operation and returns 1 if the first operand is
+	 * greater than the second operand, 0 otherwise.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String greaterThan(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -406,6 +540,15 @@ public class BcApplication implements Bc {
 		return (compare > 0) ? "1" : "0";
 	}
 
+	/**
+	 * Performs the greaterThanOrEqual operation and returns 1 if the first
+	 * operand is greater than or equal to the second operand, 0 otherwise.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String greaterThanOrEqual(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -416,6 +559,15 @@ public class BcApplication implements Bc {
 		return (compare >= 0) ? "1" : "0";
 	}
 
+	/**
+	 * Performs the lessThan operation and returns 1 if the first operand is
+	 * less than to the second operand, 0 otherwise.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String lessThan(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -426,6 +578,15 @@ public class BcApplication implements Bc {
 		return (compare < 0) ? "1" : "0";
 	}
 
+	/**
+	 * Performs the lessThanOrEqual operation and returns 1 if the first operand
+	 * is less than or equal to the second operand, 0 otherwise.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String lessThanOrEqual(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -436,6 +597,15 @@ public class BcApplication implements Bc {
 		return (compare <= 0) ? "1" : "0";
 	}
 
+	/**
+	 * Performs the equalEqual operation and returns 1 if the first operand is
+	 * equal to the second operand, 0 otherwise.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String equalEqual(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -446,6 +616,15 @@ public class BcApplication implements Bc {
 		return (compare == 0) ? "1" : "0";
 	}
 
+	/**
+	 * Performs the notEqual operation and returns 1 if the first operand is not
+	 * equal to the second operand, 0 otherwise.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String notEqual(String[] args) {
 		BigDecimal firstOperand = new BigDecimal(args[0]);
@@ -456,6 +635,15 @@ public class BcApplication implements Bc {
 		return (compare != 0) ? "1" : "0";
 	}
 
+	/**
+	 * Performs the and operation. All numbers other than 0 will be treated as
+	 * true. 0 and -0 is false.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String and(String[] args) {
 		long first = Long.parseLong(args[0]);
@@ -466,6 +654,15 @@ public class BcApplication implements Bc {
 		return res ? "1" : "0";
 	}
 
+	/**
+	 * Performs the or operation. All numbers other than 0 will be treated as
+	 * true. 0 and -0 is false.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the first operand and index 1
+	 *            is the second operand. Both must be valid numbers.
+	 * 
+	 */
 	@Override
 	public String or(String[] args) {
 		long first = Long.parseLong(args[0]);
@@ -476,6 +673,14 @@ public class BcApplication implements Bc {
 		return res ? "1" : "0";
 	}
 
+	/**
+	 * Performs the not operation. All numbers other than 0 will be treated as
+	 * true. 0 and -0 is false.
+	 * 
+	 * @param args
+	 *            Array of arguments. Index 0 is the one to be negated.
+	 * 
+	 */
 	@Override
 	public String not(String[] args) {
 		return (args[0].equals("0") || args[0].equals("-0")) ? "1" : "0";
