@@ -36,6 +36,10 @@ public class BcApplication implements Bc {
 	 * calculation and all calculation is done with the upmost precision. All
 	 * numbers will be treated as floating point numbers.
 	 * 
+	 * The precedence level is defined in this app, from lowest to highest:
+	 * { { "+", "-" }, { "*", "/" }, { "^" }, { "<", ">", "<=", ">=", "!=", "==" },
+	 * { "&&" }, { "||" }, { "!" } }
+	 * 
 	 * When calling this app, it is recommended to use quotation marks when
 	 * using the < or > operation, etc.
 	 * 
