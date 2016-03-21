@@ -1,8 +1,7 @@
 package sg.edu.nus.comp.cs4218.impl;
 
 import java.io.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
 
 import sg.edu.nus.comp.cs4218.Application;
 import sg.edu.nus.comp.cs4218.Environment;
@@ -32,60 +31,6 @@ public class ShellImpl implements Shell {
 			+ "as output redirection file.";
 	public static final String EXP_STDOUT = "Error writing to stdout.";
 	public static final String EXP_NOT_SUPPORTED = " not supported yet";
-
-	/**
-	 * Searches for and processes the commands enclosed by back quotes for
-	 * command substitution.If no back quotes are found, the argsArray from the
-	 * input is returned unchanged. If back quotes are found, the back quotes
-	 * and its enclosed commands substituted with the output from processing the
-	 * commands enclosed in the back quotes.
-	 * 
-	 * @param argsArray
-	 *            String array of the individual commands.
-	 * 
-	 * @return String array with the back quotes command processed.
-	 * 
-	 * @throws AbstractApplicationException
-	 *             If an exception happens while processing the content in the
-	 *             back quotes.
-	 * @throws ShellException
-	 *             If an exception happens while processing the content in the
-	 *             back quotes.
-	 */
-	public static String[] processBQ(String... argsArray)
-			throws AbstractApplicationException, ShellException {
-		// echo "this is space `echo "nbsp"`"
-		// echo "this is space `echo "nbsp"` and `echo "2nd space"`"
-		// Back quoted: any char except \n,`
-		String[] resultArr = new String[argsArray.length];
-		System.arraycopy(argsArray, 0, resultArr, 0, argsArray.length);
-		String patternBQ = "`([^\\n`]*)`";
-		Pattern patternBQp = Pattern.compile(patternBQ);
-
-		for (int i = 0; i < argsArray.length; i++) {
-			Matcher matcherBQ = patternBQp.matcher(argsArray[i]);
-			if (matcherBQ.find()) {// found backquoted
-				String bqStr = matcherBQ.group(1);
-				// cmdVector.add(bqStr.trim());
-				// process back quote
-				// System.out.println("backquote" + bqStr);
-				OutputStream bqOutputStream = new ByteArrayOutputStream();
-				ShellImpl shell = new ShellImpl();
-				//shell.parseAndEvaluate(bqStr, bqOutputStream);
-
-				ByteArrayOutputStream outByte = (ByteArrayOutputStream) bqOutputStream;
-				byte[] byteArray = outByte.toByteArray();
-				String bqResult = new String(byteArray).replace("\n", "")
-						.replace("\r", "");
-
-				// replace substring of back quote with result
-				String replacedStr = argsArray[i].replace("`" + bqStr + "`",
-						bqResult);
-				resultArr[i] = replacedStr;
-			}
-		}
-		return resultArr;
-	}
 
 	/**
 	 * Static method to run the application as specified by the application
@@ -137,142 +82,11 @@ public class ShellImpl implements Shell {
 	}
 
 	/**
-	 * Static method to creates an inputStream based on the file name or file
-	 * path.
-	 * 
-	 * @param inputStreamS
-	 *            String of file name or file path
-	 * 
-	 * @return InputStream of file opened
-	 * 
-	 * @throws ShellException
-	 *             If file is not found.
-	 */
-	public static InputStream openInputRedir(String inputStreamS)
-			throws ShellException {
-		File inputFile = new File(inputStreamS);
-		FileInputStream fInputStream = null;
-		try {
-			fInputStream = new FileInputStream(inputFile);
-		} catch (FileNotFoundException e) {
-			throw new ShellException(e.getMessage());
-		}
-		return fInputStream;
-	}
-
-	/**
-	 * Static method to creates an outputStream based on the file name or file
-	 * path.
-	 * 
-	 * @param onputStreamS
-	 *            String of file name or file path.
-	 * 
-	 * @return OutputStream of file opened.
-	 * 
-	 * @throws ShellException
-	 *             If file destination cannot be opened or inaccessible.
-	 */
-	public static OutputStream openOutputRedir(String outputStreamS)
-			throws ShellException {
-		File outputFile = new File(outputStreamS);
-		FileOutputStream fOutputStream = null;
-		try {
-			fOutputStream = new FileOutputStream(outputFile);
-		} catch (FileNotFoundException e) {
-			throw new ShellException(e.getMessage());
-		}
-		return fOutputStream;
-	}
-
-	/**
-	 * Static method to close an inputStream.
-	 * 
-	 * @param inputStream
-	 *            InputStream to be closed.
-	 * 
-	 * @throws ShellException
-	 *             If inputStream cannot be closed successfully.
-	 */
-	public static void closeInputStream(InputStream inputStream)
-			throws ShellException {
-		if (inputStream != System.in) {
-			try {
-				inputStream.close();
-			} catch (IOException e) {
-				throw new ShellException(e.getMessage());
-			}
-		}
-	}
-
-	/**
-	 * Static method to close an outputStream. If outputStream provided is
-	 * System.out, it will be ignored.
-	 * 
-	 * @param outputStream
-	 *            OutputStream to be closed.
-	 * 
-	 * @throws ShellException
-	 *             If outputStream cannot be closed successfully.
-	 */
-	public static void closeOutputStream(OutputStream outputStream)
-			throws ShellException {
-		if (outputStream != System.out) {
-			try {
-				outputStream.close();
-			} catch (IOException e) {
-				throw new ShellException(e.getMessage());
-			}
-		}
-	}
-
-	/**
-	 * Static method to write output of an outputStream to another outputStream,
-	 * usually System.out.
-	 * 
-	 * @param outputStream
-	 *            Source outputStream to get stream from.
-	 * @param stdout
-	 *            Destination outputStream to write stream to.
-	 * @throws ShellException
-	 *             If exception is thrown during writing.
-	 */
-	public static void writeToStdout(OutputStream outputStream,
-			OutputStream stdout) throws ShellException {
-		if (outputStream instanceof FileOutputStream) {
-			return;
-		}
-		try {
-			stdout.write(((ByteArrayOutputStream) outputStream).toByteArray());
-		} catch (IOException e) {
-			throw new ShellException(EXP_STDOUT);
-		}
-	}
-
-	/**
-	 * Static method to pipe data from an outputStream to an inputStream, for
-	 * the evaluation of the Pipe Commands.
-	 * 
-	 * @param outputStream
-	 *            Source outputStream to get stream from.
-	 * 
-	 * @return InputStream with data piped from the outputStream.
-	 * 
-	 * @throws ShellException
-	 *             If exception is thrown during piping.
-	 */
-	public static InputStream outputStreamToInputStream(
-			OutputStream outputStream) throws ShellException {
-		return new ByteArrayInputStream(
-				((ByteArrayOutputStream) outputStream).toByteArray());
-	}
-
-	/**
 	 * Main method for the Shell Interpreter program.
 	 * 
 	 * @param args
 	 *            List of strings arguments, unused.
 	 */
-
 	public static void main(String... args) {
 		ShellImpl shell = new ShellImpl();
 
@@ -424,27 +238,70 @@ public class ShellImpl implements Shell {
 		return output;
 	}
 
-	@Override
+
+	/**
+	 * Gets all the paths that is globbed (but none in this case)
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				empty string since there are no paths
+	 */
 	public String globNoPaths(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i<args.length; i++) {
+			sb.append(args[i]);
+			if (i != args.length-1) {
+				sb.append(File.separator);
+			}
+		}
+		String built = sb.toString();
+		Parser p = new Parser();
+		List<String> allPaths = p.getGlobDirectories(built);
+		sb = new StringBuilder();
+		for (int i = 0; i<allPaths.size(); i++) {
+			sb.append(allPaths.get(i));
+			if (i != allPaths.size()-1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
 	}
 
-	@Override
+	/**
+	 * Gets all the paths that is globbed (but one in this case)
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				path of the one file that is globbed
+	 */
 	public String globOneFile(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return globNoPaths(args);
 	}
 
-	@Override
+	/**
+	 * Gets all the paths of files and directories that are globbed  
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				the paths of all files and directories globbed
+	 */
 	public String globFilesDirectories(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return globNoPaths(args);
 	}
 
-	@Override
+	/**
+	 * Gets all the paths that is globbed at a multi level such as 
+	 * "*FILE.SEPARATOR*" 
+	 * 
+	 * @param args
+	 * 				folders/files to be separated by File.separator
+	 * @return
+	 * 				the paths separated by a space
+	 */
 	public String globMultiLevel(String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		return globNoPaths(args);
 	}
 }
