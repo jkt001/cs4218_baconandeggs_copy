@@ -1023,14 +1023,6 @@ public class GivenBcApplicationTest {
 		String result = bcApp.not(args);
 		assertEquals("0", result);
 	}
-	
-	@Test
-	public void testStringSplit() {
-		String test = "abcde";
-		String[] result = test.split("");
-		assertEquals(6, result.length);
-		assertEquals("", result[0]);
-	}
 
 	private String[] createArgument(String left, String right) {
 		return new String[] {left, right};

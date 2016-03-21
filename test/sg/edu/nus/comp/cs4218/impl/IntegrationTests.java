@@ -172,7 +172,7 @@ public class IntegrationTests {
 	public void testBc() throws Exception {
 		shell.parseAndEvaluate("bc 5+5", outputStream);
 		String result = outputStream.toString();
-		assertEquals("10", result);
+		assertEquals("10" + ENDL, result);
 	}
 	
 	@Test
@@ -282,7 +282,7 @@ public class IntegrationTests {
 	public void testPipeWithException() {
 		String[] args = {"cal 13 2000", "head -n 2", "tail -n 1"};
 		String output = shell.pipeWithException(args);
-		assertEquals("", output);
+		assertEquals("cal: The month specified should be in between 1..12", output);
 	}
 	
 	@Test
