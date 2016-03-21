@@ -71,7 +71,7 @@ public class BESHCalendar {
 		return new Date();
 	}
 	
-	private boolean isLeapYear(int y) {
+	public boolean isLeapYear(int y) {
 		if (y % 400 ==0) {
 			return true;
 		} else if (y % 100 == 0) {
@@ -96,11 +96,5 @@ public class BESHCalendar {
 	
 	public int getYear() {
 		return year;
-	}
-	
-	public static void main(String[] args) {
-		BESHCalendar calendar = new BESHCalendar(21, 3, 2016);
-		System.out.println(calendar.getNumberOfDaysInAMonth());
-		System.out.println(calendar.getDayOfFirstDayInMonth());
 	}
 }
