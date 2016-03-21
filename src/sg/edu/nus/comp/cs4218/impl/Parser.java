@@ -22,7 +22,12 @@ import sg.edu.nus.comp.cs4218.exception.ShellException;
 
 /**
  * A parser handles all operations related to command parsing, which includes
- * semicolon and quoting.
+ * semicolon, quoting, IO-redirection and command substituition
+ * 
+ * Functionality is guaranteed for valid inputs, but not defined for invalid ones
+ * 
+ * Invalid inputs include:
+ * 		- Opening quotations without closing it
  * 
  * @author wilson
  */
@@ -502,27 +507,6 @@ public class Parser {
 	}
 
 	// Testing methods
-	public void print() {
-		System.out.println("comds = " + comds.size());
-		System.out.println("args size= " + args.size());
-		System.out.println("ins size =" + ins.size());
-		System.out.println("outs.size = " + outs.size());
-
-		for (int i = 0; i < pipeIndex.size(); i++) {
-			System.out.println("pipeIndex = " + pipeIndex.get(i));
-		}
-
-		for (int i = 0; i < comds.size(); i++) {
-			System.out.println(comds.get(i));
-			System.out.print("args = ");
-			System.out.println(args.get(i).length);
-			for (int j = 0; j < args.get(i).length; j++) {
-				System.out.println("here" + args.get(i)[j]);
-			}
-		}
-	}
-
-	// Stubbing methods for testing
 	public ArrayList<String> getCommands() {
 		return comds;
 	}
