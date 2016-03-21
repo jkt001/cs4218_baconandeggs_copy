@@ -336,7 +336,7 @@ public class BcApplicationTest {
 	}
 	
 	@Test
-	public void testPowLargeNumber() {
+	public void testPowLargeNumber() throws BcException {
 		String leftExpression = "2";
 		String rightExpression = "100";
 		String[] args = createArgument(leftExpression, rightExpression);
@@ -345,7 +345,7 @@ public class BcApplicationTest {
 	}
 	
 	@Test
-	public void testPowFloatingNumber() {
+	public void testPowFloatingNumber() throws BcException {
 		String leftExpression = "2.5";
 		String rightExpression = "2";
 		String[] args = createArgument(leftExpression, rightExpression);
@@ -354,7 +354,7 @@ public class BcApplicationTest {
 	}
 	
 	@Test
-	public void testPowByZero() {
+	public void testPowByZero() throws BcException {
 		String leftExpression = "5";
 		String rightExpression = "0";
 		String[] args = createArgument(leftExpression, rightExpression);
