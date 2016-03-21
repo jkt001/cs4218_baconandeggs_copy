@@ -236,6 +236,16 @@ public class BcApplication implements Bc {
 		return i;
 	}
 
+	/**
+	 * Returns the result of the calculation of the postfixExpression as string
+	 * 
+	 * @param postfixExpression
+	 *            The postfix expression specified.
+	 * 
+	 * @throws BcException
+	 *             If the expression contains invalid parameters for the operation
+	 */
+	
 	public String calculate(String postFixExpression) throws BcException {
 		Stack<String> myStack = new Stack<String>();
 
@@ -298,7 +308,7 @@ public class BcApplication implements Bc {
 		return arguments;
 	}
 
-	public boolean isValidOperator(String operator) {
+	private boolean isValidOperator(String operator) {
 		for (String[] ops : OPERATORS) {
 			for (String op : ops) {
 				if (op.equals(operator)) {
@@ -310,6 +320,14 @@ public class BcApplication implements Bc {
 		return false;
 	}
 
+	/**
+	 * Returns true if the expression has a valid bracket matching and false otherwise
+	 * 
+	 * @param expression
+	 *            The infix expression specified. This infix expression cannot
+	 *            contain any whitespace.
+	 * 
+	 */
 	public boolean isValidBracketMatching(String expression) {
 		Stack<Character> brackets = new Stack<Character>();
 
