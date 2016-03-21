@@ -18,6 +18,8 @@ public class BcApplication implements Bc {
 	HashMap<String, Integer> precedenceMapping;
 	private final String[][] OPERATORS = { { "+", "-" }, { "*", "/" }, { "^" }, { "<", ">", "<=", ">=", "!=", "==" },
 			{ "&&" }, { "||" }, { "!" } };
+	
+	int start;
 
 	public BcApplication() {
 		precedenceMapping = new HashMap<String, Integer>();
@@ -62,13 +64,22 @@ public class BcApplication implements Bc {
 	}
 
 	public String getPostfixExpression(String toBeProcessed) throws BcException {
+		
 		Stack<String> postfixStack = new Stack<String>();
 
 		StringBuilder postFixBuilder = new StringBuilder();
 
 		String[] expression = toBeProcessed.split("");
+		
+		
+		
+		if (expression[0].equals("")) {
+			start = 1;
+		} else {
+			start = 0;
+		}
 
-		for (int i = 1; i < expression.length; i++) {
+		for (int i = start; i < expression.length; i++) {
 			String exp = expression[i];
 
 			if (exp.equals("(")) {
@@ -105,7 +116,7 @@ public class BcApplication implements Bc {
 	}
 
 	private boolean isNegationAndNotSubtraction(String[] expression, int i) {
-		return i == 1 || isValidOperator(expression[i-1]) || expression[i-1].equals("(");
+		return i == start || isValidOperator(expression[i-1]) || expression[i-1].equals("(");
 	}
 
 	private int processOperand(StringBuilder postFixBuilder, String[] expression, int i, String exp)
