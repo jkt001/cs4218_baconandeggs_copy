@@ -1,6 +1,7 @@
 package sg.edu.nus.comp.cs4218.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -43,6 +44,7 @@ public class IntegrationTests {
 	private static final File INPUT_FILE = Paths.get(Environment.currentDirectory).resolve(INPUT_FILENAME).toFile();
 	private static final File INPUT2_FILE = Paths.get(Environment.currentDirectory).resolve(INPUT2_FILENAME).toFile();
 	private static final String ENDL = System.lineSeparator();
+	private static final File TEMP_DIR = new File("tmp_directory");
 	
 	private String contentOfFile(File file) throws IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
@@ -78,6 +80,8 @@ public class IntegrationTests {
 		writeToFile(INPUT_CONTENT, INPUT_FILE);
 		input2Content = contentOfInput2(0, INPUT2_NUMLINES);
 		writeToFile(input2Content, INPUT2_FILE);
+		TEMP_DIR.mkdirs();
+		TEMP_DIR.deleteOnExit();
 	}
 	
 	@After
@@ -86,6 +90,7 @@ public class IntegrationTests {
 		outputStream = null;
 		INPUT_FILE.delete();
 		INPUT2_FILE.delete();
+		TEMP_DIR.delete();
 	}
 	
 	@Test
@@ -165,8 +170,7 @@ public class IntegrationTests {
 	
 	@Test
 	public void testBc() throws Exception {
-		writeToFile("5 + 5", INPUT_FILE);
-		shell.parseAndEvaluate("bc < " + INPUT_FILENAME, outputStream);
+		shell.parseAndEvaluate("bc 5+5", outputStream);
 		String result = outputStream.toString();
 		assertEquals("10", result);
 	}
@@ -231,5 +235,126 @@ public class IntegrationTests {
 		String result = outputStream.toString();
 		assertEquals(contentOfInput2(0, 5), result);
 	}
+	
+	@Test
+	public void testPipeTwoCommandsNoArgs() throws Exception {
+		String[] args = {};
+		String output = shell.pipeTwoCommands(args);
+		assertEquals("", output);
+	}
+	
+	@Test
+	public void testPipeTwoCommandsSuccess() throws Exception {
+		String[] args = {"cal 12 2000", "head -n 1"};
+		String output = shell.pipeTwoCommands(args);
+		assertEquals("   December 2000" + ENDL, output);
+	}
+	
+	@Test
+	public void testPipeTwoCommandsExceptionInFirstApp() throws Exception {
+		String[] args = {"cal 13 2000", "head -n 1"};
+		String output = shell.pipeTwoCommands(args);
+		assertEquals("", output);
+	}
+	
+	@Test
+	public void testPipeMultipleCommandsNoArgs() throws Exception { 
+		String[] args = {};
+		String output = shell.pipeMultipleCommands(args);
+		assertEquals("", output);
+	}
+	
+	@Test
+	public void testPipeMultipleCommandsSuccess() throws Exception {
+		String[] args = {"cal 12 2000", "head -n 2", "tail -n 1"};
+		String output = shell.pipeMultipleCommands(args);
+		assertEquals("Su Mo Tu We Th Fr Sa" + ENDL, output);
+	}
+	
+	@Test
+	public void testPipeMultipleCommandsWithException() throws Exception {
+		String[] args = {"cal 13 2000", "head -n 2", "tail -n 1"};
+		String output = shell.pipeMultipleCommands(args);
+		assertEquals("", output);
+	}
+	
+	@Test
+	public void testPipeWithException() {
+		String[] args = {"cal 13 2000", "head -n 2", "tail -n 1"};
+		String output = shell.pipeWithException(args);
+		assertEquals("", output);
+	}
+	
+	@Test
+	public void testGlobNoPaths() throws Exception {
+		String[] args = {"inexistent_directory", "*"};
+		String output = shell.globNoPaths(args);
+		assertEquals("", output);
+	}
+	
+	@Test
+	public void testGlobOneFile() throws Exception {
+		File tmpFile = new File("tmp_directory/test.txt");
+		tmpFile.createNewFile();
+		
+		String[] args = {"tmp_directory", "*"};
+		String output = shell.globOneFile(args);
+		
+		assertEquals("tmp_directory/test.txt", output);
+		
+		tmpFile.delete();
+	}
+	
+	@Test
+	public void testGlobFilesDirectories() throws Exception {
+		File tmpFile = new File("tmp_directory/test.txt");
+		tmpFile.createNewFile();
+		
+		File tmpDir2 = new File("tmp_directory/test_results");
+		tmpDir2.mkdirs();
+		
+		String[] args = {"tmp_directory", "*"};
+		String output = shell.globFilesDirectories(args);
+		
+		assertEquals("tmp_directory/test.txt tmp_directory/test_results/", output);
+		
+		tmpDir2.delete();
+		tmpFile.delete();
+	}
+	
+	@Test
+	public void testGlobMultiLevel() throws Exception {
+		File tmpDir = new File("tmp_directory/tmp1");
+		tmpDir.mkdirs();
+		
+		File tmpFileA = new File("tmp_directory/tmp1/A.tmp");
+		tmpFileA.createNewFile();
+		
+		File tmpFileB = new File("tmp_directory/tmp1/B.tmp");
+		tmpFileB.createNewFile();
+		
+		File tmpDir2 = new File("tmp_directory/tmp2");
+		tmpDir2.mkdirs();
+		
+		File tmpFileC = new File("tmp_directory/tmp2/C.tmp");
+		tmpFileC.createNewFile();
+		
+		File tmpFileD = new File("tmp_directory/tmp2/D.tmp");
+		tmpFileD.createNewFile();
+		
+		String[] args = {"tmp_directory", "*", "*"};
+		String output = shell.globMultiLevel(args);
+		
+		assertEquals("tmp_directory/tmp1/A.tmp tmp_directory/tmp1/B.tmp "
+				+ "tmp_directory/tmp2/C.tmp tmp_directory/tmp2/D.tmp", output);
+		
+		tmpFileA.delete();
+		tmpFileB.delete();
+		tmpFileC.delete();
+		tmpFileD.delete();
+		tmpDir.delete();
+		tmpDir2.delete();
+	}
+	
 	
 }

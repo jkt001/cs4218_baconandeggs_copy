@@ -8,12 +8,14 @@ import java.io.OutputStream;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import sg.edu.nus.comp.cs4218.exception.BcException;
 
+@Ignore
 public class BcApplicationTest {
 	
 	private static BcApplication bcApplication;

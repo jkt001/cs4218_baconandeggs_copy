@@ -11,9 +11,11 @@ import org.junit.runner.RunWith;
 	DateApplicationTest.class,
 	EchoApplicationTest.class,
 	FmtApplicationTest.class,
+	GivenBcApplicationTest.class,
+	GivenCommApplicationTest.class,
 	HeadApplicationTest.class,
 	SortApplicationTest.class,
-	TailApplicationTest.class
+	TailApplicationTest.class,
 })
 public class ApplicationTestSuite {
 }

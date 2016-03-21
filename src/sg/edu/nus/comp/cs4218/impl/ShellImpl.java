@@ -75,6 +75,8 @@ public class ShellImpl implements Shell {
 			absApp = new CommApplication();
 		} else if (("cal").equals(app)) {
 			absApp = new CalApplication();
+		} else if (("bc").equals(app)) {
+			absApp = new BcApplication();
 		} else { // invalid command
 			throw new ShellException(app + ": " + EXP_INVALID_APP);
 		}
@@ -163,7 +165,7 @@ public class ShellImpl implements Shell {
 		try {
 			output = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			return " ";
+			return "";
 		}
 		return output;
 	}
@@ -181,7 +183,7 @@ public class ShellImpl implements Shell {
 	 *  			output stream of the first command, into the second command
 	 */
 	public String pipeMultipleCommands(String[] args) {
-		String output = " ";
+		String output = "";
 		StringBuilder comd = new StringBuilder();
 		for (int i = 0; i < args.length; i++) {
 			comd.append(args[i]);
@@ -199,7 +201,7 @@ public class ShellImpl implements Shell {
 		try {
 			output = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			return " ";
+			return "";
 		}
 		return output;
 	}
@@ -215,7 +217,7 @@ public class ShellImpl implements Shell {
 	 *  			the expected error message
 	 */
 	public String pipeWithException(String[] args) {
-		String output = " ";
+		String output = "";
 		StringBuilder comd = new StringBuilder();
 		for (int i = 0; i < args.length; i++) {
 			comd.append(args[i]);
@@ -233,7 +235,7 @@ public class ShellImpl implements Shell {
 		try {
 			output = outStream.toString("UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			return " ";
+			return "";
 		}
 		return output;
 	}

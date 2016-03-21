@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.Shell;
@@ -79,6 +80,7 @@ public class IORedirectionTest {
 	}
 	
 	@Test
+	@Ignore("Append feature is not implemented in our standard.")
 	public void testOutputRedirectionAppend() throws Exception {
 		shell.parseAndEvaluate("echo hello world > tmp.out", outputStream);
 		shell.parseAndEvaluate("echo chocolate >> tmp.out", outputStream);
@@ -97,6 +99,7 @@ public class IORedirectionTest {
 	}
 	
 	@Test
+	@Ignore("HEREDOC feature is not implemented in our standard.")
 	public void testHereDocumentInputRedirection() throws Exception {
 		StringBuilder commandBuilder = new StringBuilder();
 		commandBuilder.append("head > output.txt << EOF").append(System.lineSeparator());
