@@ -5,11 +5,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -21,6 +23,8 @@ import org.junit.Test;
 
 import sg.edu.nus.comp.cs4218.Environment;
 import sg.edu.nus.comp.cs4218.Shell;
+import sg.edu.nus.comp.cs4218.exception.AbstractApplicationException;
+import sg.edu.nus.comp.cs4218.exception.ShellException;
 import sg.edu.nus.comp.cs4218.impl.app.DateApplication;
 
 /**
@@ -132,6 +136,31 @@ public class IntegrationTests {
 		DateApplication dateApplication = new DateApplication();
 		
 		assertEquals(dateApplication.formatDate(calendar) + ENDL, result);
+	}
+	
+	@Test
+	public void testSortFromStdIn() throws AbstractApplicationException, ShellException {
+		String[] toBeSorted = { 
+	    		"4294967296",
+	    		"1267650600228229401496703205376",
+	    		"11"
+	    };
+		
+		StringBuilder input = new StringBuilder();
+		for (String inputString : toBeSorted) {
+			input.append(inputString);
+			input.append(System.lineSeparator());
+		}
+		
+		InputStream stdin = new ByteArrayInputStream(input.toString().getBytes());
+		System.setIn(stdin);
+		
+		
+		shell.parseAndEvaluate("sort", outputStream);
+		
+		String expected = "11" + System.lineSeparator() + "1267650600228229401496703205376" + System.lineSeparator() + "4294967296" + System.lineSeparator();
+		
+		assertEquals(expected, outputStream.toString());	
 	}
 	
 	@Test

@@ -36,6 +36,9 @@ public class BcApplication implements Bc {
 	 * calculation and all calculation is done with the upmost precision. All
 	 * numbers will be treated as floating point numbers.
 	 * 
+	 * For division, all operations are rounded to 20 digits after the decimal point.
+	 * Hence, there might be a floating point precision error for extreme numbers.
+	 * 
 	 * The precedence level is defined in this app, from lowest to highest:
 	 * { { "+", "-" }, { "*", "/" }, { "^" }, { "<", ">", "<=", ">=", "!=", "==" },
 	 * { "&&" }, { "||" }, { "!" } }
@@ -84,6 +87,7 @@ public class BcApplication implements Bc {
 
 	private void printResult(String result, OutputStream stdout) throws BcException {
 		try {
+			if (result == null) throw new BcException("Invalid Operation");
 			stdout.write(result.getBytes("UTF-8"));
 			stdout.write(System.lineSeparator().getBytes("UTF-8"));
 		} catch (IOException e) {
@@ -467,12 +471,12 @@ public class BcApplication implements Bc {
 			return result.toString();
 
 		} catch (Exception e) {
-			MathContext mc = new MathContext(9, RoundingMode.CEILING);
+			MathContext mc = new MathContext(100, RoundingMode.CEILING);
 
 			BigDecimal firstOperand = new BigDecimal(args[0]);
 			BigDecimal secondOperand = new BigDecimal(args[1]);
 
-			BigDecimal result = firstOperand.divide(secondOperand, mc).setScale(10, RoundingMode.CEILING);
+			BigDecimal result = firstOperand.divide(secondOperand, mc).setScale(30, RoundingMode.CEILING);
 			return result.toString();
 		}
 
@@ -500,7 +504,7 @@ public class BcApplication implements Bc {
 		}
 
 		BigDecimal firstOperand = new BigDecimal(args[0]);
-		BigDecimal result = firstOperand.pow(exponent);
+		BigDecimal result = firstOperand.pow(exponent, MathContext.DECIMAL128);
 		return result.toString();
 
 	}
