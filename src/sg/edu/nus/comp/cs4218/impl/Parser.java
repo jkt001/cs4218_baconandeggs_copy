@@ -474,6 +474,19 @@ public class Parser {
 	 */
 	public void evaluate() throws ShellException, AbstractApplicationException {
 		for (int i = 0; i < comds.size(); i++) {
+			String nextComd;
+			String[] nextArgs;
+			if (comds.get(i).isEmpty()) {
+				String[] allArgs = args.get(i)[0].split("\\s+");
+				nextComd = allArgs[0];
+				nextArgs = new String[allArgs.length -1];
+				for(int j = 0; j < nextArgs.length; j++) {
+					nextArgs[j] = allArgs[j+1];
+				}
+			} else {
+				nextComd = comds.get(i);
+				nextArgs = args.get(i);
+			}
 			InputStream in = ins.get(i);
 			OutputStream out = outs.get(i);
 			if (pipeIndex.contains(i - 1)) {
@@ -483,7 +496,7 @@ public class Parser {
 				prevStream = new ByteArrayOutputStream();
 				out = prevStream;
 			}
-			runApplication(comds.get(i), args.get(i), in, out);
+			runApplication(nextComd, nextArgs, in, out);
 		}
 	}
 
@@ -518,7 +531,7 @@ public class Parser {
 	public ArrayList<String[]> getArguments() {
 		return args;
 	}
-
+	
 	public ArrayList<InputStream> getInputStreams() {
 		return ins;
 	}
