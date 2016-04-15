@@ -474,17 +474,22 @@ public class Parser {
 	 */
 	public void evaluate() throws ShellException, AbstractApplicationException {
 		for (int i = 0; i < comds.size(); i++) {
-			String nextComd;
-			String[] nextArgs;
+			String nextComd = null;
+			String[] nextArgs = null;
+			boolean transferArgs = false;
 			if (comds.get(i).isEmpty()) {
-				String[] allArgs = args.get(i)[0].split("\\s+");
-				if (allArgs.length > 0) {
-					nextComd = allArgs[0];
-					nextArgs = new String[allArgs.length -1];
-					for(int j = 0; j < nextArgs.length; j++) {
-						nextArgs[j] = allArgs[j+1];
+				if (args.get(i).length > 0) {
+					String[] allArgs = args.get(i)[0].split("\\s+");
+					if (allArgs.length > 0) {
+						nextComd = allArgs[0];
+						nextArgs = new String[allArgs.length -1];
+						transferArgs = true;
+						for(int j = 0; j < nextArgs.length; j++) {
+							nextArgs[j] = allArgs[j+1];
+						}
 					}
-				} else {
+				}
+				if (!transferArgs) {
 					nextComd = comds.get(i);
 					nextArgs = args.get(i);
 				}
