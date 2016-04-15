@@ -478,10 +478,15 @@ public class Parser {
 			String[] nextArgs;
 			if (comds.get(i).isEmpty()) {
 				String[] allArgs = args.get(i)[0].split("\\s+");
-				nextComd = allArgs[0];
-				nextArgs = new String[allArgs.length -1];
-				for(int j = 0; j < nextArgs.length; j++) {
-					nextArgs[j] = allArgs[j+1];
+				if (allArgs.length > 0) {
+					nextComd = allArgs[0];
+					nextArgs = new String[allArgs.length -1];
+					for(int j = 0; j < nextArgs.length; j++) {
+						nextArgs[j] = allArgs[j+1];
+					}
+				} else {
+					nextComd = comds.get(i);
+					nextArgs = args.get(i);
 				}
 			} else {
 				nextComd = comds.get(i);
