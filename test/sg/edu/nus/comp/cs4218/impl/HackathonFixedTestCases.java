@@ -46,7 +46,7 @@ public class HackathonFixedTestCases {
     
     /**
      * Fixes bug #18 as reported in hackathon. Testing is at an integration level and is reliant on 
-     * EchoApplication. Behaviour is expected as the .evalate() function will extract the date from
+     * EchoApplication. Behaviour is expected as the .evaluate() function will extract the date from
      * args and inject into comds
      */
     @Test
